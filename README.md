@@ -137,4 +137,4 @@ The plugin follows the standard Git Flow strategy:
 ## 📦 Repository
 
 Source code available at:  
-👉 https://github.com/walterdvalle/gitflow-helper
+👉 https://github.com/wdvalle/gitflow-helper
