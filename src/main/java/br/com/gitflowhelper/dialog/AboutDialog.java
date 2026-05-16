@@ -24,7 +24,7 @@ public class AboutDialog extends DialogWrapper {
 
     private static final String PLUGIN_NAME = "GitFlow Helper";
     private static final String PLUGIN_VERSION = PluginInfoUtil.getPluginVersion();
-    private static final String GITHUB_URL = "https://github.com/walterdvalle/gitflow-helper";
+    private static final String GITHUB_URL = "https://github.com/wdvalle/gitflow-helper";
     private static final String MARKETPLACE_URL = "https://plugins.jetbrains.com/plugin/30207-git-flow-helper";
     private static final String KOFI_URL = "https://ko-fi.com/waltervalle";
 

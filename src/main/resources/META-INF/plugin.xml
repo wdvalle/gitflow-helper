@@ -187,8 +187,8 @@
 
         <p>
             Source code available at:<br>
-            👉 <a href="https://github.com/walterdvalle/gitflow-helper" target="_blank">
-                https://github.com/walterdvalle/gitflow-helper
+            👉 <a href="https://github.com/wdvalle/gitflow-helper" target="_blank">
+                https://github.com/wdvalle/gitflow-helper
             </a>
         </p>
         ]]>
@@ -196,18 +196,26 @@
     <change-notes>
         <![CDATA[
             <ul>
-                <li><b>1.0.4</b></li>
+                <li><b>1.0.8</b></li>
                 <ul>
-                    <li>Initial public release</li>
+                    <li>New github account.</li>
+                </ul>
+                <li><b>1.0.7</b></li>
+                <ul>
+                    <li>Some NPEs solved.</li>
+                </ul>
+                <li><b>1.0.6</b></li>
+                <ul>
+                    <li>NPE reading config params in a non initialized project.</li>
                 </ul>
                 <li><b>1.0.5</b></li>
                 <ul>
                     <li>New branches in tree view</li>
                     <li>Minor improvements</li>
                 </ul>
-                <li><b>1.0.6</b></li>
+                <li><b>1.0.4</b></li>
                 <ul>
-                    <li>NPE reading config params in a non initialized project.</li>
+                    <li>Initial public release</li>
                 </ul>
             </ul>
         ]]>
