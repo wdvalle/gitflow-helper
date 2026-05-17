@@ -23,8 +23,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class ReleaseFinishAction extends BaseAction {
 
-    public ReleaseFinishAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.RELEASE_FINISH.getValue(), AllIcons.Vcs.Patch_applied);
+    public ReleaseFinishAction() {
+//        super(actionTitle, GitFlowDescriptions.RELEASE_FINISH.getValue(), AllIcons.Vcs.Patch_applied);
     }
 
     @Override

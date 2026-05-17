@@ -25,8 +25,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class HotfixStartAction extends BaseAction {
 
-    public HotfixStartAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.HOTFIX_START.getValue(), AllIcons.Actions.Execute);
+    public HotfixStartAction() {
+//        super(actionTitle, GitFlowDescriptions.HOTFIX_START.getValue(), AllIcons.Actions.Execute);
     }
 
     @Override

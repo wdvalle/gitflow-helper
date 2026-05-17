@@ -24,8 +24,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class HotfixFinishAction extends BaseAction {
 
-    public HotfixFinishAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.HOTFIX_FINISH.getValue(), AllIcons.Vcs.Patch_applied);
+    public HotfixFinishAction() {
+//        super(actionTitle, GitFlowDescriptions.HOTFIX_FINISH.getValue(), AllIcons.Vcs.Patch_applied);
     }
 
     @Override

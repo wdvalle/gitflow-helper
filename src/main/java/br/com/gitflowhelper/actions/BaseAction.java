@@ -5,11 +5,13 @@ import br.com.gitflowhelper.statusbar.GitFlowStatusBarWidget;
 import br.com.gitflowhelper.util.ActionParamsService;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.NlsActions;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import git4idea.repo.GitRepository;
 
 import javax.swing.*;
+import java.util.function.Supplier;
 
 public abstract class BaseAction extends AnAction /*implements PropertyChangeListener*/ {
     public static final String REMOTE = "origin";
@@ -33,6 +35,14 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
             Icon icon) {
         super(actionTitle, description, icon);
     }
+
+    public BaseAction(
+            Supplier<@NlsActions.ActionText String> description,
+            Icon icon) {
+        super(description, icon);
+    }
+
+    public BaseAction() { }
 
     public String getMainBranch() {
         return GitFlowSettingsService.getInstance(getProject()).getMainBranch();

@@ -2,6 +2,9 @@ package br.com.gitflowhelper.statusbar;
 
 import br.com.gitflowhelper.util.ActionParamsService;
 import br.com.gitflowhelper.popup.GitFlowPopup;
+import br.com.gitflowhelper.util.GitBranchUtils;
+import br.com.gitflowhelper.util.PropertyObserver;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.wm.StatusBar;
@@ -13,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class GitFlowStatusBarWidget implements StatusBarWidget {
+public class GitFlowStatusBarWidget extends PropertyObserver implements StatusBarWidget {
 
     private final Project project;
     private StatusBar statusBar;
@@ -32,6 +35,15 @@ public class GitFlowStatusBarWidget implements StatusBarWidget {
 
     @Override
     public void install(@NotNull StatusBar statusBar) {
+        ActionParamsService.setProject(project);
+
+        addPropertyChangeListener(ActionParamsService.getInstance());
+
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            String branchName = GitBranchUtils.getCurrentBranchName(project);
+            firePropertyChange("branchName", "", branchName);
+        });
+
         this.statusBar = statusBar;
     }
 
@@ -70,7 +82,6 @@ public class GitFlowStatusBarWidget implements StatusBarWidget {
 
         @Override
         public @Nullable ListPopup getPopup() {
-            ActionParamsService.setProject(project);
             return new GitFlowPopup().getPopup();
         }
     }

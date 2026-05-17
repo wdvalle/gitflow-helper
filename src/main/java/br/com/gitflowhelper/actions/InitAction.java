@@ -4,6 +4,7 @@ import br.com.gitflowhelper.dialog.InitDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
+import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
 import com.intellij.icons.AllIcons;
@@ -54,6 +55,7 @@ public class InitAction extends BaseAction {
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Git Flow Initialization Successful");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
+                GitFlowSettingsService.getInstance(getProject()).resetAndDeleteStorage();
             }
             setLoading(false);
         });

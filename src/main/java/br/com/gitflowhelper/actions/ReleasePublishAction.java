@@ -25,8 +25,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class ReleasePublishAction extends BaseAction {
 
-    public ReleasePublishAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.RELEASE_PUBLISH.getValue(), AllIcons.CodeWithMe.CwmShared);
+    public ReleasePublishAction() {
+//        super(actionTitle, GitFlowDescriptions.RELEASE_PUBLISH.getValue(), AllIcons.CodeWithMe.CwmShared);
     }
 
     @Override

@@ -24,8 +24,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class HotfixPublishAction extends BaseAction {
 
-    public HotfixPublishAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.HOTFIX_PUBLISH.getValue(), AllIcons.CodeWithMe.CwmShared);
+    public HotfixPublishAction() {
+//        super(actionTitle, GitFlowDescriptions.HOTFIX_PUBLISH.getValue(), AllIcons.CodeWithMe.CwmShared);
     }
 
     @Override

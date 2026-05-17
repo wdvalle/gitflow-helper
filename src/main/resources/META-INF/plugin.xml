@@ -196,6 +196,13 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>1.0.9</b></li>
+                <ul>
+                    <li>Keyboard shortcuts for git flow actions.</li>
+                    <li>Fail on Init does not initialize plugin.</li>
+                    <li>New reset plugin action.</li>
+                    <li>Focus on dialog fields.</li>
+                </ul>
                 <li><b>1.0.8</b></li>
                 <ul>
                     <li>New github account.</li>
@@ -222,6 +229,103 @@
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
     <depends>Git4Idea</depends>
+    <actions>
+        <action
+                id="GitFlowHelper.FeatureStartAction"
+                class="br.com.gitflowhelper.actions.FeatureStartAction"
+                text="Feature Start Action"
+                description="Creates a new local feature branch (git flow feature start)."
+                icon="AllIcons.Toolwindows.ToolWindowRun">
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="ctrl alt 1"/>
+        </action>
+        <action
+                id="GitFlowHelper.FeaturePublishAction"
+                class="br.com.gitflowhelper.actions.FeaturePublishAction"
+                text="Feature Publish Action"
+                description="Pushes the current feature branch to VCS (git flow feature publish)."
+                icon="AllIcons.CodeWithMe.CwmShared">
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="ctrl alt 2"/>
+        </action>
+        <action
+                id="GitFlowHelper.FeatureFinishAction"
+                class="br.com.gitflowhelper.actions.FeatureFinishAction"
+                text="Feature Finish Action"
+                description="Merges current feature branch into develop chain and deletes current branch or creates a merge request (git flow feature finish)."
+                icon="AllIcons.Vcs.Patch_applied">
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="ctrl alt 3"/>
+        </action>
+
+        <action
+                id="GitFlowHelper.ReleaseStartAction"
+                class="br.com.gitflowhelper.actions.ReleaseStartAction"
+                text="Release Start Action"
+                description="Creates a new local release branch (git flow release start)."
+                icon="AllIcons.Toolwindows.ToolWindowRun">
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="ctrl alt 4"/>
+        </action>
+        <action
+                id="GitFlowHelper.ReleasePublishAction"
+                class="br.com.gitflowhelper.actions.ReleasePublishAction"
+                text="Release Publish Action"
+                description="Pushes the current release branch to VCS (git flow release publish)."
+                icon="AllIcons.CodeWithMe.CwmShared">
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="ctrl alt 5"/>
+        </action>
+        <action
+                id="GitFlowHelper.ReleaseFinishAction"
+                class="br.com.gitflowhelper.actions.ReleaseFinishAction"
+                text="Release Finish Action"
+                description="Merges current release branch into master chain and deletes current branch (git flow release finish)."
+                icon="AllIcons.Vcs.Patch_applied">
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="ctrl alt 6"/>
+        </action>
+
+        <action
+                id="GitFlowHelper.HotfixStartAction"
+                class="br.com.gitflowhelper.actions.HotfixStartAction"
+                text="Hotfix Start Action"
+                description="Creates a new local hotfix branch (git flow hotfix start)."
+                icon="AllIcons.Toolwindows.ToolWindowRun">
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="ctrl alt 7"/>
+        </action>
+        <action
+                id="GitFlowHelper.HotfixPublishAction"
+                class="br.com.gitflowhelper.actions.HotfixPublishAction"
+                text="Hotfix Publish Action"
+                description="Pushes the current hotfix branch to VCS (git flow hotfix publish)."
+                icon="AllIcons.CodeWithMe.CwmShared">
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="ctrl alt 8"/>
+        </action>
+        <action
+                id="GitFlowHelper.HotfixFinishAction"
+                class="br.com.gitflowhelper.actions.HotfixFinishAction"
+                text="Hotfix Finish Action"
+                description="Merges current hotfix branch into master and develop chains and deletes current branch (git flow hotfix finish)."
+                icon="AllIcons.Vcs.Patch_applied">
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="ctrl alt 9"/>
+        </action>
+
+
+
+    </actions>
 
     <extensions defaultExtensionNs="com.intellij">
         <statusBarWidgetFactory

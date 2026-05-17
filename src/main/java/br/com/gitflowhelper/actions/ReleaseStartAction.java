@@ -25,8 +25,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class ReleaseStartAction extends BaseAction {
 
-    public ReleaseStartAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.RELEASE_START.getValue(), AllIcons.Actions.Execute);
+    public ReleaseStartAction() {
+//        super(actionTitle, GitFlowDescriptions.RELEASE_START.getValue(), AllIcons.Actions.Execute);
     }
 
     @Override

@@ -27,8 +27,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class FeatureStartAction extends BaseAction {
 
-    public FeatureStartAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.FEATURE_START.getValue(), AllIcons.Actions.Execute);
+    public FeatureStartAction() {
+//        super(GitFlowDescriptions.FEATURE_START::getValue, AllIcons.Actions.Execute);
     }
 
     public void actionPerformed(@NotNull AnActionEvent e) {

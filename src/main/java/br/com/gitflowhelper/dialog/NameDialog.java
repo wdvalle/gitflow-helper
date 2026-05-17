@@ -88,4 +88,9 @@ public class NameDialog extends DialogWrapper {
         onOk.accept(new NameResponse(nameField.getText(), pushOnFinish.isSelected()));
         super.doOKAction();
     }
+
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return nameField;
+    }
 }

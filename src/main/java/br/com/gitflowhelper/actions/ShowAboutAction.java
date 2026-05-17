@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 public class ShowAboutAction extends BaseAction {
 
     public ShowAboutAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.ABOUT.getValue(), AllIcons.General.Information);
+        super(actionTitle, GitFlowDescriptions.ABOUT.getValue(), AllIcons.General.ShowInfos);
     }
 
     @Override

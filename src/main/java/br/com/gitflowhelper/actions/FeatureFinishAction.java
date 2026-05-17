@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unused")
 public class FeatureFinishAction extends BaseAction {
 
-    public FeatureFinishAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.FEATURE_FINISH.getValue(), AllIcons.Vcs.Patch_applied);
+    public FeatureFinishAction() {
+//        super(actionTitle, GitFlowDescriptions.FEATURE_FINISH.getValue(), AllIcons.Vcs.Patch_applied);
     }
 
     @Override

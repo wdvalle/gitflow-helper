@@ -22,8 +22,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class FeaturePublishAction extends BaseAction {
 
-    public FeaturePublishAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.FEATURE_PUBLISH.getValue(), AllIcons.CodeWithMe.CwmShared);
+    public FeaturePublishAction() {
+//        super(actionTitle, GitFlowDescriptions.FEATURE_PUBLISH.getValue(), AllIcons.CodeWithMe.CwmShared);
     }
 
     @Override

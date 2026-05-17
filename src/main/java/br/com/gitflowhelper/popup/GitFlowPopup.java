@@ -1,6 +1,6 @@
 package br.com.gitflowhelper.popup;
 
-import br.com.gitflowhelper.actions.ActionBuilder;
+import br.com.gitflowhelper.actions.ResetAction;
 import br.com.gitflowhelper.actions.ShowAboutAction;
 import br.com.gitflowhelper.actions.branches.DeleteLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.DeleteRemoteBranchAction;
@@ -11,16 +11,10 @@ import br.com.gitflowhelper.actions.InitAction;
 import br.com.gitflowhelper.actions.branches.CheckoutLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.CheckoutRemoteBranchAction;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
-import br.com.gitflowhelper.util.GitBranchUtils;
 import br.com.gitflowhelper.util.GitFlowDescriptions;
-import br.com.gitflowhelper.util.PropertyObserver;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.*;
 import com.intellij.ui.awt.RelativePoint;
@@ -37,7 +31,7 @@ import java.util.*;
 import java.util.List;
 import java.util.function.Function;
 
-public final class GitFlowPopup extends PropertyObserver {
+public final class GitFlowPopup /*extends PropertyObserver*/ {
     private ListPopup listPopup;
     private Point local = null;
 
@@ -57,12 +51,12 @@ public final class GitFlowPopup extends PropertyObserver {
                 );
                 this.listPopup.setCaptionIcon(PluginIcons.GitFlow);
 
-                addPropertyChangeListener(ActionParamsService.getInstance());
-
-                ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                    String branchName = GitBranchUtils.getCurrentBranchName(project);
-                    firePropertyChange("branchName", "", branchName);
-                });
+//                addPropertyChangeListener(ActionParamsService.getInstance());
+//
+//                ApplicationManager.getApplication().executeOnPooledThread(() -> {
+//                    String branchName = GitBranchUtils.getCurrentBranchName(project);
+//                    firePropertyChange("branchName", "", branchName);
+//                });
 
                 this.listPopup.addListener(new JBPopupListener() {
                        @Override
@@ -81,7 +75,6 @@ public final class GitFlowPopup extends PropertyObserver {
     private DefaultActionGroup createGroup(Project project) {
         DefaultActionGroup group = new DefaultActionGroup();
         group.add(new InitAction("Init..."));
-        //group.add(new OpenTreePopupAction("Tree"));
         group.addSeparator();
 
         group.add(new BaseAction("Show as tree...", GitFlowDescriptions.SHOW_AS_TREE.getValue(), AllIcons.General.Layout) {
@@ -103,6 +96,7 @@ public final class GitFlowPopup extends PropertyObserver {
         group.add(flowGroup("Release", AllIcons.Nodes.UpFolder, GitFlowDescriptions.RELEASE_GROUP.getValue()));
         group.add(flowGroup("Hotfix", AllIcons.General.ExternalTools, GitFlowDescriptions.HOTFIX_GROUP.getValue()));
         group.addSeparator();
+        group.add(new ResetAction("Reset"));
         group.add(new ShowAboutAction("About..."));
         return group;
     }
@@ -114,18 +108,30 @@ public final class GitFlowPopup extends PropertyObserver {
     private DefaultActionGroup flowGroup(String type, Icon icon, String description) {
         DefaultActionGroup group = new DefaultActionGroup(type, description, icon);
         group.setPopup(true);
-        group.add(flowAction(type, "start"));
-        group.add(flowAction(type, "publish"));
-        group.add(flowAction(type, "finish"));
+        group.add(flowAction(type, "Start"));
+        group.add(flowAction(type, "Publish"));
+        group.add(flowAction(type, "Finish"));
         return group;
     }
 
     private AnAction flowAction(String type, String action) {
-        String actionTitle = action.substring(0, 1).toUpperCase(Locale.ROOT) + action.substring(1);
-        BaseAction act = ActionBuilder.createActionInstance(
-                type+actionTitle+"Action",
-                actionTitle);
-        return act;
+        String actionClassName = type+action+"Action";
+        return ActionManager.getInstance().getAction("GitFlowHelper."+actionClassName);
+//        BaseAction act = ActionBuilder.createActionInstance(
+//                actionClassName,
+//                action);
+//
+//        assert act != null;
+//        ActionManager.getInstance().registerAction("GitFlowHelper."+actionClassName, act);
+//        if (shortcuts.get(actionClassName) != null) {
+//            KeymapManager
+//                    .getInstance()
+//                    .getActiveKeymap().addShortcut(
+//                            "GitFlowHelper."+actionClassName,
+//                            shortcuts.get(actionClassName)
+//                    );
+//        }
+//        return act;
     }
 
     private DefaultActionGroup repositoryBranchGroup(GitRepository repository, Project project) {
