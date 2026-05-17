@@ -1,11 +1,17 @@
 package br.com.gitflowhelper.settings;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 @Service(Service.Level.PROJECT)
 @State(
@@ -60,4 +66,18 @@ public final class GitFlowSettingsService
     public String getDevelopBranch() {return state.getDevelopBranch();}
 
     public void setDevelopBranch(String developBranch) {state.setDevelopBranch(developBranch);}
+
+    public void resetAndDeleteStorage() {
+        this.state = new GitFlowSettingsState();
+        ApplicationManager.getApplication().saveSettings();
+        Path optionsPath = Path.of(
+                PathManager.getOptionsPath(),
+                "gitflow-helper.xml"
+        );
+        try {
+            FileUtil.delete(optionsPath);
+        } catch (IOException e) {
+            //throw new RuntimeException(e);
+        }
+    }
 }
