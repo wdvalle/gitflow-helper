@@ -10,7 +10,7 @@ import java.beans.PropertyChangeListener;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-public final class ActionParamsService implements PropertyChangeListener {
+public final class ActionParamsService /*implements PropertyChangeListener*/ {
 
     private static final ActionParamsService INSTANCE = new ActionParamsService();
     private static Project project;
@@ -36,11 +36,11 @@ public final class ActionParamsService implements PropertyChangeListener {
         return branchName;
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent e) {
-        ActionParamsService.setBranchName((String) e.getNewValue());
-        ActivityTracker.getInstance().inc();
-    }
+//    @Override
+//    public void propertyChange(PropertyChangeEvent e) {
+//        ActionParamsService.setBranchName((String) e.getNewValue());
+//        ActivityTracker.getInstance().inc();
+//    }
 
     public static void addRepo(AnAction action, GitRepository repo) {
         if (repos == null) {

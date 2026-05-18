@@ -1,6 +1,7 @@
 package br.com.gitflowhelper.toolwindow;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
@@ -39,5 +40,10 @@ public class ClearToolWindowAction extends AnAction {
         // Exemplo: habilitar/desabilitar dinamicamente
         boolean hasData = true; // substitua por lógica real
         e.getPresentation().setEnabled(hasData);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 }

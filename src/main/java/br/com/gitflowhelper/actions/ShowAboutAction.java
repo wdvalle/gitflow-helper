@@ -14,9 +14,14 @@ public class ShowAboutAction extends BaseAction {
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = e.getProject();
         AboutDialog dialog = new AboutDialog(project);
         dialog.show();
+    }
+
+
+    @Override
+    protected void updateImpl(@NotNull AnActionEvent e) {
     }
 }

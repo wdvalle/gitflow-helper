@@ -28,7 +28,7 @@ public class CheckoutLocalBranchAction extends BaseAction {
     }
 
     @Override
-    public void update(@NotNull AnActionEvent e) {
+    public void updateImpl(@NotNull AnActionEvent e) {
         GitRepository repo = ActionParamsService.getRepo(this);
         String remoteBranchName = ActionParamsService.getName(this);
 
@@ -42,7 +42,7 @@ public class CheckoutLocalBranchAction extends BaseAction {
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
         GitRepository repository = ActionParamsService.getRepo(this);
         String currentBranchName = repository.getCurrentBranchName();
@@ -62,7 +62,9 @@ public class CheckoutLocalBranchAction extends BaseAction {
             setLoading(false);
         });
 
-        GitBranchPopupBuilder.getJbPopup().cancel();
+        if (GitBranchPopupBuilder.getJbPopup() != null) {
+            GitBranchPopupBuilder.getJbPopup().cancel();
+        }
     }
 
     //can be called from outside

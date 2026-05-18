@@ -3,14 +3,25 @@ package br.com.gitflowhelper.actions;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.statusbar.GitFlowStatusBarWidget;
 import br.com.gitflowhelper.util.ActionParamsService;
+import br.com.gitflowhelper.util.GitBranchUtils;
+import br.com.gitflowhelper.util.NotificationUtil;
+import br.com.gitflowhelper.util.PluginUtils;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NlsActions;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import git4idea.repo.GitRepository;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public abstract class BaseAction extends AnAction /*implements PropertyChangeListener*/ {
@@ -44,6 +55,10 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
 
     public BaseAction() { }
 
+    protected abstract void updateImpl(@NotNull AnActionEvent e);
+
+    protected abstract void actionPerformedImpl(@NotNull AnActionEvent e) throws Exception;
+
     public String getMainBranch() {
         return GitFlowSettingsService.getInstance(getProject()).getMainBranch();
     }
@@ -73,5 +88,44 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
         GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
         sbw.setLoadding(loading);
         statusBar.updateWidget("GitFlowWidget");
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+        var future = ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            ActionParamsService.setBranchName(GitBranchUtils.getCurrentBranchName(getProject()));
+        });
+        try {
+            future.get();
+        }  catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        updateImpl(e);
+    }
+
+    @Override
+    public final void actionPerformed(@NotNull AnActionEvent e) {
+        try {
+            actionPerformedImpl(e);
+        } catch (Throwable ex) {
+            handleGlobalException(ex, e);
+        }
+    }
+
+    private void handleGlobalException(Throwable ex, @NotNull AnActionEvent e) {
+        NotificationUtil.showGitFlowErrorNotification(e.getProject(), "Error", ex.getMessage());
+        PluginUtils.logError(getProject(), getStackTrace(ex));
+    }
+
+    private String getStackTrace(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        throwable.printStackTrace(pw);
+        return sw.toString();
     }
 }

@@ -34,12 +34,12 @@ public class InitAction extends BaseAction {
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void actionPerformedImpl(@NotNull AnActionEvent e) {
         new InitDialog(this).show();
     }
 
     @Override
-    public void update(@NotNull AnActionEvent e) {
+    public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(StringUtil.isEmpty(getMainBranch()));
     }

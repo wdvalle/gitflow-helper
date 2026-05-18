@@ -25,13 +25,13 @@ public class ResetAction extends BaseAction {
     }
 
     @Override
-    public void update(@NotNull AnActionEvent e) {
+    public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(StringUtil.isNotEmpty(getMainBranch()));
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformedImpl(AnActionEvent e) {
         Project project = getProject();
 
         int confirm = Messages.showYesNoDialog(

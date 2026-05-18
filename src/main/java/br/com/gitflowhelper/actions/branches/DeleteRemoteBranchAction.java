@@ -26,7 +26,7 @@ public class DeleteRemoteBranchAction extends BaseAction {
     }
 
     @Override
-    public void update(AnActionEvent e) {
+    public void updateImpl(AnActionEvent e) {
         GitRepository repo = ActionParamsService.getRepo(this);
         String remoteBranchName = ActionParamsService.getName(this);
 
@@ -39,7 +39,7 @@ public class DeleteRemoteBranchAction extends BaseAction {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformedImpl(AnActionEvent e) {
         Project project = getProject();
         GitRepository repository = ActionParamsService.getRepo(this);
         String currentBranchName = repository.getCurrentBranchName();
@@ -69,7 +69,9 @@ public class DeleteRemoteBranchAction extends BaseAction {
             setLoading(false);
         });
 
-        GitBranchPopupBuilder.getJbPopup().cancel();
+        if (GitBranchPopupBuilder.getJbPopup() != null) {
+            GitBranchPopupBuilder.getJbPopup().cancel();
+        }
     }
 
     private void delete(GitRepository repository, Project project, String remoteBranchName) {

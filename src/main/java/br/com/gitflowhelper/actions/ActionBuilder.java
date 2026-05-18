@@ -6,8 +6,10 @@ import javax.swing.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+@Deprecated
 public class ActionBuilder {
 
+    @Deprecated
     public static BaseAction createActionInstance(
             String actionClassName,
             String actionTitle) {

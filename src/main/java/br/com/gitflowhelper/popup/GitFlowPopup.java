@@ -79,7 +79,10 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
 
         group.add(new BaseAction("Show as tree...", GitFlowDescriptions.SHOW_AS_TREE.getValue(), AllIcons.General.Layout) {
             @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
+            protected void updateImpl(@NotNull AnActionEvent e) {
+            }
+            @Override
+            public void actionPerformedImpl(@NotNull AnActionEvent e) {
                 JBPopup tree = GitBranchPopupBuilder.createPopup(project);
                 tree.show(new RelativePoint(local));
             }
@@ -155,6 +158,10 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
                 Presentation presentation = e.getPresentation();
                 presentation.setEnabled(false);
             }
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         });
         group.addSeparator();
 
@@ -207,6 +214,10 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
             public void update(@NotNull AnActionEvent e) {
                 Presentation presentation = e.getPresentation();
                 presentation.setEnabled(false);
+            }
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
             }
         });
         group.addSeparator();

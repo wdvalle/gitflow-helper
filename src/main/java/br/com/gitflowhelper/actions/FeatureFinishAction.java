@@ -4,9 +4,7 @@ import br.com.gitflowhelper.dialog.ActionChoiceDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
-import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -23,6 +21,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -33,30 +33,34 @@ public class FeatureFinishAction extends BaseAction {
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-        String featureCommits = "";
+    public void actionPerformedImpl(@NotNull AnActionEvent e) {
+        final String[] featureCommits = {""};
         String[] postAction = new String[1];
         Project project = getProject();
         String branchName = getBranchName();
         ActionChoiceDialog dialog = new ActionChoiceDialog(project, branchName, getDevelopBranch());
 
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
-        try {
-            for (GitRepository repository : repoManager.getRepositories()) {
-                VirtualFile root = repository.getRoot();
-                //grabs from the first
-                if (featureCommits.equals("")) {
-                    featureCommits = getFeatureCommits(project, repository, getDevelopBranch(), branchName);
-                    break;
+        var future = ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
+            try {
+                for (GitRepository repository : repoManager.getRepositories()) {
+                    VirtualFile root = repository.getRoot();
+                    //grabs from the first
+                    if (featureCommits[0].equals("")) {
+                        featureCommits[0] = getFeatureCommits(project, repository, getDevelopBranch(), branchName);
+                        break;
+                    }
                 }
+                dialog.setLog(featureCommits[0]);
+            } catch (VcsException ex) {
+                NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getMessage());
             }
-            dialog.setLog(featureCommits);
-        } catch (VcsException ex) {
-            NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getMessage());
-        }
+        });
 
-        if (dialog.showAndGet()) {
-            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        try {
+            future.get();
+            if (dialog.showAndGet()) {
+                ApplicationManager.getApplication().executeOnPooledThread(() -> {
                     setLoading(true);
                     try {
                         featureFinish(
@@ -75,12 +79,15 @@ public class FeatureFinishAction extends BaseAction {
                         NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error message: "+ex.getGitResult().getProcessMessage());
                     }
                     setLoading(false);
-            });
+                });
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
-    public void update(@NotNull AnActionEvent e) {
+    public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
                 StringUtil.isNotEmpty(getMainBranch()) &&

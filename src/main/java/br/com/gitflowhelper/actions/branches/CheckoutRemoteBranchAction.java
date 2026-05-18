@@ -28,12 +28,12 @@ public class CheckoutRemoteBranchAction extends BaseAction {
     }
 
     @Override
-    public void update(@NotNull AnActionEvent e) {
+    public void updateImpl(@NotNull AnActionEvent e) {
         //e.getPresentation().setEnabled(!isCurrent);
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
         GitRepository repository = ActionParamsService.getRepo(this);
         String currentBranchName = repository.getCurrentBranchName();
@@ -77,6 +77,8 @@ public class CheckoutRemoteBranchAction extends BaseAction {
             setLoading(false);
         });
 
-        GitBranchPopupBuilder.getJbPopup().cancel();
+        if (GitBranchPopupBuilder.getJbPopup() != null) {
+            GitBranchPopupBuilder.getJbPopup().cancel();
+        }
     }
 }
