@@ -30,7 +30,7 @@ public class HotfixStartAction extends BaseAction {
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
         new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, name ->
         {
@@ -49,7 +49,7 @@ public class HotfixStartAction extends BaseAction {
     }
 
     @Override
-    public void update(@NotNull AnActionEvent e) {
+    public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
                 StringUtil.isNotEmpty(getMainBranch()) &&

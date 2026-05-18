@@ -199,9 +199,10 @@
                 <li><b>1.0.9</b></li>
                 <ul>
                     <li>Keyboard shortcuts for git flow actions.</li>
-                    <li>Fail on Init does not initialize plugin.</li>
+                    <li>Fail on Init does not initialize plugin anymore.</li>
                     <li>New reset plugin action.</li>
-                    <li>Focus on dialog fields.</li>
+                    <li>Automatic focus on dialog fields.</li>
+                    <li>(MUCH) Better exception handling.</li>
                 </ul>
                 <li><b>1.0.8</b></li>
                 <ul>
@@ -233,7 +234,7 @@
         <action
                 id="GitFlowHelper.FeatureStartAction"
                 class="br.com.gitflowhelper.actions.FeatureStartAction"
-                text="Feature Start Action"
+                text="Feature Start"
                 description="Creates a new local feature branch (git flow feature start)."
                 icon="AllIcons.Toolwindows.ToolWindowRun">
             <keyboard-shortcut
@@ -243,7 +244,7 @@
         <action
                 id="GitFlowHelper.FeaturePublishAction"
                 class="br.com.gitflowhelper.actions.FeaturePublishAction"
-                text="Feature Publish Action"
+                text="Feature Publish"
                 description="Pushes the current feature branch to VCS (git flow feature publish)."
                 icon="AllIcons.CodeWithMe.CwmShared">
             <keyboard-shortcut
@@ -253,7 +254,7 @@
         <action
                 id="GitFlowHelper.FeatureFinishAction"
                 class="br.com.gitflowhelper.actions.FeatureFinishAction"
-                text="Feature Finish Action"
+                text="Feature Finish"
                 description="Merges current feature branch into develop chain and deletes current branch or creates a merge request (git flow feature finish)."
                 icon="AllIcons.Vcs.Patch_applied">
             <keyboard-shortcut
@@ -264,7 +265,7 @@
         <action
                 id="GitFlowHelper.ReleaseStartAction"
                 class="br.com.gitflowhelper.actions.ReleaseStartAction"
-                text="Release Start Action"
+                text="Release Start"
                 description="Creates a new local release branch (git flow release start)."
                 icon="AllIcons.Toolwindows.ToolWindowRun">
             <keyboard-shortcut
@@ -274,7 +275,7 @@
         <action
                 id="GitFlowHelper.ReleasePublishAction"
                 class="br.com.gitflowhelper.actions.ReleasePublishAction"
-                text="Release Publish Action"
+                text="Release Publish"
                 description="Pushes the current release branch to VCS (git flow release publish)."
                 icon="AllIcons.CodeWithMe.CwmShared">
             <keyboard-shortcut
@@ -284,7 +285,7 @@
         <action
                 id="GitFlowHelper.ReleaseFinishAction"
                 class="br.com.gitflowhelper.actions.ReleaseFinishAction"
-                text="Release Finish Action"
+                text="Release Finish"
                 description="Merges current release branch into master chain and deletes current branch (git flow release finish)."
                 icon="AllIcons.Vcs.Patch_applied">
             <keyboard-shortcut
@@ -295,7 +296,7 @@
         <action
                 id="GitFlowHelper.HotfixStartAction"
                 class="br.com.gitflowhelper.actions.HotfixStartAction"
-                text="Hotfix Start Action"
+                text="Hotfix Start"
                 description="Creates a new local hotfix branch (git flow hotfix start)."
                 icon="AllIcons.Toolwindows.ToolWindowRun">
             <keyboard-shortcut
@@ -305,7 +306,7 @@
         <action
                 id="GitFlowHelper.HotfixPublishAction"
                 class="br.com.gitflowhelper.actions.HotfixPublishAction"
-                text="Hotfix Publish Action"
+                text="Hotfix Publish"
                 description="Pushes the current hotfix branch to VCS (git flow hotfix publish)."
                 icon="AllIcons.CodeWithMe.CwmShared">
             <keyboard-shortcut
@@ -315,7 +316,7 @@
         <action
                 id="GitFlowHelper.HotfixFinishAction"
                 class="br.com.gitflowhelper.actions.HotfixFinishAction"
-                text="Hotfix Finish Action"
+                text="Hotfix Finish"
                 description="Merges current hotfix branch into master and develop chains and deletes current branch (git flow hotfix finish)."
                 icon="AllIcons.Vcs.Patch_applied">
             <keyboard-shortcut

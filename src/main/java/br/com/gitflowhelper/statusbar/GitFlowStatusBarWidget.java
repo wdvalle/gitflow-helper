@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class GitFlowStatusBarWidget extends PropertyObserver implements StatusBarWidget {
+public class GitFlowStatusBarWidget implements StatusBarWidget {
 
     private final Project project;
     private StatusBar statusBar;
@@ -36,14 +36,6 @@ public class GitFlowStatusBarWidget extends PropertyObserver implements StatusBa
     @Override
     public void install(@NotNull StatusBar statusBar) {
         ActionParamsService.setProject(project);
-
-        addPropertyChangeListener(ActionParamsService.getInstance());
-
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            String branchName = GitBranchUtils.getCurrentBranchName(project);
-            firePropertyChange("branchName", "", branchName);
-        });
-
         this.statusBar = statusBar;
     }
 

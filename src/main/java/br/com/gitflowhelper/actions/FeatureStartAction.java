@@ -31,7 +31,7 @@ public class FeatureStartAction extends BaseAction {
 //        super(GitFlowDescriptions.FEATURE_START::getValue, AllIcons.Actions.Execute);
     }
 
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
         new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false, name ->
         {
@@ -50,7 +50,7 @@ public class FeatureStartAction extends BaseAction {
     }
 
     @Override
-    public void update(@NotNull AnActionEvent e) {
+    public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
                 StringUtil.isNotEmpty(getMainBranch()) &&
