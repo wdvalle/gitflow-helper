@@ -7,10 +7,10 @@ import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Service(Service.Level.PROJECT)
@@ -75,7 +75,7 @@ public final class GitFlowSettingsService
                 "gitflow-helper.xml"
         );
         try {
-            FileUtil.delete(optionsPath);
+            Files.deleteIfExists(optionsPath);
         } catch (IOException e) {
             //throw new RuntimeException(e);
         }

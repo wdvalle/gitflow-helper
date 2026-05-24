@@ -196,6 +196,11 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>1.1.0</b></li>
+                <ul>
+                    <li>Upgraded IntelliJ platform version.</li>
+                    <li>Removed deprecated code (mark for removal in IntelliJ).</li>
+                </ul>
                 <li><b>1.0.9</b></li>
                 <ul>
                     <li>Keyboard shortcuts for git flow actions.</li>

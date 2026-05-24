@@ -1,7 +1,7 @@
 package br.com.gitflowhelper.util;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
 
 public class PluginInfoUtil {
@@ -9,15 +9,14 @@ public class PluginInfoUtil {
     private static final String PLUGIN_ID = "br.com.gitflowhelper";
 
     public static String getPluginVersion() {
-        PluginId pluginId = PluginId.getId(PLUGIN_ID);
+        PluginId pluginId = PluginId.findId(PLUGIN_ID);
+        if (pluginId == null) return null;
 
-        IdeaPluginDescriptor descriptor =
-                PluginManagerCore.getPlugin(pluginId);
+        IdeaPluginDescriptor descriptor = PluginManager.getInstance().findEnabledPlugin(pluginId);
 
         if (descriptor != null) {
             return descriptor.getVersion();
         }
-
         return "unknown";
     }
 }
