@@ -18,6 +18,6 @@ public class PluginInfoUtil {
 //            return descriptor.getVersion();
 //        }
 //        return "unknown";
-        return "1.2.0";
+        return "1.2.1";
     }
 }
