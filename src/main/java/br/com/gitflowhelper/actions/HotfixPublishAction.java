@@ -3,9 +3,7 @@ package br.com.gitflowhelper.actions;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
-import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -32,7 +30,7 @@ public class HotfixPublishAction extends BaseAction {
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, true);
             try {
                 hotfixPublish(project);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix published successfully");
@@ -53,6 +51,8 @@ public class HotfixPublishAction extends BaseAction {
     }
 
     private List<GitResult> hotfixPublish(Project project) {
+        setProgress(1);
+
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
@@ -66,6 +66,8 @@ public class HotfixPublishAction extends BaseAction {
                 throw new GitException("Não foi possível identificar a branch atual.");
             }
 
+            setProgress(3);
+
             String branchName = currentBranch.getName();
 
             // Validação básica de Git Flow
@@ -74,6 +76,8 @@ public class HotfixPublishAction extends BaseAction {
                         "Branch atual não é uma hotfix: " + branchName
                 );
             }
+
+            setProgress(6);
 
             // git push -u origin hotfix/<name>
             results.add(
@@ -86,7 +90,11 @@ public class HotfixPublishAction extends BaseAction {
                     )
             );
 
+            setProgress(9);
+
             repository.update();
+
+            setProgress(10);
         }
 
         return results;

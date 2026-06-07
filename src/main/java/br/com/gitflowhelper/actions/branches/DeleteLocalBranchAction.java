@@ -58,7 +58,7 @@ public class DeleteLocalBranchAction extends BaseAction {
 
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, true);
             try {
                 delete(repository, project, localBranchName);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Local branch "+localBranchName+" deleted successfully");
@@ -75,6 +75,8 @@ public class DeleteLocalBranchAction extends BaseAction {
     }
 
     private void delete(GitRepository repository, Project project, String localBranchName) {
+        setProgress(1);
+
         GitExecutor executor = new GitExecutor(project);
         executor.execute(
                 repository.getRoot(),
@@ -82,7 +84,12 @@ public class DeleteLocalBranchAction extends BaseAction {
                 "-d",
                 localBranchName
         );
+        setProgress(6);
+
         repository.update();
+
+        setProgress(10);
+
     }
 
 }

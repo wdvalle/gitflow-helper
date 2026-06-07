@@ -31,7 +31,7 @@ public class ReleaseFinishAction extends BaseAction {
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, true);
             try {
                 releaseFinish(project, true, true, true);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Released finished and tag pushed successfully");
@@ -57,6 +57,7 @@ public class ReleaseFinishAction extends BaseAction {
             boolean deleteRemoteBranch,
             boolean tagAndPush
     ) {
+        setProgress(1);
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
@@ -74,11 +75,13 @@ public class ReleaseFinishAction extends BaseAction {
             results.add(
                     executor.execute(root, GitCommand.CHECKOUT, getMainBranch())
             );
+            setProgress(2);
 
             // 2 pull main
             results.add(
                     executor.execute(root, GitCommand.PULL, REMOTE, getMainBranch())
             );
+            setProgress(3);
 
             // 3 merge release -> main
             results.add(
@@ -91,6 +94,7 @@ public class ReleaseFinishAction extends BaseAction {
                             releaseBranch
                     )
             );
+            setProgress(4);
 
             // 4 cria tag
             if (tagAndPush) {
@@ -105,6 +109,7 @@ public class ReleaseFinishAction extends BaseAction {
                         )
                 );
             }
+            setProgress(5);
 
             // 5 checkout develop
             results.add(
@@ -115,6 +120,7 @@ public class ReleaseFinishAction extends BaseAction {
             results.add(
                     executor.execute(root, GitCommand.PULL, REMOTE, getDevelopBranch())
             );
+            setProgress(6);
 
             // 7 merge release -> develop
             results.add(
@@ -127,6 +133,7 @@ public class ReleaseFinishAction extends BaseAction {
                             releaseBranch
                     )
             );
+            setProgress(7);
 
             // 8 push branches + tag
             if (tagAndPush) {
@@ -143,6 +150,7 @@ public class ReleaseFinishAction extends BaseAction {
                 );
             }
 
+            setProgress(8);
             // 9 delete local release branch
             if (deleteLocalBranch) {
                 results.add(
@@ -155,6 +163,7 @@ public class ReleaseFinishAction extends BaseAction {
                 );
             }
 
+
             GitResult checkResult = executor.execute(
                     root,
                     GitCommand.LS_REMOTE,
@@ -165,6 +174,7 @@ public class ReleaseFinishAction extends BaseAction {
             boolean branchExists = checkResult.getExitCode() == 0 &&
                     checkResult.getProcessMessage().contains("refs/heads/" + releaseBranch);
 
+            setProgress(9);
             // 10 delete remote release branch
             if (branchExists && deleteRemoteBranch) {
                 results.add(
@@ -179,6 +189,7 @@ public class ReleaseFinishAction extends BaseAction {
             }
 
             repository.update();
+            setProgress(10);
         }
 
         return results;

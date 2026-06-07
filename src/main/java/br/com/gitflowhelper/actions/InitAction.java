@@ -49,7 +49,7 @@ public class InitAction extends BaseAction {
                            String releaseField, String hotfixField) {
         Project project = getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, true);
             try {
                 init(true, project);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Git Flow Initialization Successful");
@@ -62,6 +62,8 @@ public class InitAction extends BaseAction {
     }
 
     public List<GitResult> init(boolean pushOnFinish, Project project) {
+
+        setProgress(0);
 
         List<GitResult> results = new ArrayList<>();
         GitExecutor executor = new GitExecutor(project);
@@ -87,6 +89,8 @@ public class InitAction extends BaseAction {
                                     Function.identity()
                             ));
 
+            setProgress(1);
+
             // 1 main branch
             if (!localBranches.containsKey(mainBranch)) {
                 throw new GitException(
@@ -94,6 +98,8 @@ public class InitAction extends BaseAction {
                                 root.getPath()
                 );
             }
+
+            setProgress(2);
 
             // 2 create develop if needed
             if (!localBranches.containsKey(developBranch)) {
@@ -116,6 +122,8 @@ public class InitAction extends BaseAction {
                 );
             }
 
+            setProgress(3);
+
             // 3 go to develop
             results.add(
                     executor.execute(
@@ -124,6 +132,8 @@ public class InitAction extends BaseAction {
                             developBranch
                     )
             );
+
+            setProgress(4);
 
             // 4 initial push  (opcional)
             if (pushOnFinish) {
@@ -138,6 +148,8 @@ public class InitAction extends BaseAction {
                 );
             }
 
+            setProgress(5);
+
             // 5 git config - gitflow settings
             results.add(
                     executor.execute(
@@ -148,6 +160,8 @@ public class InitAction extends BaseAction {
                     )
             );
 
+            setProgress(6);
+
             results.add(
                     executor.execute(
                             root,
@@ -156,6 +170,8 @@ public class InitAction extends BaseAction {
                             developBranch
                     )
             );
+
+            setProgress(7);
 
             results.add(
                     executor.execute(
@@ -166,6 +182,8 @@ public class InitAction extends BaseAction {
                     )
             );
 
+            setProgress(8);
+
             results.add(
                     executor.execute(
                             root,
@@ -174,6 +192,8 @@ public class InitAction extends BaseAction {
                             releasePrefix
                     )
             );
+
+            setProgress(9);
 
             results.add(
                     executor.execute(
@@ -186,6 +206,7 @@ public class InitAction extends BaseAction {
 
             // update repo state in intellij
             repository.update();
+            setProgress(10);
         }
 
         return results;

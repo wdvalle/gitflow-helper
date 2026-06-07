@@ -3,9 +3,7 @@ package br.com.gitflowhelper.actions;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
-import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -32,7 +30,7 @@ public class HotfixFinishAction extends BaseAction {
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, true);
             try {
                 hotfixFinish(project,true, true, true);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix finished and tag pushed successfully");
@@ -57,6 +55,8 @@ public class HotfixFinishAction extends BaseAction {
             boolean deleteRemoteBranch,
             boolean tagAndPush
     ) {
+        setProgress(1);
+
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
@@ -73,6 +73,8 @@ public class HotfixFinishAction extends BaseAction {
                 throw new GitException("Branch atual não encontrada.");
             }
 
+            setProgress(2);
+
             String hotfixName = hotfixBranch.getName();
 
             if (!hotfixName.startsWith("hotfix/")) {
@@ -87,6 +89,7 @@ public class HotfixFinishAction extends BaseAction {
             results.add(
                     executor.execute(root, GitCommand.CHECKOUT, mainBranch)
             );
+            setProgress(3);
 
             // 2️⃣ merge hotfix -> main
             results.add(
@@ -97,6 +100,7 @@ public class HotfixFinishAction extends BaseAction {
                             hotfixName
                     )
             );
+            setProgress(4);
 
             // 3️⃣ tag
             results.add(
@@ -106,11 +110,14 @@ public class HotfixFinishAction extends BaseAction {
                             tagName
                     )
             );
+            setProgress(5);
 
             // 4️⃣ checkout develop
             results.add(
                     executor.execute(root, GitCommand.CHECKOUT, developBranch)
             );
+
+            setProgress(6);
 
             // 5️⃣ merge hotfix -> develop
             results.add(
@@ -121,6 +128,7 @@ public class HotfixFinishAction extends BaseAction {
                             hotfixName
                     )
             );
+            setProgress(7);
 
             // 6️⃣ delete hotfix local
             if (deleteLocalBranch) {
@@ -133,6 +141,8 @@ public class HotfixFinishAction extends BaseAction {
                         )
                 );
             }
+
+            setProgress(8);
 
             GitResult checkResult = executor.execute(
                     root,
@@ -156,7 +166,7 @@ public class HotfixFinishAction extends BaseAction {
                         )
                 );
             }
-
+            setProgress(9);
             // 8️⃣ push final
             if (tagAndPush) {
                 results.add(
@@ -171,6 +181,7 @@ public class HotfixFinishAction extends BaseAction {
             }
 
             repository.update();
+            setProgress(10);
         }
 
         return results;

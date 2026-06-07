@@ -67,6 +67,14 @@ public final class GitFlowSettingsService
 
     public void setDevelopBranch(String developBranch) {state.setDevelopBranch(developBranch);}
 
+    public Long getCounter() { return state.getCounter(); }
+
+    public void setCounter(Long counter) {state.setCounter(counter);}
+
+    public Boolean getShowDetails() {return state.getShowDetails();}
+
+    public void setShowDetails(Boolean showDetails) {state.setShowDetails(showDetails);}
+
     public void resetAndDeleteStorage() {
         this.state = new GitFlowSettingsState();
         ApplicationManager.getApplication().saveSettings();

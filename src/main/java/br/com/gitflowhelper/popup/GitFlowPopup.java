@@ -1,13 +1,10 @@
 package br.com.gitflowhelper.popup;
 
-import br.com.gitflowhelper.actions.ResetAction;
-import br.com.gitflowhelper.actions.ShowAboutAction;
+import br.com.gitflowhelper.actions.*;
 import br.com.gitflowhelper.actions.branches.DeleteLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.DeleteRemoteBranchAction;
 import br.com.gitflowhelper.gittree.GitBranchPopupBuilder;
 import br.com.gitflowhelper.util.ActionParamsService;
-import br.com.gitflowhelper.actions.BaseAction;
-import br.com.gitflowhelper.actions.InitAction;
 import br.com.gitflowhelper.actions.branches.CheckoutLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.CheckoutRemoteBranchAction;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
@@ -74,6 +71,12 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
 
     private DefaultActionGroup createGroup(Project project) {
         DefaultActionGroup group = new DefaultActionGroup();
+        Long counter = GitFlowSettingsService.getInstance(project).getCounter();
+        if ((counter % BaseAction.COUNTER_RESET >= BaseAction.COUNTER_RESET - 5) && (counter < 1000)) {
+            group.add(new LikeAction("Enjoyng? Give a like!"));
+            group.addSeparator();
+        }
+        GitFlowSettingsService.getInstance(project).setCounter(++counter);
         group.add(new InitAction("Init..."));
         group.addSeparator();
 

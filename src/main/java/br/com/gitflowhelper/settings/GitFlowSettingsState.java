@@ -11,16 +11,20 @@ public class GitFlowSettingsState {
     private String mainBranch;
     private String developBranch;
 
+    private Long counter;
+    private Boolean showDetails;
+
     public GitFlowSettingsState() {
     }
 
     public GitFlowSettingsState(String featurePrefix, String releasePrefix, String hotfixPrefix,
-                                String mainBranch, String developBranch) {
+                                String mainBranch, String developBranch, Long counter) {
         this.featurePrefix = featurePrefix;
         this.releasePrefix = releasePrefix;
         this.hotfixPrefix = hotfixPrefix;
         this.mainBranch = mainBranch;
         this.developBranch = developBranch;
+        this.counter = counter;
     }
 
     public String getFeaturePrefix() {
@@ -55,6 +59,19 @@ public class GitFlowSettingsState {
 
     public void setDevelopBranch(String developBranch) {this.developBranch = developBranch;}
 
+    public Long getCounter() {
+        if (this.counter == null) {
+            this.counter = 0L;
+        }
+        return counter;
+    }
+
+    public void setCounter(Long counter) {this.counter = counter;}
+
+    public Boolean getShowDetails() {return showDetails;}
+
+    public void setShowDetails(Boolean showDetails) {this.showDetails = showDetails;}
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -64,12 +81,13 @@ public class GitFlowSettingsState {
                 && Objects.equals(releasePrefix, that.releasePrefix)
                 && Objects.equals(hotfixPrefix, that.hotfixPrefix)
                 && Objects.equals(mainBranch, that.mainBranch)
-                && Objects.equals(developBranch, that.developBranch);
+                && Objects.equals(developBranch, that.developBranch)
+                && Objects.equals(counter, that.counter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch, developBranch);
+        return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch, developBranch, counter);
     }
 
     @Override
@@ -80,6 +98,7 @@ public class GitFlowSettingsState {
                 ", hotfixPrefix='" + hotfixPrefix + '\'' +
                 ", mainBranch='" + mainBranch + '\'' +
                 ", developBranch='" + developBranch + '\'' +
+                ", counter=" + counter +
                 '}';
     }
 }

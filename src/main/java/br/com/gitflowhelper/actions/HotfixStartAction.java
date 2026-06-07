@@ -5,9 +5,7 @@ import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
 import br.com.gitflowhelper.util.GitFlowBranchType;
-import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -35,7 +33,7 @@ public class HotfixStartAction extends BaseAction {
         new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, name ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                setLoading(true);
+                setLoading(true, true);
                 try {
                     hotfixStart(project, name.getName(), name.getPushOnFinish());
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New hotfix created successfully");
@@ -58,6 +56,8 @@ public class HotfixStartAction extends BaseAction {
     }
 
     private List<GitResult> hotfixStart(Project project, String hotfixName, boolean pushOnFinish) {
+        setProgress(1);
+
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
@@ -77,6 +77,7 @@ public class HotfixStartAction extends BaseAction {
                             mainBranch
                     )
             );
+            setProgress(2);
 
             // 2) pull main
             results.add(
@@ -88,6 +89,8 @@ public class HotfixStartAction extends BaseAction {
                     )
             );
 
+            setProgress(5);
+
             // 3) create hotfix branch from main
             results.add(
                     executor.execute(
@@ -98,6 +101,8 @@ public class HotfixStartAction extends BaseAction {
                             mainBranch
                     )
             );
+
+            setProgress(7);
 
             // 4) push hotfix (if needed)
             if (pushOnFinish) {
@@ -112,7 +117,9 @@ public class HotfixStartAction extends BaseAction {
                 );
             }
 
+            setProgress(9);
             repository.update();
+            setProgress(10);
         }
 
         return results;

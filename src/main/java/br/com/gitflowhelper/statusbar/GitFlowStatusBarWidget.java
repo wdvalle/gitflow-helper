@@ -50,6 +50,10 @@ public class GitFlowStatusBarWidget implements StatusBarWidget {
         this.loading = loadding;
     }
 
+    public void setCurrentValue(String currentValue) {
+        this.currentValue = currentValue;
+    }
+
     @Override
     public @Nullable WidgetPresentation getPresentation() {
         return new Presentation();

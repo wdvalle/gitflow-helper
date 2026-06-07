@@ -59,7 +59,7 @@ public class DeleteRemoteBranchAction extends BaseAction {
 
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, true);
             try {
                 delete(repository, project, remoteBranchName);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Remote branch "+remoteBranchName+" deleted successfully");
@@ -75,12 +75,14 @@ public class DeleteRemoteBranchAction extends BaseAction {
     }
 
     private void delete(GitRepository repository, Project project, String remoteBranchName) {
+        setProgress(1);
         GitExecutor executor = new GitExecutor(project);
         String[] parts = remoteBranchName.split("/", 2);
         if (parts.length < 2) return;
 
         String remote = parts[0];
         String branch = parts[1];
+        setProgress(4);
 
         executor.execute(
                 repository.getRoot(),
@@ -89,6 +91,10 @@ public class DeleteRemoteBranchAction extends BaseAction {
                 "--delete",
                 branch
         );
+        setProgress(6);
+
         repository.update();
+        setProgress(10);
+
     }
 }

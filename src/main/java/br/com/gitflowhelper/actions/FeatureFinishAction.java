@@ -21,8 +21,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -61,7 +59,7 @@ public class FeatureFinishAction extends BaseAction {
             future.get();
             if (dialog.showAndGet()) {
                 ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                    setLoading(true);
+                    setLoading(true, true);
                     try {
                         featureFinish(
                             project,
@@ -119,6 +117,8 @@ public class FeatureFinishAction extends BaseAction {
             String mode,
             boolean rebaseBeforeIntegrate,
             String[] postAction, String branchName) {
+        setProgress(1);
+
         String baseBranch = getDevelopBranch();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
@@ -127,6 +127,7 @@ public class FeatureFinishAction extends BaseAction {
         for (GitRepository repository : repoManager.getRepositories()) {
             VirtualFile root = repository.getRoot();
 
+            setProgress(2);
             switch (mode) {
 
                 // =========================
@@ -146,6 +147,8 @@ public class FeatureFinishAction extends BaseAction {
                         // rebase develop
                         executor.execute(root, GitCommand.REBASE, baseBranch);
                     }
+
+                    setProgress(3);
 
                     // pull develop
                     results.add(
@@ -171,6 +174,7 @@ public class FeatureFinishAction extends BaseAction {
                                         finalCommitMessage
                                 )
                         );
+                        setProgress(5);
                     } else {
                         results.add(
                                 executor.execute(
@@ -182,6 +186,8 @@ public class FeatureFinishAction extends BaseAction {
                                         featureBranch
                                 )
                         );
+
+                        setProgress(5);
                     }
 
                     // push to develop
@@ -193,6 +199,8 @@ public class FeatureFinishAction extends BaseAction {
                                     baseBranch
                             )
                     );
+
+                    setProgress(7);
 
                     postAction[0] = "Feature finished and pushed to " + getDevelopBranch() + " successfully.";
 
@@ -213,6 +221,7 @@ public class FeatureFinishAction extends BaseAction {
                                     finalCommitMessage
                             )
                     );
+                    setProgress(4);
 
                     // push feature branch
                     results.add(
@@ -224,6 +233,8 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
+                    setProgress(6);
+
                     // checkout develop
                     results.add(
                             executor.execute(
@@ -234,6 +245,8 @@ public class FeatureFinishAction extends BaseAction {
                     );
 
                     postAction[0] = "Feature pushed to " + branchName + " successfully. Create yourself a merge/pull request.";
+
+                    setProgress(7);
                 }
 
                 // =========================
@@ -256,6 +269,7 @@ public class FeatureFinishAction extends BaseAction {
                                     finalCommitMessage
                             )
                     );
+                    setProgress(5);
 
                     // push with GitLab MR options
                     results.add(
@@ -271,6 +285,7 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
+                    setProgress(6);
                     // checkout develop
                     results.add(
                             executor.execute(
@@ -280,9 +295,13 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
+                    setProgress(7);
+
                     postAction[0] = "Feature pushed to " + branchName + " and merge request created successfully.";
                 }
             }
+
+            setProgress(8);
             // delete local branch
             if (deleteLocalBranch) {
                 results.add(
@@ -294,6 +313,8 @@ public class FeatureFinishAction extends BaseAction {
                         )
                 );
             }
+
+            setProgress(9);
 
             // delete remote branch
             if (deleteRemoteBranch) {
@@ -309,6 +330,7 @@ public class FeatureFinishAction extends BaseAction {
             }
 
             repository.update();
+            setProgress(10);
         }
 
         return results;

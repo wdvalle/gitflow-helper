@@ -7,7 +7,7 @@
         <![CDATA[
         <h1>GitFlow Helper</h1>
         <p>
-            <strong>GitFlow Helper</strong> is an IntelliJ plugin that provides a complete and intuitive
+            <strong>GitFlow Helper</strong> is a plugin for JetBrains tools that provides a complete and intuitive
             implementation of the <strong>Git Flow</strong> workflow, fully integrated into the IDE menus,
             status bar, and tool windows.
         </p>
@@ -196,6 +196,12 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>1.2.0</b></li>
+                <ul>
+                    <li>Progress bar in IDE status bar.</li>
+                    <li>Better messages in tool window.</li>
+                    <li>Give a like link 😉👍</li>
+                </ul>
                 <li><b>1.1.0</b></li>
                 <ul>
                     <li>Upgraded IntelliJ platform version.</li>

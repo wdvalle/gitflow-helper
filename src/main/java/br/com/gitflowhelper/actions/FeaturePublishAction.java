@@ -3,9 +3,7 @@ package br.com.gitflowhelper.actions;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
-import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -30,7 +28,7 @@ public class FeaturePublishAction extends BaseAction {
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, true);
             try {
                 featurePublish(project);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New feature published successfully");
@@ -51,6 +49,7 @@ public class FeaturePublishAction extends BaseAction {
     }
 
     private List<GitResult> featurePublish(Project project) {
+        setProgress(1);
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
         List<GitResult> results = new ArrayList<>();
@@ -58,10 +57,13 @@ public class FeaturePublishAction extends BaseAction {
         for (GitRepository repository : repoManager.getRepositories()) {
             String currentBranch = repository.getCurrentBranchName();
 
+            setProgress(2);
+
             if (currentBranch == null) {
                 throw new GitException("HEAD is detached");
             }
 
+            setProgress(6);
             results.add(
                     executor.execute(
                             repository.getRoot(),
@@ -72,7 +74,10 @@ public class FeaturePublishAction extends BaseAction {
                     )
             );
 
+            setProgress(7);
+
             repository.update();
+            setProgress(10);
         }
         return results;
     }

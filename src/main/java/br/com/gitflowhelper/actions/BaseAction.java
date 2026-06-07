@@ -20,12 +20,11 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public abstract class BaseAction extends AnAction /*implements PropertyChangeListener*/ {
     public static final String REMOTE = "origin";
+    public static final Long COUNTER_RESET = 20L;
 
     /*
     No fields allowed
@@ -84,9 +83,32 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
     public GitRepository getRepo(AnAction action) { return ActionParamsService.getRepo(action); }
 
     public void setLoading(boolean loading) {
+        setLoading(loading, false);
+    }
+
+    public void setLoading(boolean loading, boolean progress) {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(getProject());
         GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
         sbw.setLoadding(loading);
+        if (progress) {
+            setProgressImpl(0, statusBar, sbw);
+        } else {
+            sbw.setCurrentValue("GitFlowHelper");
+        }
+        statusBar.updateWidget("GitFlowWidget");
+    }
+
+    public void setProgress(Integer value) {
+        StatusBar statusBar = WindowManager.getInstance().getStatusBar(getProject());
+        GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
+        setProgressImpl(value, statusBar, sbw);
+    }
+
+    private void setProgressImpl(Integer value, StatusBar statusBar, GitFlowStatusBarWidget sbw) {
+        StringBuilder percent = new StringBuilder();
+        percent.repeat("█", Math.max(0, value));
+        percent.repeat(" ", Math.max(0, 10-value));
+        sbw.setCurrentValue(percent.toString()+" "+(value > 0? value : "")+"0%");
         statusBar.updateWidget("GitFlowWidget");
     }
 
@@ -119,13 +141,7 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
 
     private void handleGlobalException(Throwable ex, @NotNull AnActionEvent e) {
         NotificationUtil.showGitFlowErrorNotification(e.getProject(), "Error", ex.getMessage());
-        PluginUtils.logError(getProject(), getStackTrace(ex));
+        PluginUtils.logError(getProject(), PluginUtils.getStackTrace(ex));
     }
 
-    private String getStackTrace(Throwable throwable) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        throwable.printStackTrace(pw);
-        return sw.toString();
-    }
 }

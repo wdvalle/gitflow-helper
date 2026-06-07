@@ -52,7 +52,7 @@ public class CheckoutLocalBranchAction extends BaseAction {
         if (isCurrent) return;
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, true);
             try {
                 checkout(repository, project, checkoutBranchName);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Local branch "+checkoutBranchName+" checked out successfully");
@@ -69,12 +69,19 @@ public class CheckoutLocalBranchAction extends BaseAction {
 
     //can be called from outside
     public void checkout(GitRepository repository, Project project, String checkoutBranchName) {
+        setProgress(20);
+
         GitExecutor executor = new GitExecutor(project);
         executor.execute(
                 repository.getRoot(),
                 GitCommand.CHECKOUT,
                 checkoutBranchName
         );
+        setProgress(7);
+
         repository.update();
+
+        setProgress(10);
+
     }
 }

@@ -5,9 +5,7 @@ import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
 import br.com.gitflowhelper.util.GitFlowBranchType;
-import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -35,7 +33,7 @@ public class ReleaseStartAction extends BaseAction {
         new NameDialog(project, GitFlowBranchType.RELEASE.getValue() + " start", "Version description", true, (name) ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                setLoading(true);
+                setLoading(true, true);
                 try {
                     releaseStart(project, name.getName(), name.getPushOnFinish());
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New release created successfully");
@@ -58,6 +56,7 @@ public class ReleaseStartAction extends BaseAction {
     }
 
     public List<GitResult> releaseStart(Project project, String releaseName, boolean push) {
+        setProgress(1);
         String releaseBranch = getReleasePrefix() + releaseName;
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
@@ -75,6 +74,7 @@ public class ReleaseStartAction extends BaseAction {
                             getDevelopBranch()
                     )
             );
+            setProgress(3);
 
             // 2 pull develop
             results.add(
@@ -86,6 +86,8 @@ public class ReleaseStartAction extends BaseAction {
                     )
             );
 
+            setProgress(5);
+
             // 3 create and checkout release branch
             results.add(
                     executor.execute(
@@ -95,6 +97,8 @@ public class ReleaseStartAction extends BaseAction {
                             releaseBranch
                     )
             );
+
+            setProgress(7);
 
             // 4 push release (opcional)
             if (push) {
@@ -109,8 +113,10 @@ public class ReleaseStartAction extends BaseAction {
                 );
             }
 
+            setProgress(9);
             // 5 sync with IntelliJ
             repository.update();
+            setProgress(10);
         }
 
         return results;

@@ -4,12 +4,8 @@ import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
-import br.com.gitflowhelper.settings.GitFlowSettingsService;
-import br.com.gitflowhelper.util.GitBranchUtils;
 import br.com.gitflowhelper.util.GitFlowBranchType;
-import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -36,7 +32,7 @@ public class FeatureStartAction extends BaseAction {
         new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false, name ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                setLoading(true);
+                setLoading(true, true);
                 try {
                     featureStart(project, name.getName());
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New feature created successfully");
@@ -59,6 +55,8 @@ public class FeatureStartAction extends BaseAction {
     }
 
     private List<GitResult> featureStart(Project project, String featureName) {
+        setProgress(1);
+
         String featureBranch = getFeaturePrefix() + featureName;
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
@@ -67,15 +65,20 @@ public class FeatureStartAction extends BaseAction {
         for (GitRepository repository : repoManager.getRepositories()) {
             VirtualFile root = repository.getRoot();
 
+            setProgress(2);
             // 1. checkout develop
             results.add(
                     executor.execute(root, GitCommand.CHECKOUT, getDevelopBranch())
             );
 
+            setProgress(5);
+
             // 2. pull develop
             results.add(
                     executor.execute(root, GitCommand.PULL)
             );
+
+            setProgress(7);
 
             // 3 + 4. create + checkout feature branch
             results.add(
@@ -88,7 +91,10 @@ public class FeatureStartAction extends BaseAction {
                     )
             );
 
+            setProgress(9);
+
             repository.update();
+            setProgress(10);
         }
         return results;
     }

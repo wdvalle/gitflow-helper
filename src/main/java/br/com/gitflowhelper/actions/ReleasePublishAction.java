@@ -33,7 +33,7 @@ public class ReleasePublishAction extends BaseAction {
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, true);
             try {
                 releasePublish(project);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New release published successfully");
@@ -54,6 +54,7 @@ public class ReleasePublishAction extends BaseAction {
     }
 
     public List<GitResult> releasePublish(Project project) throws GitException {
+        setProgress(1);
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
@@ -62,6 +63,7 @@ public class ReleasePublishAction extends BaseAction {
             VirtualFile root = repository.getRoot();
             String currentBranch = repository.getCurrentBranchName();
 
+            setProgress(4);
             // push release
             results.add(
                     executor.execute(
@@ -72,8 +74,11 @@ public class ReleasePublishAction extends BaseAction {
                             currentBranch
                     )
             );
+            setProgress(6);
 
             repository.update();
+
+            setProgress(10);
         }
 
         return results;

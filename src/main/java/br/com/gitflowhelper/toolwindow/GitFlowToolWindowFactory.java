@@ -11,7 +11,7 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
         // Instancia nosso painel customizado
-        ToolWindowPanel myToolWindowPanel = new ToolWindowPanel();
+        ToolWindowPanel myToolWindowPanel = new ToolWindowPanel(project);
 
         // Cria o conteúdo usando o ContentFactory do IntelliJ
         ContentFactory contentFactory = ContentFactory.getInstance();

@@ -50,8 +50,10 @@ public class CheckoutRemoteBranchAction extends BaseAction {
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             boolean needsRemote = true;
-            setLoading(true);
+            setLoading(true, true);
             try {
+                setProgress(1);
+
                 GitBranch branch = repository.getBranches().findLocalBranch(localBranch);
                 if (branch != null) {
                     new CheckoutLocalBranchAction("", localBranch)
@@ -59,6 +61,7 @@ public class CheckoutRemoteBranchAction extends BaseAction {
                     needsRemote = false;
 
                 }
+                setProgress(3);
                 if (needsRemote) {
                     executor.execute(
                             repository.getRoot(),
@@ -69,7 +72,12 @@ public class CheckoutRemoteBranchAction extends BaseAction {
                             checkoutBranchName
                     );
                 }
+                setProgress(7);
+
                 repository.update();
+
+                setProgress(10);
+
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Remote branch " + checkoutBranchName + " checked out successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
