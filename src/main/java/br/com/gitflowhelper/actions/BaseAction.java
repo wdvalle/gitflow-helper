@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 
 public abstract class BaseAction extends AnAction /*implements PropertyChangeListener*/ {
     public static final String REMOTE = "origin";
-    public static final Long COUNTER_RESET = 20L;
+    public static final Long COUNTER_RESET = 50L;
 
     /*
     No fields allowed
