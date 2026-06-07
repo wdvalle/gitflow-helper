@@ -18,8 +18,6 @@ import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.function.Supplier;
 
 public abstract class BaseAction extends AnAction /*implements PropertyChangeListener*/ {
@@ -89,7 +87,7 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
     public void setLoading(boolean loading, boolean progress) {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(getProject());
         GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
-        sbw.setLoadding(loading);
+        sbw.setLoading(loading);
         if (progress) {
             setProgressImpl(0, statusBar, sbw);
         } else {
@@ -105,10 +103,7 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
     }
 
     private void setProgressImpl(Integer value, StatusBar statusBar, GitFlowStatusBarWidget sbw) {
-        StringBuilder percent = new StringBuilder();
-        percent.repeat("█", Math.max(0, value));
-        percent.repeat(" ", Math.max(0, 10-value));
-        sbw.setCurrentValue(percent.toString()+" "+(value > 0? value : "")+"0%");
+        sbw.setProgress(value);
         statusBar.updateWidget("GitFlowWidget");
     }
 

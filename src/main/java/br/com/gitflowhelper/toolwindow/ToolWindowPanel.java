@@ -38,9 +38,6 @@ public class ToolWindowPanel extends JPanel {
         kit = (HTMLEditorKit) textPane.getEditorKit();
 
         // Action Group
-        if (GitFlowSettingsService.getInstance(project).getShowDetails() == null) {
-            GitFlowSettingsService.getInstance(project).setShowDetails(true);
-        }
         ActionGroup actionGroup = new WindowActionGroup(textPane, GitFlowSettingsService.getInstance(project).getShowDetails());
         ActionToolbar toolbar = ActionManager.getInstance()
             .createActionToolbar(

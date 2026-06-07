@@ -1,0 +1,36 @@
+Com base na análise do código atual do Git Flow Helper, aqui estão algumas ideias de inovações que podem elevar o plugin para um próximo nível, focando em produtividade, automação e integração:
+1. Integração com Ecossistemas (GitHub, GitLab, Jira)
+•
+One-Click Pull Request: Atualmente o plugin já suporta AUTO_CREATE para GitLab via push options. Uma grande evolução seria o suporte nativo para GitHub e Bitbucket, permitindo abrir a página de criação de PR (ou criar via API) imediatamente após um Feature Publish.
+•
+Vínculo com Tasks (Jira/YouTrack/GitHub Issues): Ao iniciar uma feature (Feature Start), o plugin poderia listar as tasks atribuídas ao desenvolvedor. Ao selecionar uma, o nome da branch seria sugerido automaticamente (ex: feature/PROJ-123-descricao-da-task).
+•
+Status de CI/CD: No diálogo de Feature Finish, mostrar o status do último build da branch no GitHub Actions ou GitLab CI, evitando que o desenvolvedor finalize uma feature que está com o build quebrado.
+2. Inteligência e Automação
+•
+IA para Resumo de Commits: Integrar com os recursos de IA do IntelliJ para gerar automaticamente a mensagem de commit de merge (ou a descrição do Pull Request) com base nos commits realizados na branch de feature.
+•
+Sincronização Inteligente (Auto-Sync): Uma ação rápida para sincronizar a branch atual com a base (develop ou main). O plugin faria o pull da base e o merge/rebase na branch de feature com um único clique.
+•
+Auto-Cleanup de Branches Obsoletas: Uma funcionalidade de "faxina" que identifica branches locais e remotas de features já finalizadas ou sem atividade há muitos dias, sugerindo a remoção para manter o repositório limpo.
+3. Visualização e Dashboard
+•
+Dashboard de Release: Uma aba na Tool Window que mostre o "O que há de novo?". Ela listaria todas as features que já foram mescladas na develop mas ainda não foram incluídas em uma release, ajudando o Tech Lead a decidir o momento de gerar a próxima versão.
+•
+Visualização Gráfica do Fluxo: Em vez de apenas a árvore do Git, uma representação visual simplificada do modelo Git Flow, mostrando claramente o que está em produção (main), o que está em integração (develop) e as features ativas.
+4. Segurança e Qualidade (Guardrails)
+•
+Pre-finish Checks: Impedir ou emitir um alerta ao tentar finalizar uma feature se:
+◦
+Houver arquivos modificados não commitados.
+◦
+A branch de feature estiver muito atrás (atrasada) em relação à develop.
+◦
+Os testes unitários locais estiverem falhando.
+•
+Bloqueio de Commits em Branches Protegidas: Um aviso visual proeminente se o usuário tentar fazer commits diretamente na main ou develop, sugerindo a criação de uma feature ou hotfix.
+5. Suporte a Fluxos Avançados
+•
+Support Branches: Implementar o suporte para branches de suporte (support/*), que são usadas para manter múltiplas versões antigas do software simultaneamente (comum em bibliotecas e softwares enterprise).
+•
+Customização de Prefixos por Projeto: Embora o plugin já salve configurações, permitir que ele detecte automaticamente os prefixos usados no repositório (lendo o arquivo .git/config se o Git Flow CLI já tiver sido usado anteriormente).

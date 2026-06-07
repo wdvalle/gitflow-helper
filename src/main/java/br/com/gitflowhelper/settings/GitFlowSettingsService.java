@@ -71,7 +71,12 @@ public final class GitFlowSettingsService
 
     public void setCounter(Long counter) {state.setCounter(counter);}
 
-    public Boolean getShowDetails() {return state.getShowDetails();}
+    public Boolean getShowDetails() {
+        if (state.getShowDetails() == null) {
+            state.setShowDetails(true);
+        }
+        return state.getShowDetails();
+    }
 
     public void setShowDetails(Boolean showDetails) {state.setShowDetails(showDetails);}
 

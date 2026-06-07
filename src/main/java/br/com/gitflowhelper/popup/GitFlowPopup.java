@@ -33,6 +33,9 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
     private Point local = null;
 
     public GitFlowPopup() {
+    }
+
+    public void show(JComponent component) {
         Project project = ActionParamsService.getProject();
 
         DataManager.getInstance()
@@ -48,24 +51,21 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
                 );
                 this.listPopup.setCaptionIcon(PluginIcons.GitFlow);
 
-//                addPropertyChangeListener(ActionParamsService.getInstance());
-//
-//                ApplicationManager.getApplication().executeOnPooledThread(() -> {
-//                    String branchName = GitBranchUtils.getCurrentBranchName(project);
-//                    firePropertyChange("branchName", "", branchName);
-//                });
-
                 this.listPopup.addListener(new JBPopupListener() {
                        @Override
                        public void beforeShown(@NotNull LightweightWindowEvent event) {
-                           var oldPlace = listPopup.getLocationOnScreen();
-                           var newPlace = new Point((int) oldPlace.getX(), (int) oldPlace.getY()+45);
-                           listPopup.setLocation(newPlace);
-                           local = newPlace;
-                           JBPopupListener.super.beforeShown(event);
+                           local = listPopup.getLocationOnScreen();
+                           if (component.isShowing()) {
+                               int popupHeight = listPopup.getContent().getPreferredSize().height;
+                               Point componentLoc = component.getLocationOnScreen();
+                               local.y = componentLoc.y - popupHeight;
+                               listPopup.setLocation(local);
+                           }
                        }
                    }
                 );
+
+                this.listPopup.showUnderneathOf(component);
             });
     }
 
