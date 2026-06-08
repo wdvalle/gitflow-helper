@@ -241,6 +241,7 @@
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
     <depends>Git4Idea</depends>
+    <depends>com.intellij.tasks</depends>
     <actions>
         <action
                 id="GitFlowHelper.FeatureStartAction"

@@ -13,6 +13,7 @@ public class GitFlowSettingsState {
 
     private Long counter;
     private Boolean showDetails;
+    private boolean integrateWithTasks = false;
 
     public GitFlowSettingsState() {
     }
@@ -71,6 +72,14 @@ public class GitFlowSettingsState {
     public Boolean getShowDetails() {return showDetails;}
 
     public void setShowDetails(Boolean showDetails) {this.showDetails = showDetails;}
+
+    public boolean isIntegrateWithTasks() {
+        return integrateWithTasks;
+    }
+
+    public void setIntegrateWithTasks(boolean integrateWithTasks) {
+        this.integrateWithTasks = integrateWithTasks;
+    }
 
     @Override
     public boolean equals(Object o) {

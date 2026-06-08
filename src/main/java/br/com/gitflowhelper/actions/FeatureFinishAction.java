@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.ActionChoiceDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
@@ -12,6 +13,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.tasks.LocalTask;
+import com.intellij.tasks.Task;
+import com.intellij.tasks.TaskManager;
 import git4idea.GitCommit;
 import git4idea.commands.GitCommand;
 import git4idea.history.GitHistoryUtils;
@@ -71,7 +75,8 @@ public class FeatureFinishAction extends BaseAction {
                             dialog.getSelectedAction(),
                             true,
                             postAction,
-                            branchName);
+                            branchName,
+                            dialog.getCloseAssociatedTask());
                         NotificationUtil.showGitFlowSuccessNotification(project, "Success",  postAction[0]);
                     } catch (GitException ex) {
                         NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error message: "+ex.getGitResult().getProcessMessage());
@@ -116,8 +121,24 @@ public class FeatureFinishAction extends BaseAction {
             boolean deleteRemoteBranch,
             String mode,
             boolean rebaseBeforeIntegrate,
-            String[] postAction, String branchName) {
+            String[] postAction, String branchName,
+            boolean closeTask) {
         setProgress(1);
+
+        if (closeTask && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+            TaskManager taskManager = TaskManager.getManager(project);
+            LocalTask activeTask = taskManager.getActiveTask();
+            if (activeTask != null && !activeTask.isDefault()) {
+                // If the active task summary is part of the branch name or if it's just the active task
+                // In many cases, the branch was created for this task.
+                for (LocalTask task : taskManager.getLocalTasks()) {
+                    if (task.isDefault()) {
+                        taskManager.activateTask(task, false);
+                        break;
+                    }
+                }
+            }
+        }
 
         String baseBranch = getDevelopBranch();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);

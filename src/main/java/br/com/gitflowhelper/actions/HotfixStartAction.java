@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
@@ -15,6 +16,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
+import com.intellij.tasks.Task;
+import com.intellij.tasks.TaskManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -30,12 +33,18 @@ public class HotfixStartAction extends BaseAction {
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = getProject();
-        new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, name ->
+        new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, response ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true);
                 try {
-                    hotfixStart(project, name.getName(), name.getPushOnFinish());
+                    hotfixStart(project, response.getName(), response.getPushOnFinish());
+
+                    Task selectedTask = response.getSelectedTask();
+                    if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+                        TaskManager.getManager(project).activateTask(selectedTask, true);
+                    }
+
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New hotfix created successfully");
                 } catch (GitException ex) {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());

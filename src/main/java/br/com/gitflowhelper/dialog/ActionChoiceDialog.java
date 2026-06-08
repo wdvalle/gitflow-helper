@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.dialog;
 
+import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -21,10 +22,12 @@ public class ActionChoiceDialog extends DialogWrapper {
     private JBCheckBox keepLocalBranch;
     private JBCheckBox keepRemoteBranch;
     private JBCheckBox squashCommit;
+    private JBCheckBox closeAssociatedTask;
     private JBTextArea commitMessage;
     private String branchName;
     private String targetBranch;
     private String log;
+    private Project project;
     
     public static final String INTEGRATE = "Integrate immediately";
     public static final String AUTO_CREATE = "Create merge request (Gitlab only)";
@@ -32,6 +35,7 @@ public class ActionChoiceDialog extends DialogWrapper {
 
     public ActionChoiceDialog(@Nullable Project project, String branchName, String targetBranch) {
         super(project); // true = modal
+        this.project = project;
         this.branchName = branchName;
         this.targetBranch = targetBranch;
         setTitle("Finish feature");
@@ -53,6 +57,8 @@ public class ActionChoiceDialog extends DialogWrapper {
         keepLocalBranch = new JBCheckBox("Keep local branch when finished");
         keepRemoteBranch = new JBCheckBox("Keep remote branch when finished");
         squashCommit = new JBCheckBox("Squash commits (one commit message only)");
+        closeAssociatedTask = new JBCheckBox("Close associated task");
+        closeAssociatedTask.setSelected(true);
         commitMessage = new JBTextArea();
         commitMessage.setRows(30);
         commitMessage.setLineWrap(true);
@@ -93,15 +99,20 @@ public class ActionChoiceDialog extends DialogWrapper {
         explanationLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         
         // Cria o layout usando FormBuilder (padrão do IntelliJ para alinhamento)
-        return FormBuilder.createFormBuilder()
+        FormBuilder builder = FormBuilder.createFormBuilder()
                 .addComponent(branchLabel)
                 .addLabeledComponent("What to do when finished:", actionComboBox)
                 .addComponent(explanationLabel)
                 .addVerticalGap(10)
                 .addComponent(keepLocalBranch)
                 .addComponent(keepRemoteBranch)
-                .addComponent(squashCommit)
-                .addVerticalGap(10)
+                .addComponent(squashCommit);
+
+        if (project != null && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+            builder.addComponent(closeAssociatedTask);
+        }
+
+        return builder.addVerticalGap(10)
                 .addComponent(commitLabel)
                 .addComponent(commitScroll)
                 .getPanel();
@@ -113,6 +124,9 @@ public class ActionChoiceDialog extends DialogWrapper {
     public Boolean getKeepLocalBranch() { return keepLocalBranch.isSelected(); }
     public Boolean getKeepRemoteBranch() { return keepRemoteBranch.isSelected(); }
     public Boolean getSquashCommit() { return squashCommit.isSelected(); }
+    public Boolean getCloseAssociatedTask() {
+        return closeAssociatedTask.isSelected() && (project == null || GitFlowSettingsService.getInstance(project).isIntegrateWithTasks());
+    }
     public String getCommitMessage() { return commitMessage.getText(); }
     public String getLog() { return log; }
     public void setLog(String log) { this.log = log; }

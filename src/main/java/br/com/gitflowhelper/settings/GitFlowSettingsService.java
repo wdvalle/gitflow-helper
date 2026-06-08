@@ -80,6 +80,14 @@ public final class GitFlowSettingsService
 
     public void setShowDetails(Boolean showDetails) {state.setShowDetails(showDetails);}
 
+    public boolean isIntegrateWithTasks() {
+        return state.isIntegrateWithTasks();
+    }
+
+    public void setIntegrateWithTasks(boolean integrateWithTasks) {
+        state.setIntegrateWithTasks(integrateWithTasks);
+    }
+
     public void resetAndDeleteStorage() {
         this.state = new GitFlowSettingsState();
         ApplicationManager.getApplication().saveSettings();
