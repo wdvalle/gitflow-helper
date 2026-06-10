@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity('2024.2')
+        intellijIdeaCommunity('2024.2.4')
         bundledPlugin('Git4Idea')
         bundledPlugin('com.intellij.tasks')
     }

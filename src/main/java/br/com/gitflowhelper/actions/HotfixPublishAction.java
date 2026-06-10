@@ -28,16 +28,16 @@ public class HotfixPublishAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        Project project = getProject();
+        Project project = e.getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true, true);
+            setLoading(true, true, project);
             try {
                 hotfixPublish(project);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix published successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
-            setLoading(false);
+            setLoading(false, project);
         });
     }
 
@@ -45,13 +45,13 @@ public class HotfixPublishAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch()) &&
-                        getBranchName() != null && getBranchName().startsWith(getHotfixPrefix())
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).startsWith(getHotfixPrefix(e.getProject()))
         );
     }
 
     private List<GitResult> hotfixPublish(Project project) {
-        setProgress(1);
+        setProgress(1, project);
 
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
@@ -66,7 +66,7 @@ public class HotfixPublishAction extends BaseAction {
                 throw new GitException("Não foi possível identificar a branch atual.");
             }
 
-            setProgress(3);
+            setProgress(3, project);
 
             String branchName = currentBranch.getName();
 
@@ -77,7 +77,7 @@ public class HotfixPublishAction extends BaseAction {
                 );
             }
 
-            setProgress(6);
+            setProgress(6, project);
 
             // git push -u origin hotfix/<name>
             results.add(
@@ -90,11 +90,11 @@ public class HotfixPublishAction extends BaseAction {
                     )
             );
 
-            setProgress(9);
+            setProgress(9, project);
 
             repository.update();
 
-            setProgress(10);
+            setProgress(10, project);
         }
 
         return results;

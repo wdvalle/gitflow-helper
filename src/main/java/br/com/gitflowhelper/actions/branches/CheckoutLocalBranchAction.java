@@ -29,8 +29,8 @@ public class CheckoutLocalBranchAction extends BaseAction {
 
     @Override
     public void updateImpl(@NotNull AnActionEvent e) {
-        GitRepository repo = ActionParamsService.getRepo(this);
-        String remoteBranchName = ActionParamsService.getName(this);
+        GitRepository repo = ActionParamsService.getRepo(e.getProject(),this);
+        String remoteBranchName = ActionParamsService.getName(e.getProject(), this);
 
         if (repo.getCurrentBranch() != null) {
             String current = repo.getCurrentBranch().getName();
@@ -43,23 +43,23 @@ public class CheckoutLocalBranchAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        Project project = getProject();
-        GitRepository repository = ActionParamsService.getRepo(this);
+        Project project = e.getProject();
+        GitRepository repository = ActionParamsService.getRepo(project, this);
         String currentBranchName = repository.getCurrentBranchName();
-        String checkoutBranchName = ActionParamsService.getName(this);
+        String checkoutBranchName = ActionParamsService.getName(project, this);
         boolean isCurrent = currentBranchName.equals(checkoutBranchName);
 
         if (isCurrent) return;
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true, true);
+            setLoading(true, true, project);
             try {
                 checkout(repository, project, checkoutBranchName);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Local branch "+checkoutBranchName+" checked out successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
-            setLoading(false);
+            setLoading(false, project);
         });
 
         if (GitBranchPopupBuilder.getJbPopup() != null) {
@@ -69,7 +69,7 @@ public class CheckoutLocalBranchAction extends BaseAction {
 
     //can be called from outside
     public void checkout(GitRepository repository, Project project, String checkoutBranchName) {
-        setProgress(20);
+        setProgress(20, project);
 
         GitExecutor executor = new GitExecutor(project);
         executor.execute(
@@ -77,11 +77,11 @@ public class CheckoutLocalBranchAction extends BaseAction {
                 GitCommand.CHECKOUT,
                 checkoutBranchName
         );
-        setProgress(7);
+        setProgress(7, project);
 
         repository.update();
 
-        setProgress(10);
+        setProgress(10, project);
 
     }
 }

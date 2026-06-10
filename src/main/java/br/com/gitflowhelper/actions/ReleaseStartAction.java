@@ -32,11 +32,11 @@ public class ReleaseStartAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        Project project = getProject();
+        Project project = e.getProject();
         new NameDialog(project, GitFlowBranchType.RELEASE.getValue() + " start", "Version description", true, (response) ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                setLoading(true, true);
+                setLoading(true, true, project);
                 try {
                     releaseStart(project, response.getName(), response.getPushOnFinish());
 
@@ -49,7 +49,7 @@ public class ReleaseStartAction extends BaseAction {
                 } catch (GitException ex) {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
                 }
-                setLoading(false);
+                setLoading(false, project);
             });
         }
         ).show();
@@ -59,14 +59,14 @@ public class ReleaseStartAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch()) &&
-                        getBranchName() != null && getBranchName().equals(getDevelopBranch())
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getDevelopBranch(e.getProject()))
         );
     }
 
     public List<GitResult> releaseStart(Project project, String releaseName, boolean push) {
-        setProgress(1);
-        String releaseBranch = getReleasePrefix() + releaseName;
+        setProgress(1, project);
+        String releaseBranch = getReleasePrefix(project) + releaseName;
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
@@ -80,10 +80,10 @@ public class ReleaseStartAction extends BaseAction {
                     executor.execute(
                             root,
                             GitCommand.CHECKOUT,
-                            getDevelopBranch()
+                            getDevelopBranch(project)
                     )
             );
-            setProgress(3);
+            setProgress(3, project);
 
             // 2 pull develop
             results.add(
@@ -91,11 +91,11 @@ public class ReleaseStartAction extends BaseAction {
                             root,
                             GitCommand.PULL,
                             REMOTE,
-                            getDevelopBranch()
+                            getDevelopBranch(project)
                     )
             );
 
-            setProgress(5);
+            setProgress(5, project);
 
             // 3 create and checkout release branch
             results.add(
@@ -107,7 +107,7 @@ public class ReleaseStartAction extends BaseAction {
                     )
             );
 
-            setProgress(7);
+            setProgress(7, project);
 
             // 4 push release (opcional)
             if (push) {
@@ -122,10 +122,10 @@ public class ReleaseStartAction extends BaseAction {
                 );
             }
 
-            setProgress(9);
+            setProgress(9, project);
             // 5 sync with IntelliJ
             repository.update();
-            setProgress(10);
+            setProgress(10, project);
         }
 
         return results;

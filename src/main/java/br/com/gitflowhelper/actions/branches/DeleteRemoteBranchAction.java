@@ -27,8 +27,8 @@ public class DeleteRemoteBranchAction extends BaseAction {
 
     @Override
     public void updateImpl(AnActionEvent e) {
-        GitRepository repo = ActionParamsService.getRepo(this);
-        String remoteBranchName = ActionParamsService.getName(this);
+        GitRepository repo = ActionParamsService.getRepo(e.getProject(),this);
+        String remoteBranchName = ActionParamsService.getName(e.getProject(),this);
 
         if (repo.getCurrentBranch() != null) {
             String current = repo.getCurrentBranch().getName();
@@ -40,10 +40,10 @@ public class DeleteRemoteBranchAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(AnActionEvent e) {
-        Project project = getProject();
-        GitRepository repository = ActionParamsService.getRepo(this);
+        Project project = e.getProject();
+        GitRepository repository = ActionParamsService.getRepo(project, this);
         String currentBranchName = repository.getCurrentBranchName();
-        String remoteBranchName = ActionParamsService.getName(this);
+        String remoteBranchName = ActionParamsService.getName(project, this);
         boolean isCurrent = currentBranchName.equals(remoteBranchName);
 
         if (isCurrent) return;
@@ -59,14 +59,14 @@ public class DeleteRemoteBranchAction extends BaseAction {
 
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true, true);
+            setLoading(true, true, project);
             try {
                 delete(repository, project, remoteBranchName);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Remote branch "+remoteBranchName+" deleted successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
-            setLoading(false);
+            setLoading(false, project);
         });
 
         if (GitBranchPopupBuilder.getJbPopup() != null) {
@@ -75,14 +75,14 @@ public class DeleteRemoteBranchAction extends BaseAction {
     }
 
     private void delete(GitRepository repository, Project project, String remoteBranchName) {
-        setProgress(1);
+        setProgress(1, project);
         GitExecutor executor = new GitExecutor(project);
         String[] parts = remoteBranchName.split("/", 2);
         if (parts.length < 2) return;
 
         String remote = parts[0];
         String branch = parts[1];
-        setProgress(4);
+        setProgress(4, project);
 
         executor.execute(
                 repository.getRoot(),
@@ -91,10 +91,10 @@ public class DeleteRemoteBranchAction extends BaseAction {
                 "--delete",
                 branch
         );
-        setProgress(6);
+        setProgress(6, project);
 
         repository.update();
-        setProgress(10);
+        setProgress(10, project);
 
     }
 }

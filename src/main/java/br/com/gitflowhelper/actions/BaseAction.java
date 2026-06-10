@@ -56,36 +56,33 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
 
     protected abstract void actionPerformedImpl(@NotNull AnActionEvent e) throws Exception;
 
-    public String getMainBranch() {
-        return GitFlowSettingsService.getInstance(getProject()).getMainBranch();
+    public String getMainBranch(Project project) {
+        return GitFlowSettingsService.getInstance(project).getMainBranch();
     }
-    public String getDevelopBranch() {
-        return GitFlowSettingsService.getInstance(getProject()).getDevelopBranch();
+    public String getDevelopBranch(Project project) {
+        return GitFlowSettingsService.getInstance(project).getDevelopBranch();
     }
-    public String getFeaturePrefix() {
-        return GitFlowSettingsService.getInstance(getProject()).getFeaturePrefix();
+    public String getFeaturePrefix(Project project) {
+        return GitFlowSettingsService.getInstance(project).getFeaturePrefix();
     }
-    public String getReleasePrefix() {
-        return GitFlowSettingsService.getInstance(getProject()).getReleasePrefix();
+    public String getReleasePrefix(Project project) {
+        return GitFlowSettingsService.getInstance(project).getReleasePrefix();
     }
-    public String getHotfixPrefix() {
-        return GitFlowSettingsService.getInstance(getProject()).getHotfixPrefix();
+    public String getHotfixPrefix(Project project) {
+        return GitFlowSettingsService.getInstance(project).getHotfixPrefix();
     }
-    public Project getProject() {
-        return ActionParamsService.getProject();
+    public String getBranchName(Project project) {
+        return ActionParamsService.getBranchName(project);
     }
-    public String getBranchName() {
-        return ActionParamsService.getBranchName();
-    }
-    public void addRepo(AnAction action, GitRepository repo) { ActionParamsService.addRepo(action, repo); }
-    public GitRepository getRepo(AnAction action) { return ActionParamsService.getRepo(action); }
+    public void addRepo(Project project, AnAction action, GitRepository repo) { ActionParamsService.addRepo(project, action, repo); }
+    public GitRepository getRepo(Project project, AnAction action) { return ActionParamsService.getRepo(project, action); }
 
-    public void setLoading(boolean loading) {
-        setLoading(loading, false);
+    public void setLoading(boolean loading, Project project) {
+        setLoading(loading, false, project);
     }
 
-    public void setLoading(boolean loading, boolean progress) {
-        StatusBar statusBar = WindowManager.getInstance().getStatusBar(getProject());
+    public void setLoading(boolean loading, boolean progress, Project project) {
+        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
         sbw.setLoading(loading);
         if (progress) {
@@ -96,8 +93,8 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
         statusBar.updateWidget("GitFlowWidget");
     }
 
-    public void setProgress(Integer value) {
-        StatusBar statusBar = WindowManager.getInstance().getStatusBar(getProject());
+    public void setProgress(Integer value, Project project) {
+        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
         setProgressImpl(value, statusBar, sbw);
     }
@@ -115,7 +112,7 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
     @Override
     public void update(@NotNull AnActionEvent e) {
         var future = ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            ActionParamsService.setBranchName(GitBranchUtils.getCurrentBranchName(getProject()));
+            ActionParamsService.setBranchName(e.getProject(), GitBranchUtils.getCurrentBranchName(e.getProject()));
         });
         try {
             future.get();
@@ -136,7 +133,7 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
 
     private void handleGlobalException(Throwable ex, @NotNull AnActionEvent e) {
         NotificationUtil.showGitFlowErrorNotification(e.getProject(), "Error", ex.getMessage());
-        PluginUtils.logError(getProject(), PluginUtils.getStackTrace(ex));
+        PluginUtils.logError(e.getProject(), PluginUtils.getStackTrace(ex));
     }
 
 }

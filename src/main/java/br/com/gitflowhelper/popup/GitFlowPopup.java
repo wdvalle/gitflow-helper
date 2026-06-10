@@ -9,14 +9,10 @@ import br.com.gitflowhelper.actions.branches.CheckoutLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.CheckoutRemoteBranchAction;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.GitFlowDescriptions;
-import br.com.gitflowhelper.util.NotificationUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogBuilder;
-import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.*;
 import com.intellij.ui.awt.RelativePoint;
 import git4idea.GitLocalBranch;
@@ -32,16 +28,16 @@ import java.util.*;
 import java.util.List;
 import java.util.function.Function;
 
-public final class GitFlowPopup /*extends PropertyObserver*/ {
+public final class GitFlowPopup {
     private ListPopup listPopup;
     private Point local = null;
+    private Project project;
 
-    public GitFlowPopup() {
+    public GitFlowPopup(Project project) {
+        this.project = project;
     }
 
     public void show(JComponent component) {
-        Project project = ActionParamsService.getProject();
-
         DataManager.getInstance()
             .getDataContextFromFocusAsync()
             .onSuccess(dataContext -> {
@@ -237,7 +233,7 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
                     GitFlowDescriptions.REPO_ITEM.getValue(),
                     (isCurrent ?
                             AllIcons.Gutter.Bookmark :
-                            branch.getName().equals(GitFlowSettingsService.getInstance(ActionParamsService.getProject()).getMainBranch()) ?
+                            branch.getName().equals(GitFlowSettingsService.getInstance(project).getMainBranch()) ?
                                     AllIcons.Nodes.Favorite :
                                     AllIcons.Vcs.BranchNode));
             checkoutDeleteGr.setPopup(true);
@@ -249,12 +245,12 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
                     "Delete",
                     branch.getName()
             );
-            ActionParamsService.addName(newCheckoutAction, branch.getName());
-            ActionParamsService.addName(newDeleteAction, branch.getName());
+            ActionParamsService.addName(project, newCheckoutAction, branch.getName());
+            ActionParamsService.addName(project, newDeleteAction, branch.getName());
             checkoutDeleteGr.add(newCheckoutAction);
             checkoutDeleteGr.add(newDeleteAction);
-            ActionParamsService.addRepo(newCheckoutAction, repository);
-            ActionParamsService.addRepo(newDeleteAction, repository);
+            ActionParamsService.addRepo(project, newCheckoutAction, repository);
+            ActionParamsService.addRepo(project, newDeleteAction, repository);
             group.add(checkoutDeleteGr);
         });
 
@@ -293,7 +289,7 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
                     GitFlowDescriptions.REPO_ITEM.getValue(),
                     (isCurrent ?
                             AllIcons.Gutter.Bookmark :
-                            branch.getName().equals(BaseAction.REMOTE+"/"+GitFlowSettingsService.getInstance(ActionParamsService.getProject()).getMainBranch()) ?
+                            branch.getName().equals(BaseAction.REMOTE+"/"+GitFlowSettingsService.getInstance(project).getMainBranch()) ?
                                     AllIcons.Nodes.Favorite :
                                     AllIcons.Vcs.BranchNode
                     ));
@@ -306,12 +302,12 @@ public final class GitFlowPopup /*extends PropertyObserver*/ {
                     "Delete",
                     branch.getName()
             );
-            ActionParamsService.addName(newCheckoutAction, branch.getName());
-            ActionParamsService.addName(newDeleteAction, branch.getName());
+            ActionParamsService.addName(project, newCheckoutAction, branch.getName());
+            ActionParamsService.addName(project, newDeleteAction, branch.getName());
             checkoutDeleteGr.add(newCheckoutAction);
             checkoutDeleteGr.add(newDeleteAction);
-            ActionParamsService.addRepo(newCheckoutAction, repository);
-            ActionParamsService.addRepo(newDeleteAction, repository);
+            ActionParamsService.addRepo(project, newCheckoutAction, repository);
+            ActionParamsService.addRepo(project, newDeleteAction, repository);
             group.add(checkoutDeleteGr);
         });
 

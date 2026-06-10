@@ -27,12 +27,12 @@ public class ResetAction extends BaseAction {
     @Override
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
-        presentation.setEnabled(StringUtil.isNotEmpty(getMainBranch()));
+        presentation.setEnabled(StringUtil.isNotEmpty(getMainBranch(e.getProject())));
     }
 
     @Override
     public void actionPerformedImpl(AnActionEvent e) {
-        Project project = getProject();
+        Project project = e.getProject();
 
         int confirm = Messages.showYesNoDialog(
                 project,
@@ -45,15 +45,15 @@ public class ResetAction extends BaseAction {
 
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true);
+            setLoading(true, project);
             try {
-                GitFlowSettingsService.getInstance(getProject()).resetAndDeleteStorage();
-                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Deleted file .idea/gitflow-helper.xml.");
+                GitFlowSettingsService.getInstance(project).resetAndDeleteStorage();
+                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Reset successfully.");
 
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
-            setLoading(false);
+            setLoading(false, project);
         });
 
     }

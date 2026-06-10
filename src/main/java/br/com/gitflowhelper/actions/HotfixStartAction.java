@@ -32,11 +32,11 @@ public class HotfixStartAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        Project project = getProject();
+        Project project = e.getProject();
         new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, response ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                setLoading(true, true);
+                setLoading(true, true, project);
                 try {
                     hotfixStart(project, response.getName(), response.getPushOnFinish());
 
@@ -49,7 +49,7 @@ public class HotfixStartAction extends BaseAction {
                 } catch (GitException ex) {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
                 }
-                setLoading(false);
+                setLoading(false, project);
             });
         }
         ).show();
@@ -59,20 +59,20 @@ public class HotfixStartAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch()) &&
-                        getBranchName() != null && getBranchName().equals(getMainBranch())
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getMainBranch(e.getProject()))
         );
     }
 
     private List<GitResult> hotfixStart(Project project, String hotfixName, boolean pushOnFinish) {
-        setProgress(1);
+        setProgress(1, project);
 
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
 
-        String mainBranch = getMainBranch();
-        String hotfixBranch = getHotfixPrefix() + hotfixName;
+        String mainBranch = getMainBranch(project);
+        String hotfixBranch = getHotfixPrefix(project) + hotfixName;
 
         for (GitRepository repository : repoManager.getRepositories()) {
 
@@ -86,7 +86,7 @@ public class HotfixStartAction extends BaseAction {
                             mainBranch
                     )
             );
-            setProgress(2);
+            setProgress(2, project);
 
             // 2) pull main
             results.add(
@@ -98,7 +98,7 @@ public class HotfixStartAction extends BaseAction {
                     )
             );
 
-            setProgress(5);
+            setProgress(5, project);
 
             // 3) create hotfix branch from main
             results.add(
@@ -111,7 +111,7 @@ public class HotfixStartAction extends BaseAction {
                     )
             );
 
-            setProgress(7);
+            setProgress(7, project);
 
             // 4) push hotfix (if needed)
             if (pushOnFinish) {
@@ -126,9 +126,9 @@ public class HotfixStartAction extends BaseAction {
                 );
             }
 
-            setProgress(9);
+            setProgress(9, project);
             repository.update();
-            setProgress(10);
+            setProgress(10, project);
         }
 
         return results;

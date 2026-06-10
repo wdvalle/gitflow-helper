@@ -1,9 +1,8 @@
 package br.com.gitflowhelper.statusbar;
 
-import br.com.gitflowhelper.util.ActionParamsService;
 import br.com.gitflowhelper.popup.GitFlowPopup;
+import br.com.gitflowhelper.util.ActionParamsService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.wm.CustomStatusBarWidget;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
@@ -17,6 +16,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
 
 public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
 
@@ -41,15 +41,12 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
 
     @Override
     public void install(@NotNull StatusBar statusBar) {
-        ActionParamsService.setProject(project);
         this.statusBar = statusBar;
     }
 
     @Override
     public void dispose() {
-        ActionParamsService.setBranchName(null);
-        ActionParamsService.setProject(null);
-        ActionParamsService.clearRepos();
+        ActionParamsService.clear(project);
     }
 
     public void setLoading(boolean loading) {
@@ -118,7 +115,7 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
             MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    new GitFlowPopup().show(component);
+                    new GitFlowPopup(project).show(component);
                 }
             };
             

@@ -316,10 +316,10 @@ public class GitBranchPopupBuilder {
         if (branchNode.isRemote()) {
             var newCheckoutAction = new CheckoutRemoteBranchAction("Checkout", branchNode.getName());
             var newDeleteAction = new DeleteRemoteBranchAction("Delete", branchNode.getName());
-            ActionParamsService.addRepo(newCheckoutAction, repo);
-            ActionParamsService.addRepo(newDeleteAction, repo);
-            ActionParamsService.addName(newCheckoutAction, branchNode.getName());
-            ActionParamsService.addName(newDeleteAction, branchNode.getName());
+            ActionParamsService.addRepo(project, newCheckoutAction, repo);
+            ActionParamsService.addRepo(project, newDeleteAction, repo);
+            ActionParamsService.addName(project, newCheckoutAction, branchNode.getName());
+            ActionParamsService.addName(project, newDeleteAction, branchNode.getName());
             group.add(newCheckoutAction);
             group.add(newDeleteAction);
             if (name.startsWith(BaseAction.REMOTE+"/"+featurePrefix)) {
@@ -334,10 +334,10 @@ public class GitBranchPopupBuilder {
         } else {
             var newCheckoutAction = new CheckoutLocalBranchAction("Checkout", branchNode.getName());
             var newDeleteAction = new DeleteLocalBranchAction("Delete", branchNode.getName());
-            ActionParamsService.addRepo(newCheckoutAction, repo);
-            ActionParamsService.addRepo(newDeleteAction, repo);
-            ActionParamsService.addName(newCheckoutAction, branchNode.getName());
-            ActionParamsService.addName(newDeleteAction, branchNode.getName());
+            ActionParamsService.addRepo(project, newCheckoutAction, repo);
+            ActionParamsService.addRepo(project, newDeleteAction, repo);
+            ActionParamsService.addName(project, newCheckoutAction, branchNode.getName());
+            ActionParamsService.addName(project, newDeleteAction, branchNode.getName());
             group.add(newCheckoutAction);
             group.add(newDeleteAction);
             if (name.startsWith(featurePrefix)) {

@@ -26,16 +26,16 @@ public class FeaturePublishAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        Project project = getProject();
+        Project project = e.getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true, true);
+            setLoading(true, true, project);
             try {
                 featurePublish(project);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New feature published successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
-            setLoading(false);
+            setLoading(false, project);
         });
     }
 
@@ -43,13 +43,13 @@ public class FeaturePublishAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch()) &&
-                        getBranchName() != null && getBranchName().startsWith(getFeaturePrefix())
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).startsWith(getFeaturePrefix(e.getProject()))
         );
     }
 
     private List<GitResult> featurePublish(Project project) {
-        setProgress(1);
+        setProgress(1, project);
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
         List<GitResult> results = new ArrayList<>();
@@ -57,13 +57,13 @@ public class FeaturePublishAction extends BaseAction {
         for (GitRepository repository : repoManager.getRepositories()) {
             String currentBranch = repository.getCurrentBranchName();
 
-            setProgress(2);
+            setProgress(2, project);
 
             if (currentBranch == null) {
                 throw new GitException("HEAD is detached");
             }
 
-            setProgress(6);
+            setProgress(6, project);
             results.add(
                     executor.execute(
                             repository.getRoot(),
@@ -74,10 +74,10 @@ public class FeaturePublishAction extends BaseAction {
                     )
             );
 
-            setProgress(7);
+            setProgress(7, project);
 
             repository.update();
-            setProgress(10);
+            setProgress(10, project);
         }
         return results;
     }

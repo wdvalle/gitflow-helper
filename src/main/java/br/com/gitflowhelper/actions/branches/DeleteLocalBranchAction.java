@@ -26,8 +26,8 @@ public class DeleteLocalBranchAction extends BaseAction {
 
     @Override
     public void updateImpl(AnActionEvent e) {
-        GitRepository repo = ActionParamsService.getRepo(this);
-        String remoteBranchName = ActionParamsService.getName(this);
+        GitRepository repo = ActionParamsService.getRepo(e.getProject(), this);
+        String remoteBranchName = ActionParamsService.getName(e.getProject(), this);
 
         if (repo.getCurrentBranch() != null) {
             String current = repo.getCurrentBranch().getName();
@@ -39,10 +39,10 @@ public class DeleteLocalBranchAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(AnActionEvent e) {
-        Project project = getProject();
-        GitRepository repository = ActionParamsService.getRepo(this);
+        Project project = e.getProject();
+        GitRepository repository = ActionParamsService.getRepo(e.getProject(), this);
         String currentBranchName = repository.getCurrentBranchName();
-        String localBranchName = ActionParamsService.getName(this);
+        String localBranchName = ActionParamsService.getName(e.getProject(), this);
         boolean isCurrent = currentBranchName.equals(localBranchName);
 
         if (isCurrent) return;
@@ -58,14 +58,14 @@ public class DeleteLocalBranchAction extends BaseAction {
 
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true, true);
+            setLoading(true, true, project);
             try {
                 delete(repository, project, localBranchName);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Local branch "+localBranchName+" deleted successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
-            setLoading(false);
+            setLoading(false, e.getProject());
         });
 
         if (GitBranchPopupBuilder.getJbPopup() != null) {
@@ -75,7 +75,7 @@ public class DeleteLocalBranchAction extends BaseAction {
     }
 
     private void delete(GitRepository repository, Project project, String localBranchName) {
-        setProgress(1);
+        setProgress(1, project);
 
         GitExecutor executor = new GitExecutor(project);
         executor.execute(
@@ -84,11 +84,11 @@ public class DeleteLocalBranchAction extends BaseAction {
                 "-d",
                 localBranchName
         );
-        setProgress(6);
+        setProgress(6, project);
 
         repository.update();
 
-        setProgress(10);
+        setProgress(10, project);
 
     }
 

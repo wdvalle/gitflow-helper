@@ -3,7 +3,9 @@ package br.com.gitflowhelper.dialog;
 import br.com.gitflowhelper.util.ActionParamsService;
 import br.com.gitflowhelper.actions.InitAction;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,11 +22,13 @@ public class InitDialog extends DialogWrapper {
     private final JTextField hotfixField  = new JTextField("hotfix/");
 
     private JPanel panel = new JPanel(new GridBagLayout());
+    private Project project;
 
     private InitAction initAction;
 
-    public InitDialog(InitAction initAction) {
-        super(ActionParamsService.getProject());
+    public InitDialog(InitAction initAction, @Nullable Project project) {
+        super(project);
+        this.project = project;
         this.initAction = initAction;
         setTitle("Git Flow Init");
         init();
@@ -50,14 +54,14 @@ public class InitDialog extends DialogWrapper {
 
     @Override
     public void doOKAction() {
-        GitFlowSettingsService settings = GitFlowSettingsService.getInstance(ActionParamsService.getProject());
+        GitFlowSettingsService settings = GitFlowSettingsService.getInstance(project);
         settings.setMainBranch(mainField.getText());
         settings.setDevelopBranch(developField.getText());
         settings.setFeaturePrefix(featureField.getText());
         settings.setReleasePrefix(releaseField.getText());
         settings.setHotfixPrefix(hotfixField.getText());
 
-        this.initAction.doOKAction(mainField.getText(),  developField.getText(), featureField.getText(), releaseField.getText(), hotfixField.getText());
+        this.initAction.doOKAction(project, mainField.getText(),  developField.getText(), featureField.getText(), releaseField.getText(), hotfixField.getText());
 
         super.doOKAction();
     }

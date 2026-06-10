@@ -196,6 +196,11 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>1.3.0</b></li>
+                <ul>
+                    <li>Better progress bar in IDE status bar.</li>
+                    <li>Simultaneous projects work fine.</li>
+                </ul>
                 <li><b>1.2.1</b></li>
                 <ul>
                     <li>Progress bar in IDE status bar.</li>

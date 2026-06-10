@@ -18,9 +18,9 @@ public class LikeAction extends BaseAction {
 
     @Override
     protected void actionPerformedImpl(@NotNull AnActionEvent e) throws Exception {
-        Long counter = GitFlowSettingsService.getInstance(getProject()).getCounter();
+        Long counter = GitFlowSettingsService.getInstance(e.getProject()).getCounter();
         Long diff = COUNTER_RESET - counter % COUNTER_RESET;
-        GitFlowSettingsService.getInstance(getProject()).setCounter(counter+diff);
+        GitFlowSettingsService.getInstance(e.getProject()).setCounter(counter+diff);
         BrowserUtil.browse("https://plugins.jetbrains.com/plugin/30207-git-flow-helper/reviews");
     }
 }

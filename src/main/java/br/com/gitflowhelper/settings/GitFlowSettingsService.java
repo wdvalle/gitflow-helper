@@ -91,14 +91,14 @@ public final class GitFlowSettingsService
     public void resetAndDeleteStorage() {
         this.state = new GitFlowSettingsState();
         ApplicationManager.getApplication().saveSettings();
-        Path optionsPath = Path.of(
-                PathManager.getOptionsPath(),
-                "gitflow-helper.xml"
-        );
-        try {
-            Files.deleteIfExists(optionsPath);
-        } catch (IOException e) {
-            //throw new RuntimeException(e);
-        }
+//        Path optionsPath = Path.of(
+//                PathManager.getOptionsPath(),
+//                "gitflow-helper.xml"
+//        );
+//        try {
+//            Files.deleteIfExists(optionsPath);
+//        } catch (IOException e) {
+//            //throw new RuntimeException(e);
+//        }
     }
 }

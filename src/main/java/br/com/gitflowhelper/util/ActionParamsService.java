@@ -7,71 +7,67 @@ import git4idea.repo.GitRepository;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 public final class ActionParamsService /*implements PropertyChangeListener*/ {
 
     private static final ActionParamsService INSTANCE = new ActionParamsService();
-    private static Project project;
-    private static String branchName;
-    private static Map<AnAction, GitRepository> repos;
-    private static Map<AnAction, String> names = new IdentityHashMap<AnAction, String>();
+    private static final Map<Project, ActionParams> paramsMap = new HashMap<Project, ActionParams>();
+
+    private static class ActionParams {
+        String branchName;
+        Map<AnAction, GitRepository> repos;
+        Map<AnAction, String> names = new IdentityHashMap<AnAction, String>();
+    }
 
     private ActionParamsService() { }
+
+    private static ActionParams getOrCreateParams(Project key) {
+        ActionParams params = paramsMap.get(key);
+        if (params == null) {
+            params = new ActionParams();
+            paramsMap.put(key, params);
+        }
+        return params;
+    }
 
     public static ActionParamsService getInstance() {
         return INSTANCE;
     }
 
-    public static void setProject(Project project) {
-        ActionParamsService.project = project;
-    }
-    public static void setBranchName(String branchName) {
-        ActionParamsService.branchName = branchName;
+    public static void setBranchName(Project key, String branchName) {
+        getOrCreateParams(key).branchName = branchName;
     }
 
-    public static Project getProject() { return project; }
-    public static String getBranchName() {
-        return branchName;
+    public static String getBranchName(Project key) {
+        return getOrCreateParams(key).branchName;
     }
 
-//    @Override
-//    public void propertyChange(PropertyChangeEvent e) {
-//        ActionParamsService.setBranchName((String) e.getNewValue());
-//        ActivityTracker.getInstance().inc();
-//    }
-
-    public static void addRepo(AnAction action, GitRepository repo) {
-        if (repos == null) {
-            repos = new IdentityHashMap<AnAction, GitRepository>();
+    public static void addRepo(Project key, AnAction action, GitRepository repo) {
+        ActionParams params = getOrCreateParams(key);
+        if (params.repos == null) {
+            params.repos = new IdentityHashMap<AnAction, GitRepository>();
         }
-        repos.put(action, repo);
+        params.repos.put(action, repo);
     }
-    public static GitRepository getRepo(AnAction action) {
-        if (repos == null) {
-            repos = new IdentityHashMap<AnAction, GitRepository>();
+    public static GitRepository getRepo(Project key, AnAction action) {
+        ActionParams params = getOrCreateParams(key);
+        if (params.repos == null) {
+            params.repos = new IdentityHashMap<AnAction, GitRepository>();
         }
-        return repos.get(action);
+        return params.repos.get(action);
     }
 
-    public static void addName(AnAction action, String name) {
-        names.put(action, name);
+    public static void addName(Project key, AnAction action, String name) {
+        getOrCreateParams(key).names.put(action, name);
     }
-    public static String getName(AnAction action) {
-        return names.get(action);
+    public static String getName(Project key, AnAction action) {
+        return getOrCreateParams(key).names.get(action);
     }
 
-    public static void clearRepos() {
-        if (repos != null) {
-            repos.clear();
-            repos = null;
-        }
-    }
-    public static void clearNames() {
-        if (names != null) {
-            names.clear();
-            names = null;
-        }
+    public static void clear(Project key) {
+        paramsMap.remove(key);
     }
 }

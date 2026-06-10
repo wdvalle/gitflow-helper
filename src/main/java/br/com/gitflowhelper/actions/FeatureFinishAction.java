@@ -38,9 +38,9 @@ public class FeatureFinishAction extends BaseAction {
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         final String[] featureCommits = {""};
         String[] postAction = new String[1];
-        Project project = getProject();
-        String branchName = getBranchName();
-        ActionChoiceDialog dialog = new ActionChoiceDialog(project, branchName, getDevelopBranch());
+        Project project = e.getProject();
+        String branchName = getBranchName(project);
+        ActionChoiceDialog dialog = new ActionChoiceDialog(project, branchName, getDevelopBranch(project));
 
         var future = ApplicationManager.getApplication().executeOnPooledThread(() -> {
             GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
@@ -49,7 +49,7 @@ public class FeatureFinishAction extends BaseAction {
                     VirtualFile root = repository.getRoot();
                     //grabs from the first
                     if (featureCommits[0].equals("")) {
-                        featureCommits[0] = getFeatureCommits(project, repository, getDevelopBranch(), branchName);
+                        featureCommits[0] = getFeatureCommits(project, repository, getDevelopBranch(project), branchName);
                         break;
                     }
                 }
@@ -63,7 +63,7 @@ public class FeatureFinishAction extends BaseAction {
             future.get();
             if (dialog.showAndGet()) {
                 ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                    setLoading(true, true);
+                    setLoading(true, true, project);
                     try {
                         featureFinish(
                             project,
@@ -81,7 +81,7 @@ public class FeatureFinishAction extends BaseAction {
                     } catch (GitException ex) {
                         NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error message: "+ex.getGitResult().getProcessMessage());
                     }
-                    setLoading(false);
+                    setLoading(false, project);
                 });
             }
         } catch (Exception ex) {
@@ -93,8 +93,8 @@ public class FeatureFinishAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch()) &&
-                        getBranchName() != null && getBranchName().startsWith(getFeaturePrefix())
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).startsWith(getFeaturePrefix(e.getProject()))
         );
     }
 
@@ -123,7 +123,7 @@ public class FeatureFinishAction extends BaseAction {
             boolean rebaseBeforeIntegrate,
             String[] postAction, String branchName,
             boolean closeTask) {
-        setProgress(1);
+        setProgress(1, project);
 
         if (closeTask && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
             TaskManager taskManager = TaskManager.getManager(project);
@@ -140,7 +140,7 @@ public class FeatureFinishAction extends BaseAction {
             }
         }
 
-        String baseBranch = getDevelopBranch();
+        String baseBranch = getDevelopBranch(project);
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
         List<GitResult> results = new ArrayList<>();
@@ -148,7 +148,7 @@ public class FeatureFinishAction extends BaseAction {
         for (GitRepository repository : repoManager.getRepositories()) {
             VirtualFile root = repository.getRoot();
 
-            setProgress(2);
+            setProgress(2, project);
             switch (mode) {
 
                 // =========================
@@ -169,7 +169,7 @@ public class FeatureFinishAction extends BaseAction {
                         executor.execute(root, GitCommand.REBASE, baseBranch);
                     }
 
-                    setProgress(3);
+                    setProgress(3, project);
 
                     // pull develop
                     results.add(
@@ -195,7 +195,7 @@ public class FeatureFinishAction extends BaseAction {
                                         finalCommitMessage
                                 )
                         );
-                        setProgress(5);
+                        setProgress(5, project);
                     } else {
                         results.add(
                                 executor.execute(
@@ -208,7 +208,7 @@ public class FeatureFinishAction extends BaseAction {
                                 )
                         );
 
-                        setProgress(5);
+                        setProgress(5, project);
                     }
 
                     // push to develop
@@ -221,9 +221,9 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
-                    setProgress(7);
+                    setProgress(7, project);
 
-                    postAction[0] = "Feature finished and pushed to " + getDevelopBranch() + " successfully.";
+                    postAction[0] = "Feature finished and pushed to " + getDevelopBranch(project) + " successfully.";
 
                 }
 
@@ -242,7 +242,7 @@ public class FeatureFinishAction extends BaseAction {
                                     finalCommitMessage
                             )
                     );
-                    setProgress(4);
+                    setProgress(4, project);
 
                     // push feature branch
                     results.add(
@@ -254,7 +254,7 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
-                    setProgress(6);
+                    setProgress(6, project);
 
                     // checkout develop
                     results.add(
@@ -267,7 +267,7 @@ public class FeatureFinishAction extends BaseAction {
 
                     postAction[0] = "Feature pushed to " + branchName + " successfully. Create yourself a merge/pull request.";
 
-                    setProgress(7);
+                    setProgress(7, project);
                 }
 
                 // =========================
@@ -290,7 +290,7 @@ public class FeatureFinishAction extends BaseAction {
                                     finalCommitMessage
                             )
                     );
-                    setProgress(5);
+                    setProgress(5, project);
 
                     // push with GitLab MR options
                     results.add(
@@ -306,7 +306,7 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
-                    setProgress(6);
+                    setProgress(6, project);
                     // checkout develop
                     results.add(
                             executor.execute(
@@ -316,13 +316,13 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
-                    setProgress(7);
+                    setProgress(7, project);
 
                     postAction[0] = "Feature pushed to " + branchName + " and merge request created successfully.";
                 }
             }
 
-            setProgress(8);
+            setProgress(8, project);
             // delete local branch
             if (deleteLocalBranch) {
                 results.add(
@@ -335,7 +335,7 @@ public class FeatureFinishAction extends BaseAction {
                 );
             }
 
-            setProgress(9);
+            setProgress(9, project);
 
             // delete remote branch
             if (deleteRemoteBranch) {
@@ -351,7 +351,7 @@ public class FeatureFinishAction extends BaseAction {
             }
 
             repository.update();
-            setProgress(10);
+            setProgress(10, project);
         }
 
         return results;

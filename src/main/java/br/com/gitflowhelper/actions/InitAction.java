@@ -35,45 +35,44 @@ public class InitAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        new InitDialog(this).show();
+        new InitDialog(this, e.getProject()).show();
     }
 
     @Override
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
-        presentation.setEnabled(StringUtil.isEmpty(getMainBranch()));
+        presentation.setEnabled(StringUtil.isEmpty(getMainBranch(e.getProject())));
     }
 
     //invoked by InitDialog
-    public void doOKAction(String mainField, String developField, String featureField,
+    public void doOKAction(Project project, String mainField, String developField, String featureField,
                            String releaseField, String hotfixField) {
-        Project project = getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true, true);
+            setLoading(true, project);
             try {
                 init(true, project);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Git Flow Initialization Successful");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
-                GitFlowSettingsService.getInstance(getProject()).resetAndDeleteStorage();
+                GitFlowSettingsService.getInstance(project).resetAndDeleteStorage();
             }
-            setLoading(false);
+            setLoading(false, project);
         });
     }
 
     public List<GitResult> init(boolean pushOnFinish, Project project) {
 
-        setProgress(0);
+        setProgress(0, project);
 
         List<GitResult> results = new ArrayList<>();
         GitExecutor executor = new GitExecutor(project);
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
 
-        String mainBranch = getMainBranch();
-        String developBranch = getDevelopBranch();
-        String featurePrefix = normalizePrefix(getFeaturePrefix());
-        String releasePrefix = normalizePrefix(getReleasePrefix());
-        String hotfixPrefix  = normalizePrefix(getHotfixPrefix());
+        String mainBranch = getMainBranch(project);
+        String developBranch = getDevelopBranch(project);
+        String featurePrefix = normalizePrefix(getFeaturePrefix(project));
+        String releasePrefix = normalizePrefix(getReleasePrefix(project));
+        String hotfixPrefix  = normalizePrefix(getHotfixPrefix(project));
 
         for (GitRepository repository : repoManager.getRepositories()) {
 
@@ -89,7 +88,7 @@ public class InitAction extends BaseAction {
                                     Function.identity()
                             ));
 
-            setProgress(1);
+            setProgress(1, project);
 
             // 1 main branch
             if (!localBranches.containsKey(mainBranch)) {
@@ -99,7 +98,7 @@ public class InitAction extends BaseAction {
                 );
             }
 
-            setProgress(2);
+            setProgress(2, project);
 
             // 2 create develop if needed
             if (!localBranches.containsKey(developBranch)) {
@@ -122,7 +121,7 @@ public class InitAction extends BaseAction {
                 );
             }
 
-            setProgress(3);
+            setProgress(3, project);
 
             // 3 go to develop
             results.add(
@@ -133,7 +132,7 @@ public class InitAction extends BaseAction {
                     )
             );
 
-            setProgress(4);
+            setProgress(4, project);
 
             // 4 initial push  (opcional)
             if (pushOnFinish) {
@@ -148,7 +147,7 @@ public class InitAction extends BaseAction {
                 );
             }
 
-            setProgress(5);
+            setProgress(5, project);
 
             // 5 git config - gitflow settings
             results.add(
@@ -160,7 +159,7 @@ public class InitAction extends BaseAction {
                     )
             );
 
-            setProgress(6);
+            setProgress(6, project);
 
             results.add(
                     executor.execute(
@@ -171,7 +170,7 @@ public class InitAction extends BaseAction {
                     )
             );
 
-            setProgress(7);
+            setProgress(7, project);
 
             results.add(
                     executor.execute(
@@ -182,7 +181,7 @@ public class InitAction extends BaseAction {
                     )
             );
 
-            setProgress(8);
+            setProgress(8, project);
 
             results.add(
                     executor.execute(
@@ -193,7 +192,7 @@ public class InitAction extends BaseAction {
                     )
             );
 
-            setProgress(9);
+            setProgress(9, project);
 
             results.add(
                     executor.execute(
@@ -206,7 +205,7 @@ public class InitAction extends BaseAction {
 
             // update repo state in intellij
             repository.update();
-            setProgress(10);
+            setProgress(10, project);
         }
 
         return results;

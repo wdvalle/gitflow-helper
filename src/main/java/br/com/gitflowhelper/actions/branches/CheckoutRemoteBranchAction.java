@@ -34,10 +34,10 @@ public class CheckoutRemoteBranchAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        Project project = getProject();
-        GitRepository repository = ActionParamsService.getRepo(this);
+        Project project = e.getProject();
+        GitRepository repository = ActionParamsService.getRepo(project,this);
         String currentBranchName = repository.getCurrentBranchName();
-        String checkoutBranchName = ActionParamsService.getName(this);
+        String checkoutBranchName = ActionParamsService.getName(project,this);
         boolean isCurrent = currentBranchName.equals(checkoutBranchName);
 
         if (isCurrent) return;
@@ -50,9 +50,9 @@ public class CheckoutRemoteBranchAction extends BaseAction {
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             boolean needsRemote = true;
-            setLoading(true, true);
+            setLoading(true, true, project);
             try {
-                setProgress(1);
+                setProgress(1, project);
 
                 GitBranch branch = repository.getBranches().findLocalBranch(localBranch);
                 if (branch != null) {
@@ -61,7 +61,7 @@ public class CheckoutRemoteBranchAction extends BaseAction {
                     needsRemote = false;
 
                 }
-                setProgress(3);
+                setProgress(3, project);
                 if (needsRemote) {
                     executor.execute(
                             repository.getRoot(),
@@ -72,17 +72,17 @@ public class CheckoutRemoteBranchAction extends BaseAction {
                             checkoutBranchName
                     );
                 }
-                setProgress(7);
+                setProgress(7, project);
 
                 repository.update();
 
-                setProgress(10);
+                setProgress(10, project);
 
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Remote branch " + checkoutBranchName + " checked out successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
-            setLoading(false);
+            setLoading(false, project);
         });
 
         if (GitBranchPopupBuilder.getJbPopup() != null) {

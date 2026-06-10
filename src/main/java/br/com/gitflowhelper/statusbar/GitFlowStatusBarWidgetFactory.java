@@ -29,5 +29,7 @@ public class GitFlowStatusBarWidgetFactory
     }
 
     @Override
-    public void disposeWidget(@NotNull StatusBarWidget widget) {}
+    public void disposeWidget(@NotNull StatusBarWidget widget) {
+        widget.dispose();
+    }
 }

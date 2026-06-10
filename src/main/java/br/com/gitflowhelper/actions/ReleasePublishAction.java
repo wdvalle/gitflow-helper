@@ -31,16 +31,16 @@ public class ReleasePublishAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        Project project = getProject();
+        Project project = e.getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true, true);
+            setLoading(true, true, project);
             try {
                 releasePublish(project);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New release published successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
-            setLoading(false);
+            setLoading(false, project);
         });
     }
 
@@ -48,13 +48,13 @@ public class ReleasePublishAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch()) &&
-                        getBranchName() != null && getBranchName().startsWith(getReleasePrefix())
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).startsWith(getReleasePrefix(e.getProject()))
         );
     }
 
     public List<GitResult> releasePublish(Project project) throws GitException {
-        setProgress(1);
+        setProgress(1, project);
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
@@ -63,7 +63,7 @@ public class ReleasePublishAction extends BaseAction {
             VirtualFile root = repository.getRoot();
             String currentBranch = repository.getCurrentBranchName();
 
-            setProgress(4);
+            setProgress(4, project);
             // push release
             results.add(
                     executor.execute(
@@ -74,11 +74,11 @@ public class ReleasePublishAction extends BaseAction {
                             currentBranch
                     )
             );
-            setProgress(6);
+            setProgress(6, project);
 
             repository.update();
 
-            setProgress(10);
+            setProgress(10, project);
         }
 
         return results;

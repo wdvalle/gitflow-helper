@@ -31,11 +31,11 @@ public class FeatureStartAction extends BaseAction {
     }
 
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        Project project = getProject();
+        Project project = e.getProject();
         new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false, response ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                setLoading(true, true);
+                setLoading(true, true, project);
                 try {
                     featureStart(project, response.getName());
 
@@ -48,7 +48,7 @@ public class FeatureStartAction extends BaseAction {
                 } catch (GitException ex) {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
                 }
-                setLoading(false);
+                setLoading(false, project);
             });
         }
         ).show();
@@ -58,15 +58,15 @@ public class FeatureStartAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch()) &&
-                        getBranchName() != null && getBranchName().equals(getDevelopBranch())
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getDevelopBranch(e.getProject()))
         );
     }
 
     private List<GitResult> featureStart(Project project, String featureName) {
-        setProgress(1);
+        setProgress(1, project);
 
-        String featureBranch = getFeaturePrefix() + featureName;
+        String featureBranch = getFeaturePrefix(project) + featureName;
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
         List<GitResult> results = new ArrayList<>();
@@ -74,20 +74,20 @@ public class FeatureStartAction extends BaseAction {
         for (GitRepository repository : repoManager.getRepositories()) {
             VirtualFile root = repository.getRoot();
 
-            setProgress(2);
+            setProgress(2, project);
             // 1. checkout develop
             results.add(
-                    executor.execute(root, GitCommand.CHECKOUT, getDevelopBranch())
+                    executor.execute(root, GitCommand.CHECKOUT, getDevelopBranch(project))
             );
 
-            setProgress(5);
+            setProgress(5, project);
 
             // 2. pull develop
             results.add(
                     executor.execute(root, GitCommand.PULL)
             );
 
-            setProgress(7);
+            setProgress(7, project);
 
             // 3 + 4. create + checkout feature branch
             results.add(
@@ -96,14 +96,14 @@ public class FeatureStartAction extends BaseAction {
                             GitCommand.CHECKOUT,
                             "-b",
                             featureBranch,
-                            getDevelopBranch()
+                            getDevelopBranch(project)
                     )
             );
 
-            setProgress(9);
+            setProgress(9, project);
 
             repository.update();
-            setProgress(10);
+            setProgress(10, project);
         }
         return results;
     }

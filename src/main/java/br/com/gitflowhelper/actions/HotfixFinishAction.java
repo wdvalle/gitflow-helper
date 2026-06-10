@@ -28,16 +28,16 @@ public class HotfixFinishAction extends BaseAction {
 
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
-        Project project = getProject();
+        Project project = e.getProject();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true, true);
+            setLoading(true, true, project);
             try {
                 hotfixFinish(project,true, true, true);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix finished and tag pushed successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
-            setLoading(false);
+            setLoading(false, project);
         });
     }
 
@@ -45,8 +45,8 @@ public class HotfixFinishAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch()) &&
-                        getBranchName() != null && getBranchName().startsWith(getHotfixPrefix())
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).startsWith(getHotfixPrefix(e.getProject()))
         );
     }
 
@@ -55,14 +55,14 @@ public class HotfixFinishAction extends BaseAction {
             boolean deleteRemoteBranch,
             boolean tagAndPush
     ) {
-        setProgress(1);
+        setProgress(1, project);
 
         List<GitResult> results = new ArrayList<>();
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
 
-        String mainBranch = getMainBranch();
-        String developBranch = getDevelopBranch();
+        String mainBranch = getMainBranch(project);
+        String developBranch = getDevelopBranch(project);
 
         for (GitRepository repository : repoManager.getRepositories()) {
 
@@ -73,7 +73,7 @@ public class HotfixFinishAction extends BaseAction {
                 throw new GitException("Branch atual não encontrada.");
             }
 
-            setProgress(2);
+            setProgress(2, project);
 
             String hotfixName = hotfixBranch.getName();
 
@@ -89,7 +89,7 @@ public class HotfixFinishAction extends BaseAction {
             results.add(
                     executor.execute(root, GitCommand.CHECKOUT, mainBranch)
             );
-            setProgress(3);
+            setProgress(3, project);
 
             // 2️⃣ merge hotfix -> main
             results.add(
@@ -100,7 +100,7 @@ public class HotfixFinishAction extends BaseAction {
                             hotfixName
                     )
             );
-            setProgress(4);
+            setProgress(4, project);
 
             // 3️⃣ tag
             results.add(
@@ -110,14 +110,14 @@ public class HotfixFinishAction extends BaseAction {
                             tagName
                     )
             );
-            setProgress(5);
+            setProgress(5, project);
 
             // 4️⃣ checkout develop
             results.add(
                     executor.execute(root, GitCommand.CHECKOUT, developBranch)
             );
 
-            setProgress(6);
+            setProgress(6, project);
 
             // 5️⃣ merge hotfix -> develop
             results.add(
@@ -128,7 +128,7 @@ public class HotfixFinishAction extends BaseAction {
                             hotfixName
                     )
             );
-            setProgress(7);
+            setProgress(7, project);
 
             // 6️⃣ delete hotfix local
             if (deleteLocalBranch) {
@@ -142,7 +142,7 @@ public class HotfixFinishAction extends BaseAction {
                 );
             }
 
-            setProgress(8);
+            setProgress(8, project);
 
             GitResult checkResult = executor.execute(
                     root,
@@ -166,7 +166,7 @@ public class HotfixFinishAction extends BaseAction {
                         )
                 );
             }
-            setProgress(9);
+            setProgress(9, project);
             // 8️⃣ push final
             if (tagAndPush) {
                 results.add(
@@ -181,7 +181,7 @@ public class HotfixFinishAction extends BaseAction {
             }
 
             repository.update();
-            setProgress(10);
+            setProgress(10, project);
         }
 
         return results;

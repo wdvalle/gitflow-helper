@@ -13,20 +13,20 @@ public class GitFlowSettingsState {
 
     private Long counter;
     private Boolean showDetails;
-    private boolean integrateWithTasks = false;
+    private Boolean integrateWithTasks = false;
 
     public GitFlowSettingsState() {
     }
 
-    public GitFlowSettingsState(String featurePrefix, String releasePrefix, String hotfixPrefix,
-                                String mainBranch, String developBranch, Long counter) {
-        this.featurePrefix = featurePrefix;
-        this.releasePrefix = releasePrefix;
-        this.hotfixPrefix = hotfixPrefix;
-        this.mainBranch = mainBranch;
-        this.developBranch = developBranch;
-        this.counter = counter;
-    }
+//    public GitFlowSettingsState(String featurePrefix, String releasePrefix, String hotfixPrefix,
+//                                String mainBranch, String developBranch, Long counter) {
+//        this.featurePrefix = featurePrefix;
+//        this.releasePrefix = releasePrefix;
+//        this.hotfixPrefix = hotfixPrefix;
+//        this.mainBranch = mainBranch;
+//        this.developBranch = developBranch;
+//        this.counter = counter;
+//    }
 
     public String getFeaturePrefix() {
         return featurePrefix;
@@ -73,41 +73,45 @@ public class GitFlowSettingsState {
 
     public void setShowDetails(Boolean showDetails) {this.showDetails = showDetails;}
 
-    public boolean isIntegrateWithTasks() {
+    public Boolean isIntegrateWithTasks() {
         return integrateWithTasks;
     }
 
-    public void setIntegrateWithTasks(boolean integrateWithTasks) {
+    public void setIntegrateWithTasks(Boolean integrateWithTasks) {
         this.integrateWithTasks = integrateWithTasks;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof GitFlowSettingsState)) return false;
-        GitFlowSettingsState that = (GitFlowSettingsState) o;
-        return Objects.equals(featurePrefix, that.featurePrefix)
-                && Objects.equals(releasePrefix, that.releasePrefix)
-                && Objects.equals(hotfixPrefix, that.hotfixPrefix)
-                && Objects.equals(mainBranch, that.mainBranch)
-                && Objects.equals(developBranch, that.developBranch)
-                && Objects.equals(counter, that.counter);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch, developBranch, counter);
     }
 
     @Override
     public String toString() {
         return "GitFlowSettingsState{" +
-                "featurePrefix='" + featurePrefix + '\'' +
+                "counter=" + counter +
+                ", featurePrefix='" + featurePrefix + '\'' +
                 ", releasePrefix='" + releasePrefix + '\'' +
                 ", hotfixPrefix='" + hotfixPrefix + '\'' +
                 ", mainBranch='" + mainBranch + '\'' +
                 ", developBranch='" + developBranch + '\'' +
-                ", counter=" + counter +
+                ", showDetails=" + showDetails +
+                ", integrateWithTasks=" + integrateWithTasks +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        GitFlowSettingsState that = (GitFlowSettingsState) o;
+        return Objects.equals(featurePrefix, that.featurePrefix) &&
+                Objects.equals(releasePrefix, that.releasePrefix) &&
+                Objects.equals(hotfixPrefix, that.hotfixPrefix) &&
+                Objects.equals(mainBranch, that.mainBranch) &&
+                Objects.equals(developBranch, that.developBranch) &&
+                Objects.equals(counter, that.counter) &&
+                Objects.equals(showDetails, that.showDetails) &&
+                Objects.equals(integrateWithTasks, that.integrateWithTasks);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch,
+                developBranch, counter, showDetails, integrateWithTasks);
     }
 }
