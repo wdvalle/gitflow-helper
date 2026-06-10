@@ -4,6 +4,7 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginId;
 
+@Deprecated
 public class PluginInfoUtil {
 
     private static final String PLUGIN_ID = "br.com.gitflowhelper";
