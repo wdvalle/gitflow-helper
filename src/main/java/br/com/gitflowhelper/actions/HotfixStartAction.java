@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflow.tracker.GFTask;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
@@ -8,6 +9,7 @@ import br.com.gitflowhelper.git.GitResult;
 import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.GitFlowBranchType;
 import br.com.gitflowhelper.util.NotificationUtil;
+import com.G.G.B.B.GF;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -41,9 +43,11 @@ public class HotfixStartAction extends BaseAction {
                 try {
                     hotfixStart(project, response.getName(), response.getPushOnFinish());
 
-                    Task selectedTask = response.getSelectedTask();
+                    GFTask selectedTask = response.getSelectedTask();
                     if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
-                        TaskManager.getManager(project).activateTask(selectedTask, true);
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            TaskManager.getManager(project).activateTask(selectedTask.getTask(), true);
+                        }, project.getDisposed());
                     }
 
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New hotfix created successfully");

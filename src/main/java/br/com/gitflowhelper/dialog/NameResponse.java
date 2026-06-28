@@ -1,12 +1,13 @@
 package br.com.gitflowhelper.dialog;
 
+import br.com.gitflow.tracker.GFTask;
 import com.intellij.tasks.Task;
 
 public class NameResponse {
 
     private String name;
     private Boolean pushOnFinish;
-    private Task selectedTask;
+    private GFTask selectedTask;
     private boolean activateTask;
     private String username;
 
@@ -14,11 +15,11 @@ public class NameResponse {
         this(name, pushOnFinish, null, false, null);
     }
 
-    public NameResponse(String name, Boolean pushOnFinish, Task selectedTask) {
+    public NameResponse(String name, Boolean pushOnFinish, GFTask selectedTask) {
         this(name, pushOnFinish, selectedTask, true, null);
     }
 
-    public NameResponse(String name, Boolean pushOnFinish, Task selectedTask, boolean activateTask, String username) {
+    public NameResponse(String name, Boolean pushOnFinish, GFTask selectedTask, boolean activateTask, String username) {
         this.name = name;
         this.pushOnFinish = pushOnFinish;
         this.selectedTask = selectedTask;
@@ -38,11 +39,11 @@ public class NameResponse {
         this.pushOnFinish = pushOnFinish;
     }
 
-    public Task getSelectedTask() {
+    public GFTask getSelectedTask() {
         return selectedTask;
     }
 
-    public void setSelectedTask(Task selectedTask) {
+    public void setSelectedTask(GFTask selectedTask) {
         this.selectedTask = selectedTask;
     }
 

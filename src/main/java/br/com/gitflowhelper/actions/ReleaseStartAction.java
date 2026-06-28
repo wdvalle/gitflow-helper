@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflow.tracker.GFTask;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
@@ -41,9 +42,11 @@ public class ReleaseStartAction extends BaseAction {
                 try {
                     releaseStart(project, response.getName(), response.getPushOnFinish());
 
-                    Task selectedTask = response.getSelectedTask();
+                    GFTask selectedTask = response.getSelectedTask();
                     if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
-                        TaskManager.getManager(project).activateTask(selectedTask, true);
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            TaskManager.getManager(project).activateTask(selectedTask.getTask(), true);
+                        }, project.getDisposed());
                     }
 
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New release created successfully");

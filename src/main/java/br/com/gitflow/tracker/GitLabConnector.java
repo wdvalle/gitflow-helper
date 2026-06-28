@@ -23,8 +23,30 @@ public class GitLabConnector extends IssueTrackerConnector {
     }
 
     @Override
-    public boolean assignIssue(String issueId, String assigneeId) {
-        return putRequest("/api/v4/projects/" + projectId + "/issues/" + issueId, "{\"assignee_ids\":[" + assigneeId + "]}");
+    public boolean assignIssue(String issueId, String username) {
+        String userId = getUserId(username);
+        if (userId == null) return false;
+        return putRequest("/api/v4/projects/" + projectId + "/issues/" + issueId, "{\"assignee_ids\":[" + userId + "]}");
+    }
+
+    private String getUserId(String username) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(this.baseUrl + "/api/v4/users?username=" + username))
+                    .header("PRIVATE-TOKEN", this.token)
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) return null;
+
+            JsonElement jsonElement = JsonParser.parseString(response.body());
+            if (jsonElement.isJsonArray() && !jsonElement.getAsJsonArray().isEmpty()) {
+                return jsonElement.getAsJsonArray().get(0).getAsJsonObject().get("id").getAsString();
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return null;
     }
 
     @Override
@@ -71,7 +93,8 @@ public class GitLabConnector extends IssueTrackerConnector {
                     .header("Content-Type", "application/json")
                     .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
-            return httpClient.send(request, HttpResponse.BodyHandlers.ofString()).statusCode() == 200;
+            var httpCode = httpClient.send(request, HttpResponse.BodyHandlers.ofString()).statusCode();
+            return httpCode == 200;
         } catch (Exception e) {
             return false;
         }

@@ -138,9 +138,9 @@ public class FeatureFinishAction extends BaseAction {
                 // In many cases, the branch was created for this task.
                 for (LocalTask task : taskManager.getLocalTasks()) {
                     if (task.isDefault()) {
-                        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                        ApplicationManager.getApplication().invokeLater(() -> {
                             taskManager.activateTask(task, false);
-                        });
+                        }, project.getDisposed());
                         break;
                     }
                 }

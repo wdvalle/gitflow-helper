@@ -408,7 +408,7 @@ public class NameDialog extends DialogWrapper {
             }
         }
 
-        Task selectedTask = taskComboBox != null ? (Task) taskComboBox.getSelectedItem() : null;
+        GFTask selectedTask = taskComboBox != null ? (GFTask) taskComboBox.getSelectedItem() : null;
         boolean activate = activateTaskCheckBox != null && activateTaskCheckBox.isSelected();
         onOk.accept(new NameResponse(name, pushOnFinish.isSelected(), selectedTask, activate, username));
         super.doOKAction();
