@@ -5,6 +5,7 @@ import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
+import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.GitFlowBranchType;
 import br.com.gitflowhelper.util.NotificationUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -48,6 +49,8 @@ public class ReleaseStartAction extends BaseAction {
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New release created successfully");
                 } catch (GitException ex) {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
+                } catch (Throwable ex) {
+                    ExceptionUtil.handleException(project, ex);
                 }
                 setLoading(false, project);
             });

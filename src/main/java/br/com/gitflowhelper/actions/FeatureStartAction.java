@@ -1,10 +1,13 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflow.tracker.IssueTrackerConnector;
+import br.com.gitflow.tracker.TrackerFactory;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
+import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.GitFlowBranchType;
 import br.com.gitflowhelper.util.NotificationUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -22,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("unused")
 public class FeatureStartAction extends BaseAction {
@@ -41,17 +45,39 @@ public class FeatureStartAction extends BaseAction {
 
                     Task selectedTask = response.getSelectedTask();
                     if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
-                        TaskManager.getManager(project).activateTask(selectedTask, true);
+                        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                            TaskManager.getManager(project).activateTask(selectedTask, true);
+                        });
                     }
+                    markAsStarted(project, response.getSelectedTask());
 
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New feature created successfully");
                 } catch (GitException ex) {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
+                } catch (Throwable ex) {
+                    ExceptionUtil.handleException(project, ex);
                 }
                 setLoading(false, project);
             });
         }
         ).show();
+    }
+
+    private void markAsStarted(Project project, Task selectedTask) {
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            Optional<IssueTrackerConnector> connectorOpt = TrackerFactory.getConnector(project, selectedTask);
+            connectorOpt.ifPresent(connector -> {
+                try {
+                    connector.startIssue(selectedTask.getId());
+                } catch (Exception e) {
+                    NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error connecting issue traker: "+e.getMessage());
+                }
+            });
+
+            if (connectorOpt.isEmpty()) {
+                NotificationUtil.showGitFlowErrorNotification(project, "Error", "No issue traker connector found.");
+            }
+        });
     }
 
     @Override

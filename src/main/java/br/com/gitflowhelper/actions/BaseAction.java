@@ -3,6 +3,7 @@ package br.com.gitflowhelper.actions;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.statusbar.GitFlowStatusBarWidget;
 import br.com.gitflowhelper.util.ActionParamsService;
+import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.GitBranchUtils;
 import br.com.gitflowhelper.util.NotificationUtil;
 import br.com.gitflowhelper.util.PluginUtils;
@@ -82,21 +83,33 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
     }
 
     public void setLoading(boolean loading, boolean progress, Project project) {
-        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
-        GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
-        sbw.setLoading(loading);
-        if (progress) {
-            setProgressImpl(0, statusBar, sbw);
-        } else {
-            sbw.setCurrentValue("GitFlowHelper");
-        }
-        statusBar.updateWidget("GitFlowWidget");
+        ApplicationManager.getApplication().invokeLater(() -> {
+            StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+            if (statusBar != null) {
+                GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
+                if (sbw != null) {
+                    sbw.setLoading(loading);
+                    if (progress) {
+                        setProgressImpl(0, statusBar, sbw);
+                    } else {
+                        sbw.setCurrentValue("GitFlowHelper");
+                    }
+                    statusBar.updateWidget("GitFlowWidget");
+                }
+            }
+        }, project.getDisposed());
     }
 
     public void setProgress(Integer value, Project project) {
-        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
-        GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
-        setProgressImpl(value, statusBar, sbw);
+        ApplicationManager.getApplication().invokeLater(() -> {
+            StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+            if (statusBar != null) {
+                GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
+                if (sbw != null) {
+                    setProgressImpl(value, statusBar, sbw);
+                }
+            }
+        }, project.getDisposed());
     }
 
     private void setProgressImpl(Integer value, StatusBar statusBar, GitFlowStatusBarWidget sbw) {
@@ -117,7 +130,7 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
         try {
             future.get();
         }  catch (Exception ex) {
-            throw new RuntimeException(ex);
+            ExceptionUtil.handleException(e.getProject(), ex);
         }
         updateImpl(e);
     }
@@ -127,13 +140,8 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
         try {
             actionPerformedImpl(e);
         } catch (Throwable ex) {
-            handleGlobalException(ex, e);
+            ExceptionUtil.handleException(e.getProject(), ex);
         }
-    }
-
-    private void handleGlobalException(Throwable ex, @NotNull AnActionEvent e) {
-        NotificationUtil.showGitFlowErrorNotification(e.getProject(), "Error", ex.getMessage());
-        PluginUtils.logError(e.getProject(), PluginUtils.getStackTrace(ex));
     }
 
 }

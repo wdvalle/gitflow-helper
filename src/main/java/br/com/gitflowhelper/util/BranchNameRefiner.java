@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.util;
 
+import br.com.gitflow.tracker.GFTask;
 import com.intellij.tasks.Task;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +14,7 @@ public class BranchNameRefiner {
     private static final Pattern DUPLICATE_HYPHENS = Pattern.compile("-+");
     private static final Pattern START_END_HYPHENS = Pattern.compile("^-|-$");
 
-    public static String slugify(@NotNull Task task) {
+    public static String slugify(@NotNull GFTask task) {
         String id = task.getPresentableId();
         String summary = task.getSummary();
         

@@ -5,7 +5,10 @@ import br.com.gitflowhelper.dialog.ActionChoiceDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
+import br.com.gitflowhelper.util.ExceptionUtil;
+import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -54,8 +57,8 @@ public class FeatureFinishAction extends BaseAction {
                     }
                 }
                 dialog.setLog(featureCommits[0]);
-            } catch (VcsException ex) {
-                NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getMessage());
+            } catch (Exception ex) {
+                ExceptionUtil.handleException(project, ex);
             }
         });
 
@@ -80,12 +83,14 @@ public class FeatureFinishAction extends BaseAction {
                         NotificationUtil.showGitFlowSuccessNotification(project, "Success",  postAction[0]);
                     } catch (GitException ex) {
                         NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error message: "+ex.getGitResult().getProcessMessage());
+                    } catch (Throwable ex) {
+                        ExceptionUtil.handleException(project, ex);
                     }
                     setLoading(false, project);
                 });
             }
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            ExceptionUtil.handleException(project, ex);
         }
     }
 
@@ -133,7 +138,9 @@ public class FeatureFinishAction extends BaseAction {
                 // In many cases, the branch was created for this task.
                 for (LocalTask task : taskManager.getLocalTasks()) {
                     if (task.isDefault()) {
-                        taskManager.activateTask(task, false);
+                        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                            taskManager.activateTask(task, false);
+                        });
                         break;
                     }
                 }

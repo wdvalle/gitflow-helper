@@ -51,25 +51,27 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
 
     public void setLoading(boolean loading) {
         this.loading = loading;
-        updateUI();
+        SwingUtilities.invokeLater(this::updateUI);
     }
 
     public void setCurrentValue(String currentValue) {
         this.currentValue = currentValue;
-        updateUI();
+        SwingUtilities.invokeLater(this::updateUI);
     }
 
     public void setProgress(int value) {
-        if (progressBar != null && component != null) {
-            CardLayout layout = (CardLayout) component.getLayout();
-            if (value < 10) {
-                progressBar.setIndeterminate(false);
-                progressBar.setValue(value);
-                layout.show(component, "progress");
-            } else {
-                layout.show(component, "label");
+        SwingUtilities.invokeLater(() -> {
+            if (progressBar != null && component != null) {
+                CardLayout layout = (CardLayout) component.getLayout();
+                if (value < 10) {
+                    progressBar.setIndeterminate(false);
+                    progressBar.setValue(value);
+                    layout.show(component, "progress");
+                } else {
+                    layout.show(component, "label");
+                }
             }
-        }
+        });
     }
 
     private void updateUI() {
@@ -114,15 +116,15 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
             
             MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
-                    new GitFlowPopup(project).show(component);
+                public void mousePressed(MouseEvent e) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        new GitFlowPopup(project).show(component);
+                    }
                 }
             };
             
             label.addMouseListener(mouseAdapter);
-            component.addMouseListener(mouseAdapter);
             progressWrapper.addMouseListener(mouseAdapter);
-            progressBar.addMouseListener(mouseAdapter);
 
             component.add(label, "label");
             component.add(progressWrapper, "progress");

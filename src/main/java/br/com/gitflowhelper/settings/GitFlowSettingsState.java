@@ -14,6 +14,7 @@ public class GitFlowSettingsState {
     private Long counter;
     private Boolean showDetails;
     private Boolean integrateWithTasks = false;
+    private String preferredUsername;
 
     public GitFlowSettingsState() {
     }
@@ -81,6 +82,14 @@ public class GitFlowSettingsState {
         this.integrateWithTasks = integrateWithTasks;
     }
 
+    public String getPreferredUsername() {
+        return preferredUsername;
+    }
+
+    public void setPreferredUsername(String preferredUsername) {
+        this.preferredUsername = preferredUsername;
+    }
+
     @Override
     public String toString() {
         return "GitFlowSettingsState{" +
@@ -92,6 +101,7 @@ public class GitFlowSettingsState {
                 ", developBranch='" + developBranch + '\'' +
                 ", showDetails=" + showDetails +
                 ", integrateWithTasks=" + integrateWithTasks +
+                ", preferredUsername='" + preferredUsername + '\'' +
                 '}';
     }
 
@@ -106,12 +116,13 @@ public class GitFlowSettingsState {
                 Objects.equals(developBranch, that.developBranch) &&
                 Objects.equals(counter, that.counter) &&
                 Objects.equals(showDetails, that.showDetails) &&
-                Objects.equals(integrateWithTasks, that.integrateWithTasks);
+                Objects.equals(integrateWithTasks, that.integrateWithTasks) &&
+                Objects.equals(preferredUsername, that.preferredUsername);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch,
-                developBranch, counter, showDetails, integrateWithTasks);
+                developBranch, counter, showDetails, integrateWithTasks, preferredUsername);
     }
 }

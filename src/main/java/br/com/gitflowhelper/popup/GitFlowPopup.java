@@ -9,10 +9,14 @@ import br.com.gitflowhelper.actions.branches.CheckoutLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.CheckoutRemoteBranchAction;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.GitFlowDescriptions;
+import br.com.gitflowhelper.util.NotificationUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogBuilder;
+import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.*;
 import com.intellij.ui.awt.RelativePoint;
 import git4idea.GitLocalBranch;
@@ -38,35 +42,32 @@ public final class GitFlowPopup {
     }
 
     public void show(JComponent component) {
-        DataManager.getInstance()
-            .getDataContextFromFocusAsync()
-            .onSuccess(dataContext -> {
+        DataContext dataContext = DataManager.getInstance().getDataContext(component);
 
-                this.listPopup = JBPopupFactory.getInstance().createActionGroupPopup(
-                        "Git Flow",
-                        createGroup(project),
-                        dataContext,
-                        JBPopupFactory.ActionSelectionAid.SPEEDSEARCH,
-                        true
-                );
-                this.listPopup.setCaptionIcon(PluginIcons.GitFlow);
+        this.listPopup = JBPopupFactory.getInstance().createActionGroupPopup(
+                "Git Flow",
+                createGroup(project),
+                dataContext,
+                JBPopupFactory.ActionSelectionAid.SPEEDSEARCH,
+                true
+        );
+        this.listPopup.setCaptionIcon(PluginIcons.GitFlow);
 
-                this.listPopup.addListener(new JBPopupListener() {
-                       @Override
-                       public void beforeShown(@NotNull LightweightWindowEvent event) {
-                           local = listPopup.getLocationOnScreen();
-                           if (component.isShowing()) {
-                               int popupHeight = listPopup.getContent().getPreferredSize().height;
-                               Point componentLoc = component.getLocationOnScreen();
-                               local.y = componentLoc.y - popupHeight;
-                               listPopup.setLocation(local);
-                           }
-                       }
+        this.listPopup.addListener(new JBPopupListener() {
+               @Override
+               public void beforeShown(@NotNull LightweightWindowEvent event) {
+                   local = listPopup.getLocationOnScreen();
+                   if (component.isShowing()) {
+                       int popupHeight = listPopup.getContent().getPreferredSize().height;
+                       Point componentLoc = component.getLocationOnScreen();
+                       local.y = componentLoc.y - popupHeight;
+                       listPopup.setLocation(local);
                    }
-                );
+               }
+           }
+        );
 
-                this.listPopup.showUnderneathOf(component);
-            });
+        this.listPopup.showUnderneathOf(component);
     }
 
     private DefaultActionGroup createGroup(Project project) {
@@ -97,7 +98,7 @@ public final class GitFlowPopup {
             group.add(repositoryBranchGroup(repository, project));
         }
 
-        /*group.addSeparator();
+        group.addSeparator();
         group.add(new BaseAction("Integrate with tasks", "Enable/Disable Task integration", AllIcons.Actions.Checked) {
             @Override
             protected void updateImpl(@NotNull AnActionEvent e) {
@@ -144,7 +145,7 @@ public final class GitFlowPopup {
                     NotificationUtil.showGitFlowSuccessNotification(p, "Git Flow Helper", "Task integration disabled successfully.");
                 }
             }
-        });*/
+        });
 
         group.addSeparator();
         group.add(flowGroup("Feature", AllIcons.Actions.AddFile, GitFlowDescriptions.FEATURE_GROUP.getValue()));

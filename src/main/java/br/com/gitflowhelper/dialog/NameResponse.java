@@ -8,20 +8,22 @@ public class NameResponse {
     private Boolean pushOnFinish;
     private Task selectedTask;
     private boolean activateTask;
+    private String username;
 
     public NameResponse(String name, Boolean pushOnFinish) {
-        this(name, pushOnFinish, null, false);
+        this(name, pushOnFinish, null, false, null);
     }
 
     public NameResponse(String name, Boolean pushOnFinish, Task selectedTask) {
-        this(name, pushOnFinish, selectedTask, true);
+        this(name, pushOnFinish, selectedTask, true, null);
     }
 
-    public NameResponse(String name, Boolean pushOnFinish, Task selectedTask, boolean activateTask) {
+    public NameResponse(String name, Boolean pushOnFinish, Task selectedTask, boolean activateTask, String username) {
         this.name = name;
         this.pushOnFinish = pushOnFinish;
         this.selectedTask = selectedTask;
         this.activateTask = activateTask;
+        this.username = username;
     }
     public String getName() {
         return name;
@@ -51,4 +53,8 @@ public class NameResponse {
     public void setActivateTask(boolean activateTask) {
         this.activateTask = activateTask;
     }
+
+    public String getUsername() { return username; }
+
+    public void setUsername(String username) { this.username = username; }
 }
