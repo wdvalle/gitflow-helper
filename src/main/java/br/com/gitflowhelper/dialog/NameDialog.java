@@ -11,6 +11,7 @@ import br.com.gitflowhelper.util.PluginUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -150,7 +151,7 @@ public class NameDialog extends DialogWrapper {
         return ApplicationManager.getApplication().runReadAction((Computable<List<GFTask>>) () -> {
             try {
                 TaskManager taskManager = TaskManager.getManager(project);
-                List<Task> allTasks = new ArrayList<>(taskManager.getIssues(""));
+                List<Task> allTasks = new ArrayList<>(taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false));
 
                 List<String> projectPaths = getProjectPaths();
                 List<GFTask> tasks = new ArrayList<>();
