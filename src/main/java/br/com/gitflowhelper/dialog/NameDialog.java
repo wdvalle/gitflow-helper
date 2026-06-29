@@ -52,6 +52,8 @@ public class NameDialog extends DialogWrapper {
     private final boolean showPush;
     private final Project project;
     private boolean isComboLoading = false;
+    private Timer loadingTimer;
+    private int loadingDots = 0;
     private Optional<IssueTrackerConnector> trackerConnector = Optional.empty();
 
     public NameDialog(Project project, String titleText, String label, boolean showPush, Consumer<NameResponse> onOk) {
@@ -102,6 +104,16 @@ public class NameDialog extends DialogWrapper {
 
         loadTasksAsync();
 
+        if (isComboLoading) {
+            loadingTimer = new Timer(250, e -> {
+                loadingDots = (loadingDots + 1) % 4;
+                if (taskComboBox != null) {
+                    taskComboBox.repaint();
+                }
+            });
+            loadingTimer.start();
+        }
+
         taskComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -110,8 +122,13 @@ public class NameDialog extends DialogWrapper {
                     setText(task.getPresentableId() + ": " + task.getSummary());
                     setIcon(task.getIcon());
                 } else {
-                    setText(isComboLoading ? "Loading tasks..." : "Select a task...");
-                    setIcon(isComboLoading ? AllIcons.Actions.BuildLoadChanges : null);
+                    if (isComboLoading) {
+                        setText("Loading tasks" + ".".repeat(loadingDots));
+                        setIcon(AllIcons.Actions.BuildLoadChanges);
+                    } else {
+                        setText("Select a task...");
+                        setIcon(null);
+                    }
                 }
                 return this;
             }
@@ -137,13 +154,18 @@ public class NameDialog extends DialogWrapper {
     private void loadTasksAsync() {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             List<GFTask> tasks = getTaskModel();
-            if (tasks != null && !project.isDisposed() && taskComboBox != null) {
-                taskComboBox.setModel(new CollectionComboBoxModel<>(tasks));
-                taskComboBox.setSelectedItem(null);
-                taskComboBox.revalidate();
-                isComboLoading = false;
-                taskComboBox.repaint();
-            }
+//            ApplicationManager.getApplication().invokeLater(() -> {
+                if (tasks != null && !project.isDisposed() && taskComboBox != null) {
+                    taskComboBox.setModel(new CollectionComboBoxModel<>(tasks));
+                    taskComboBox.setSelectedItem(null);
+                    taskComboBox.revalidate();
+                    isComboLoading = false;
+                    if (loadingTimer != null) {
+                        loadingTimer.stop();
+                    }
+                    taskComboBox.repaint();
+                }
+//            });
         });
     }
 
@@ -413,6 +435,14 @@ public class NameDialog extends DialogWrapper {
         boolean activate = activateTaskCheckBox != null && activateTaskCheckBox.isSelected();
         onOk.accept(new NameResponse(name, pushOnFinish.isSelected(), selectedTask, activate, username));
         super.doOKAction();
+    }
+
+    @Override
+    protected void dispose() {
+        if (loadingTimer != null) {
+            loadingTimer.stop();
+        }
+        super.dispose();
     }
 
     @Override
