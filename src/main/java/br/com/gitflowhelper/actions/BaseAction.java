@@ -1,5 +1,8 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflow.tracker.GFTask;
+import br.com.gitflow.tracker.IssueTrackerConnector;
+import br.com.gitflow.tracker.TrackerFactory;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.statusbar.GitFlowStatusBarWidget;
 import br.com.gitflowhelper.util.ActionParamsService;
@@ -15,10 +18,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NlsActions;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.tasks.LocalTask;
+import com.intellij.tasks.TaskManager;
 import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class BaseAction extends AnAction /*implements PropertyChangeListener*/ {
@@ -115,6 +121,70 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
     private void setProgressImpl(Integer value, StatusBar statusBar, GitFlowStatusBarWidget sbw) {
         sbw.setProgress(value);
         statusBar.updateWidget("GitFlowWidget");
+    }
+
+    protected void doStartTask(GFTask selectedTask, boolean isActivateTask, String userName, Project project) {
+        if (selectedTask != null && isActivateTask && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+            markAsStarted(project, selectedTask, userName);
+            ApplicationManager.getApplication().invokeLater(() -> {
+                try {
+                    TaskManager.getManager(project).activateTask(selectedTask.getTask(), true);
+                } catch (Throwable e1) {
+                    ExceptionUtil.handleException(project, e1);
+                }
+            }, project.getDisposed());
+        }
+    }
+
+    private void markAsStarted(Project project, GFTask selectedTask, String username) {
+        Optional<IssueTrackerConnector> connectorOpt = TrackerFactory.getConnector(project, selectedTask.getTask());
+        connectorOpt.ifPresent(connector -> {
+            try {
+                connector.startIssue(selectedTask.getLocalId());
+                connector.assignIssue(selectedTask.getLocalId(), username);
+            } catch (Exception e) {
+                NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error starting issue: "+e.getMessage());
+            }
+        });
+
+        if (connectorOpt.isEmpty()) {
+            NotificationUtil.showGitFlowErrorNotification(project, "Error", "No issue traker connector found.");
+        }
+    }
+
+    protected void doFinishTask(boolean closeTask, Project project) {
+        if (closeTask && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+            TaskManager taskManager = TaskManager.getManager(project);
+            LocalTask activeTask = taskManager.getActiveTask();
+            if (!activeTask.isDefault()) {
+                // If the active task summary is part of the branch name or if it's just the active task
+                // In many cases, the branch was created for this task.
+                markAsFinished(project, activeTask);
+                for (LocalTask task : taskManager.getLocalTasks()) {
+                    if (task.isDefault()) {
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            taskManager.activateTask(task, false);
+                        }, project.getDisposed());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void markAsFinished(Project project, LocalTask task) {
+        Optional<IssueTrackerConnector> connectorOpt = TrackerFactory.getConnector(project, task);
+        connectorOpt.ifPresent(connector -> {
+            try {
+                connector.closeIssue(task.getNumber());
+            } catch (Exception e) {
+                NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error closing issue: "+e.getMessage());
+            }
+        });
+
+        if (connectorOpt.isEmpty()) {
+            NotificationUtil.showGitFlowErrorNotification(project, "Error", "No issue traker connector found.");
+        }
     }
 
     @Override

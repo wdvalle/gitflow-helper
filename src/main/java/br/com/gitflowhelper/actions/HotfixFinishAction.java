@@ -33,6 +33,7 @@ public class HotfixFinishAction extends BaseAction {
             setLoading(true, true, project);
             try {
                 hotfixFinish(project,true, true, true);
+                doFinishTask(true, project);
                 NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix finished and tag pushed successfully");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());

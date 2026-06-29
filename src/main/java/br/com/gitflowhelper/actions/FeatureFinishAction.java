@@ -80,23 +80,7 @@ public class FeatureFinishAction extends BaseAction {
                             postAction,
                             branchName);
 
-                        if (dialog.getCloseAssociatedTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
-                            TaskManager taskManager = TaskManager.getManager(project);
-                            LocalTask activeTask = taskManager.getActiveTask();
-                            if (!activeTask.isDefault()) {
-                                // If the active task summary is part of the branch name or if it's just the active task
-                                // In many cases, the branch was created for this task.
-                                markAsFinished(project, activeTask);
-                                for (LocalTask task : taskManager.getLocalTasks()) {
-                                    if (task.isDefault()) {
-                                        ApplicationManager.getApplication().invokeLater(() -> {
-                                            taskManager.activateTask(task, false);
-                                        }, project.getDisposed());
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                        doFinishTask(dialog.getCloseAssociatedTask(), project);
 
                         NotificationUtil.showGitFlowSuccessNotification(project, "Success",  postAction[0]);
                     } catch (GitException ex) {
@@ -110,21 +94,6 @@ public class FeatureFinishAction extends BaseAction {
             }
         } catch (Exception ex) {
             ExceptionUtil.handleException(project, ex);
-        }
-    }
-
-    private void markAsFinished(Project project, LocalTask task) {
-        Optional<IssueTrackerConnector> connectorOpt = TrackerFactory.getConnector(project, task);
-        connectorOpt.ifPresent(connector -> {
-            try {
-                connector.closeIssue(task.getNumber());
-            } catch (Exception e) {
-                NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error closing issue: "+e.getMessage());
-            }
-        });
-
-        if (connectorOpt.isEmpty()) {
-            NotificationUtil.showGitFlowErrorNotification(project, "Error", "No issue traker connector found.");
         }
     }
 

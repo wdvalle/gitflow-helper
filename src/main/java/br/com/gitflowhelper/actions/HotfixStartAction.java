@@ -1,6 +1,8 @@
 package br.com.gitflowhelper.actions;
 
 import br.com.gitflow.tracker.GFTask;
+import br.com.gitflow.tracker.IssueTrackerConnector;
+import br.com.gitflow.tracker.TrackerFactory;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
@@ -25,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("unused")
 public class HotfixStartAction extends BaseAction {
@@ -41,14 +44,10 @@ public class HotfixStartAction extends BaseAction {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);
                 try {
+
                     hotfixStart(project, response.getName(), response.getPushOnFinish());
 
-                    GFTask selectedTask = response.getSelectedTask();
-                    if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            TaskManager.getManager(project).activateTask(selectedTask.getTask(), true);
-                        }, project.getDisposed());
-                    }
+                    doStartTask(response.getSelectedTask(), response.isActivateTask(), response.getUsername(), project);
 
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New hotfix created successfully");
                 } catch (GitException ex) {

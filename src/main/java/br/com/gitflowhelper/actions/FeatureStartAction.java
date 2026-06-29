@@ -1,9 +1,5 @@
 package br.com.gitflowhelper.actions;
 
-import br.com.gitflow.tracker.GFTask;
-import br.com.gitflow.tracker.IssueTrackerConnector;
-import br.com.gitflow.tracker.TrackerFactory;
-import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
@@ -20,12 +16,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
-import com.intellij.tasks.TaskManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @SuppressWarnings("unused")
 public class FeatureStartAction extends BaseAction {
@@ -38,15 +32,12 @@ public class FeatureStartAction extends BaseAction {
         Project project = e.getProject();
         new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false,true, response ->
         {
-            GFTask selectedTask = response.getSelectedTask();
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);
                 try {
                     featureStart(project, response.getName());
 
-                    if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
-                        markAsStarted(project, response.getSelectedTask(), response.getUsername());
-                    }
+                    doStartTask(response.getSelectedTask(), response.isActivateTask(), response.getUsername(), project);
 
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New feature created successfully");
 
@@ -54,38 +45,10 @@ public class FeatureStartAction extends BaseAction {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
                 } catch (Throwable ex) {
                     ExceptionUtil.handleException(project, ex);
-                } finally {
-                    setLoading(false, project);
                 }
+                setLoading(false, project);
             });
-
-            if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    try {
-                        TaskManager.getManager(project).activateTask(selectedTask.getTask(), true);
-                    } catch (Throwable e1) {
-                        ExceptionUtil.handleException(project, e1);
-                    }
-                }, project.getDisposed());
-            }
-        }
-        ).show();
-    }
-
-    private void markAsStarted(Project project, GFTask selectedTask, String username) {
-        Optional<IssueTrackerConnector> connectorOpt = TrackerFactory.getConnector(project, selectedTask.getTask());
-        connectorOpt.ifPresent(connector -> {
-            try {
-                connector.startIssue(selectedTask.getLocalId());
-                connector.assignIssue(selectedTask.getLocalId(), username);
-            } catch (Exception e) {
-                NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error starting issue: "+e.getMessage());
-            }
-        });
-
-        if (connectorOpt.isEmpty()) {
-            NotificationUtil.showGitFlowErrorNotification(project, "Error", "No issue traker connector found.");
-        }
+        }).show();
     }
 
     @Override
