@@ -52,9 +52,25 @@ public class AboutDialog extends DialogWrapper {
         JPanel titlePanel = new JPanel(new VerticalLayout(2));
         titlePanel.setOpaque(false);
 
+        JPanel titleRow = new JPanel(new GridBagLayout());
+        titleRow.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.SOUTH;
+        gbc.gridy = 0;
+
         JBLabel title = new JBLabel(PLUGIN_NAME);
         title.setFont(title.getFont().deriveFont(Font.BOLD, title.getFont().getSize() + 4f));
-        titlePanel.add(title);
+        title.setBorder(JBUI.Borders.emptyRight(8));
+        titleRow.add(title, gbc);
+
+        JBLabel withTasks = new JBLabel("with tasks");
+        withTasks.setFont(withTasks.getFont().deriveFont(Font.ITALIC,withTasks.getFont().getSize() - 0f));
+        withTasks.setForeground(JBColor.GRAY);
+        gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.SOUTHWEST;
+        titleRow.add(withTasks, gbc);
+
+        titlePanel.add(titleRow);
 
         JBLabel version = new JBLabel("Version " + PLUGIN_VERSION);
         version.setForeground(JBColor.GRAY);

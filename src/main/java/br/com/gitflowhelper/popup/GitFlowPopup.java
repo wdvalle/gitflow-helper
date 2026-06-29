@@ -146,6 +146,7 @@ public final class GitFlowPopup {
                 }
             }
         });
+        group.add(new ViewTaskAction());
 
         group.addSeparator();
         group.add(flowGroup("Feature", AllIcons.Actions.AddFile, GitFlowDescriptions.FEATURE_GROUP.getValue()));

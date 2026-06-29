@@ -30,7 +30,7 @@ public class FeatureStartAction extends BaseAction {
 
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false,true, response ->
+        new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false,true, GitFlowBranchType.FEATURE, response ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);

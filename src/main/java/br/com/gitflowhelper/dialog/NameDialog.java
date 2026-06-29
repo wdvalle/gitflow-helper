@@ -7,6 +7,7 @@ import br.com.gitflow.tracker.TrackerFactory;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.BranchNameRefiner;
 import br.com.gitflowhelper.util.ExceptionUtil;
+import br.com.gitflowhelper.util.GitFlowBranchType;
 import br.com.gitflowhelper.util.PluginUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
@@ -52,12 +53,17 @@ public class NameDialog extends DialogWrapper {
     private final String label;
     private final boolean showPush;
     private final Project project;
+    private final GitFlowBranchType branchType;
     private boolean isComboLoading = false;
     private Timer loadingTimer;
     private int loadingDots = 0;
     private Optional<IssueTrackerConnector> trackerConnector = Optional.empty();
 
     public NameDialog(Project project, String titleText, String label, boolean showPush, boolean showIntegration, Consumer<NameResponse> onOk) {
+        this(project, titleText, label, showPush, showIntegration, null, onOk);
+    }
+
+    public NameDialog(Project project, String titleText, String label, boolean showPush, boolean showIntegration, GitFlowBranchType branchType, Consumer<NameResponse> onOk) {
         super(project);
         this.project = project;
         this.onOk = onOk;
@@ -65,6 +71,7 @@ public class NameDialog extends DialogWrapper {
         this.label = label;
         this.showPush = showPush;
         this.showIntegration = showIntegration;
+        this.branchType = branchType;
         this.usernameField.setText(GitFlowSettingsService.getInstance(project).getState().getPreferredUsername());
         this.pushOnFinish = new JBCheckBox("Push local branch when finished");
         this.activateTaskCheckBox = new JBCheckBox("Set task as active/started");
@@ -140,7 +147,9 @@ public class NameDialog extends DialogWrapper {
             try {
                 GFTask selectedTask = (GFTask) taskComboBox.getSelectedItem();
                 if (selectedTask != null) {
-                    nameField.setText(BranchNameRefiner.slugify(selectedTask));
+                    if (branchType != GitFlowBranchType.HOTFIX) {
+                        nameField.setText(BranchNameRefiner.slugify(selectedTask));
+                    }
                     updateTaskDetailPanel(selectedTask);
                 } else {
                     if (taskDetailScrollPane != null) {
@@ -156,18 +165,16 @@ public class NameDialog extends DialogWrapper {
     private void loadTasksAsync() {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             List<GFTask> tasks = getTaskModel();
-//            ApplicationManager.getApplication().invokeLater(() -> {
-                if (tasks != null && !project.isDisposed() && taskComboBox != null) {
-                    taskComboBox.setModel(new CollectionComboBoxModel<>(tasks));
-                    taskComboBox.setSelectedItem(null);
-                    taskComboBox.revalidate();
-                    isComboLoading = false;
-                    if (loadingTimer != null) {
-                        loadingTimer.stop();
-                    }
-                    taskComboBox.repaint();
+            if (tasks != null && !project.isDisposed() && taskComboBox != null) {
+                taskComboBox.setModel(new CollectionComboBoxModel<>(tasks));
+                taskComboBox.setSelectedItem(null);
+                taskComboBox.revalidate();
+                isComboLoading = false;
+                if (loadingTimer != null) {
+                    loadingTimer.stop();
                 }
-//            });
+                taskComboBox.repaint();
+            }
         });
     }
 

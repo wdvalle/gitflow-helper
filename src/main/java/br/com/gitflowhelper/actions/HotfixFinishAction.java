@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflowhelper.dialog.HotfixDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
@@ -29,17 +30,21 @@ public class HotfixFinishAction extends BaseAction {
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            setLoading(true, true, project);
-            try {
-                hotfixFinish(project,true, true, true);
-                doFinishTask(true, project);
-                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix finished and tag pushed successfully");
-            } catch (GitException ex) {
-                NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
-            }
-            setLoading(false, project);
-        });
+        HotfixDialog dialog = new HotfixDialog(project);
+        if (dialog.showAndGet()) {
+            boolean finishTask = dialog.isFinishTask();
+            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                setLoading(true, true, project);
+                try {
+                    hotfixFinish(project, true, true, true);
+                    doFinishTask(finishTask, project);
+                    NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix finished and tag pushed successfully");
+                } catch (GitException ex) {
+                    NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
+                }
+                setLoading(false, project);
+            });
+        }
     }
 
     @Override
