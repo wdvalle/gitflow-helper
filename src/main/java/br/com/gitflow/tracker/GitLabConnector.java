@@ -29,6 +29,11 @@ public class GitLabConnector extends IssueTrackerConnector {
         return putRequest("/api/v4/projects/" + projectId + "/issues/" + issueId, "{\"assignee_ids\":[" + userId + "]}");
     }
 
+    @Override
+    public boolean closeIssue(String issueId) {
+        return putRequest("/api/v4/projects/" + projectId + "/issues/" + issueId, "{\"state_event\":\"close\", \"remove_labels\":\"Doing\"}");
+    }
+
     private String getUserId(String username) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -47,11 +52,6 @@ public class GitLabConnector extends IssueTrackerConnector {
             return null;
         }
         return null;
-    }
-
-    @Override
-    public boolean closeIssue(String issueId) {
-        return putRequest("/api/v4/projects/" + projectId + "/issues/" + issueId, "{\"state_event\":\"close\"}");
     }
 
     @Override

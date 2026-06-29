@@ -38,12 +38,12 @@ public class FeatureStartAction extends BaseAction {
         Project project = e.getProject();
         new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false, response ->
         {
+            GFTask selectedTask = response.getSelectedTask();
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);
                 try {
                     featureStart(project, response.getName());
 
-                    GFTask selectedTask = response.getSelectedTask();
                     if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
                         markAsStarted(project, response.getSelectedTask(), response.getUsername());
                     }
@@ -54,13 +54,13 @@ public class FeatureStartAction extends BaseAction {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
                 } catch (Throwable ex) {
                     ExceptionUtil.handleException(project, ex);
+                } finally {
+                    setLoading(false, project);
                 }
-                setLoading(false, project);
             });
 
             ApplicationManager.getApplication().invokeLater(() -> {
                 try {
-                    GFTask selectedTask = response.getSelectedTask();
                     TaskManager.getManager(project).activateTask(selectedTask.getTask(), true);
                 } catch (Throwable e1) {
                     ExceptionUtil.handleException(project, e1);
@@ -77,7 +77,7 @@ public class FeatureStartAction extends BaseAction {
                 connector.startIssue(selectedTask.getLocalId());
                 connector.assignIssue(selectedTask.getLocalId(), username);
             } catch (Exception e) {
-                NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error connecting issue traker: "+e.getMessage());
+                NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error starting issue: "+e.getMessage());
             }
         });
 

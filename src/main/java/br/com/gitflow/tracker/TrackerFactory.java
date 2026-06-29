@@ -1,9 +1,11 @@
 package br.com.gitflow.tracker;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.tasks.LocalTask;
 import com.intellij.tasks.Task;
 import com.intellij.tasks.TaskManager;
 import com.intellij.tasks.TaskRepository;
+import com.intellij.tasks.impl.LocalTaskImpl;
 
 import java.net.URI;
 import java.util.Optional;
@@ -119,6 +121,12 @@ public class TrackerFactory {
     private static String extractGitLabProjectId(Task task) {
         try {
             // 1. Tenta obter o ID do projeto via reflexão (campo myIssue do GitlabTask)
+            if (task instanceof LocalTaskImpl) {
+                Task theTask = task.getRepository().getIssues(task.getId(), 0, 1, false)[0];
+                Object myIssue = getFieldValue(theTask, "myIssue");
+                Object projectId = getFieldValue(myIssue, "projectId");
+                if (projectId != null) return projectId.toString();
+            }
             Object myIssue = getFieldValue(task, "myIssue");
             if (myIssue != null) {
                 Object projectId = getFieldValue(myIssue, "projectId");

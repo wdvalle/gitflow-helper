@@ -1,14 +1,14 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflow.tracker.IssueTrackerConnector;
+import br.com.gitflow.tracker.TrackerFactory;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.ActionChoiceDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
 import br.com.gitflowhelper.util.ExceptionUtil;
-import br.com.gitflowhelper.util.GitFlowDescriptions;
 import br.com.gitflowhelper.util.NotificationUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -17,7 +17,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.tasks.LocalTask;
-import com.intellij.tasks.Task;
 import com.intellij.tasks.TaskManager;
 import git4idea.GitCommit;
 import git4idea.commands.GitCommand;
@@ -28,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -78,19 +78,53 @@ public class FeatureFinishAction extends BaseAction {
                             dialog.getSelectedAction(),
                             true,
                             postAction,
-                            branchName,
-                            dialog.getCloseAssociatedTask());
+                            branchName);
+
+                        if (dialog.getCloseAssociatedTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+                            TaskManager taskManager = TaskManager.getManager(project);
+                            LocalTask activeTask = taskManager.getActiveTask();
+                            if (!activeTask.isDefault()) {
+                                // If the active task summary is part of the branch name or if it's just the active task
+                                // In many cases, the branch was created for this task.
+                                markAsFinished(project, activeTask);
+                                for (LocalTask task : taskManager.getLocalTasks()) {
+                                    if (task.isDefault()) {
+                                        ApplicationManager.getApplication().invokeLater(() -> {
+                                            taskManager.activateTask(task, false);
+                                        }, project.getDisposed());
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
                         NotificationUtil.showGitFlowSuccessNotification(project, "Success",  postAction[0]);
                     } catch (GitException ex) {
                         NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error message: "+ex.getGitResult().getProcessMessage());
                     } catch (Throwable ex) {
                         ExceptionUtil.handleException(project, ex);
                     }
+
                     setLoading(false, project);
                 });
             }
         } catch (Exception ex) {
             ExceptionUtil.handleException(project, ex);
+        }
+    }
+
+    private void markAsFinished(Project project, LocalTask task) {
+        Optional<IssueTrackerConnector> connectorOpt = TrackerFactory.getConnector(project, task);
+        connectorOpt.ifPresent(connector -> {
+            try {
+                connector.closeIssue(task.getNumber());
+            } catch (Exception e) {
+                NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error closing issue: "+e.getMessage());
+            }
+        });
+
+        if (connectorOpt.isEmpty()) {
+            NotificationUtil.showGitFlowErrorNotification(project, "Error", "No issue traker connector found.");
         }
     }
 
@@ -126,26 +160,10 @@ public class FeatureFinishAction extends BaseAction {
             boolean deleteRemoteBranch,
             String mode,
             boolean rebaseBeforeIntegrate,
-            String[] postAction, String branchName,
-            boolean closeTask) {
+            String[] postAction,
+            String branchName) {
         setProgress(1, project);
 
-        if (closeTask && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
-            TaskManager taskManager = TaskManager.getManager(project);
-            LocalTask activeTask = taskManager.getActiveTask();
-            if (activeTask != null && !activeTask.isDefault()) {
-                // If the active task summary is part of the branch name or if it's just the active task
-                // In many cases, the branch was created for this task.
-                for (LocalTask task : taskManager.getLocalTasks()) {
-                    if (task.isDefault()) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            taskManager.activateTask(task, false);
-                        }, project.getDisposed());
-                        break;
-                    }
-                }
-            }
-        }
 
         String baseBranch = getDevelopBranch(project);
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
