@@ -59,13 +59,15 @@ public class FeatureStartAction extends BaseAction {
                 }
             });
 
-            ApplicationManager.getApplication().invokeLater(() -> {
-                try {
-                    TaskManager.getManager(project).activateTask(selectedTask.getTask(), true);
-                } catch (Throwable e1) {
-                    ExceptionUtil.handleException(project, e1);
-                }
-            }, project.getDisposed());
+            if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    try {
+                        TaskManager.getManager(project).activateTask(selectedTask.getTask(), true);
+                    } catch (Throwable e1) {
+                        ExceptionUtil.handleException(project, e1);
+                    }
+                }, project.getDisposed());
+            }
         }
         ).show();
     }

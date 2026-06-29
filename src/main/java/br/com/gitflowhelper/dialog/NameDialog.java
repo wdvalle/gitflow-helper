@@ -427,7 +427,7 @@ public class NameDialog extends DialogWrapper {
         String username = usernameField.getText();
         GitFlowSettingsService.getInstance(project).getState().setPreferredUsername(username);
 
-        if (GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+        if (GitFlowSettingsService.getInstance(project).isIntegrateWithTasks() && showIntegration) {
             if (taskComboBox == null || taskComboBox.getSelectedItem() == null) {
                 return;
             }
