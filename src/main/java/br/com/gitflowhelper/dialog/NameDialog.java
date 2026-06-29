@@ -42,6 +42,7 @@ public class NameDialog extends DialogWrapper {
 
     private final JTextField usernameField = new JTextField(40);
     private final JTextField nameField = new JTextField(40);
+    private final boolean showIntegration;
     private ComboBox<GFTask> taskComboBox;
     private JEditorPane taskDescriptionPane;
     private JBScrollPane taskDetailScrollPane;
@@ -56,13 +57,14 @@ public class NameDialog extends DialogWrapper {
     private int loadingDots = 0;
     private Optional<IssueTrackerConnector> trackerConnector = Optional.empty();
 
-    public NameDialog(Project project, String titleText, String label, boolean showPush, Consumer<NameResponse> onOk) {
+    public NameDialog(Project project, String titleText, String label, boolean showPush, boolean showIntegration, Consumer<NameResponse> onOk) {
         super(project);
         this.project = project;
         this.onOk = onOk;
         setTitle(titleText);
         this.label = label;
         this.showPush = showPush;
+        this.showIntegration = showIntegration;
         this.usernameField.setText(GitFlowSettingsService.getInstance(project).getState().getPreferredUsername());
         this.pushOnFinish = new JBCheckBox("Push local branch when finished");
         this.activateTaskCheckBox = new JBCheckBox("Set task as active/started");
@@ -327,7 +329,7 @@ public class NameDialog extends DialogWrapper {
         int currentGridY = 0;
 
         // Preferred username field row
-        if (GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+        if (GitFlowSettingsService.getInstance(project).isIntegrateWithTasks() && showIntegration) {
             gbc.gridx = 0;
             gbc.gridy = currentGridY;
             gbc.weightx = 0;

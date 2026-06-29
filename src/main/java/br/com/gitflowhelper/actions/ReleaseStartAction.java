@@ -35,7 +35,7 @@ public class ReleaseStartAction extends BaseAction {
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        new NameDialog(project, GitFlowBranchType.RELEASE.getValue() + " start", "Version description", true, (response) ->
+        new NameDialog(project, GitFlowBranchType.RELEASE.getValue() + " start", "Version description", true, false, (response) ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);

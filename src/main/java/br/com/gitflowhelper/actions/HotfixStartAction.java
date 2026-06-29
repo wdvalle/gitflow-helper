@@ -36,7 +36,7 @@ public class HotfixStartAction extends BaseAction {
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, response ->
+        new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, true, response ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);
