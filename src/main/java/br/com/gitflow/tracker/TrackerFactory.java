@@ -26,14 +26,14 @@ public class TrackerFactory {
 
                 try {
                     if (typeName.equalsIgnoreCase("GitLab")) {
-                        // No GitLab do IntelliJ, a URL costuma apontar para a raiz.
-                        // O ID do projeto pode estar embutido ou ser necessário extraí-lo da URL da task.
+                        // In IntelliJ's GitLab, the URL usually points to the root.
+                        // The project ID may be embedded or need to be extracted from the task URL.
                         String projectId = extractGitLabProjectId(task);
                         return Optional.of(new GitLabConnector(url, projectId, token));
                         
                     } else if (typeName.equalsIgnoreCase("GitHub")) {
-                        // Precisamos converter a URL do repositório (ex: https://github.com/dono/repo) 
-                        // para o formato "dono/repo"
+                        // We need to convert the repository URL (e.g., https://github.com/owner/repo) 
+                        // to the "owner/repo" format
                         String repoName = extractGitHubRepo(url);
                         return Optional.of(new GitHubConnector(repoName, token));
                         
@@ -41,14 +41,14 @@ public class TrackerFactory {
                         return Optional.of(new RedmineConnector(url, token));
                         
                     } else if (typeName.equalsIgnoreCase("Jira")) {
-                        // Jira exige e-mail (username) + token
+                        // Jira requires email (username) + token
                         return Optional.of(new JiraConnector(url, username, token));
                         
                     } else if (typeName.equalsIgnoreCase("YouTrack")) {
                         return Optional.of(new YouTrackConnector(url, token));
                     }
                 } catch (Exception e) {
-                    // Log silencioso ou tratamento específico do plugin caso a extração falhe
+                    // Silent log or specific plugin handling if extraction fails
                     return Optional.empty();
                 }
             }
@@ -68,10 +68,6 @@ public class TrackerFactory {
         return normalizedIssueUrl.startsWith(normalizedRepoUrl);
     }
 
-    /**
-     * Metodo genérico para extrair dados protegidos dos Repositórios do IntelliJ via Reflexão.
-     * Serve tanto para 'password' quanto para 'username'.
-     */
     private static String extractField(TaskRepository repository, String primaryField, String fallbackField) {
         try {
             java.lang.reflect.Field field = findField(repository.getClass(), primaryField);
@@ -98,29 +94,22 @@ public class TrackerFactory {
         return null;
     }
 
-    /**
-     * Auxiliar para transformar "https://github.com/dono/meu-repo" em "dono/meu-repo"
-     */
     private static String extractGitHubRepo(String repoUrl) {
         try {
             URI uri = new URI(repoUrl);
-            String path = uri.getPath(); // Retorna "/dono/meu-repo"
+            String path = uri.getPath(); // Returns "/owner/my-repo"
             if (path != null && path.startsWith("/")) {
                 path = path.substring(1);
             }
             return path;
         } catch (Exception e) {
-            return repoUrl; // Fallback inseguro, mas evita crash imediato
+            return repoUrl; // Unsafe fallback, but avoids immediate crash
         }
     }
 
-    /**
-     * O GitLab usa IID e ProjectID. O ProjectID nem sempre está explícito na base URL.
-     * Muitas vezes é necessário fazer "URL encode" do path com namespace (ex: "grupo%2Fprojeto").
-     */
     private static String extractGitLabProjectId(Task task) {
         try {
-            // 1. Tenta obter o ID do projeto via reflexão (campo myIssue do GitlabTask)
+            // 1. Try to get the project ID via reflection (myIssue field of GitlabTask)
             if (task instanceof LocalTaskImpl) {
                 Task theTask = task.getRepository().getIssues(task.getId(), 0, 1, false)[0];
                 Object myIssue = getFieldValue(theTask, "myIssue");
@@ -137,12 +126,12 @@ public class TrackerFactory {
             String taskUrl = task.getIssueUrl();
             if (taskUrl == null) return "";
 
-            // 2. Fallback: Extração via URL da issue
-            // Exemplo url: https://gitlab.com/meu-grupo/meu-projeto/-/issues/123
+            // 2. Fallback: Extraction via issue URL
+            // Example url: https://gitlab.com/my-group/my-project/-/issues/123
             URI uri = new URI(taskUrl);
             String path = uri.getPath();
             
-            // Removemos a parte final referentes as issues para pegar só o namespace
+            // We remove the final part related to issues to get only the namespace
             if (path.contains("/-/issues/")) {
                 path = path.substring(0, path.indexOf("/-/issues/"));
             } else if (path.contains("/issues/")) {
@@ -153,7 +142,7 @@ public class TrackerFactory {
                 path = path.substring(1);
             }
             
-            // O GitLab aceita o "Namespace/Projeto" encodado no lugar do ID numérico!
+            // GitLab accepts the encoded "Namespace/Project" instead of the numeric ID!
             return path;
         } catch (Exception e) {
             return "";
