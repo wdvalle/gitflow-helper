@@ -6,6 +6,8 @@
        height="50">
 </a>
 
+## Task server integration coming soon! In the next version, you will be able to start your feature just by clicking your task (GitLab, GitHub, etc.) inside your JetBrains tool.
+
 **GitFlow Helper** is an IntelliJ plugin that provides a complete and intuitive implementation of the **Git Flow** workflow, fully integrated into the IDE menus, status bar, and tool windows.
 
 The plugin allows developers to work with Git Flow without relying on external tools or memorizing Git commands, offering a clean, menu-driven and IDE-native experience.
