@@ -146,6 +146,7 @@ public final class GitFlowPopup {
                 }
             }
         });
+        group.add(new ShowTasksAction());
         group.add(new ViewTaskAction());
 
         group.addSeparator();

@@ -1,14 +1,13 @@
 package br.com.gitflowhelper.dialog;
 
 import br.com.gitflow.tracker.GFTask;
-import br.com.gitflow.tracker.IssueResponse;
-import br.com.gitflow.tracker.IssueTrackerConnector;
-import br.com.gitflow.tracker.TrackerFactory;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.BranchNameRefiner;
 import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.GitFlowBranchType;
 import br.com.gitflowhelper.util.PluginUtils;
+import br.com.gitflowhelper.util.TaskFormatter;
+import br.com.gitflowhelper.util.TaskProjectFilter;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
@@ -23,9 +22,6 @@ import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
-import git4idea.repo.GitRemote;
-import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -36,7 +32,6 @@ import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 public class NameDialog extends DialogWrapper {
@@ -57,7 +52,8 @@ public class NameDialog extends DialogWrapper {
     private boolean isComboLoading = false;
     private Timer loadingTimer;
     private int loadingDots = 0;
-    private Optional<IssueTrackerConnector> trackerConnector = Optional.empty();
+    private final TaskFormatter taskFormatter;
+    private final TaskProjectFilter taskProjectFilter;
 
     public NameDialog(Project project, String titleText, String label, boolean showPush, boolean showIntegration, Consumer<NameResponse> onOk) {
         this(project, titleText, label, showPush, showIntegration, null, onOk);
@@ -72,6 +68,8 @@ public class NameDialog extends DialogWrapper {
         this.showPush = showPush;
         this.showIntegration = showIntegration;
         this.branchType = branchType;
+        this.taskFormatter = new TaskFormatter(project);
+        this.taskProjectFilter = new TaskProjectFilter(project);
         this.usernameField.setText(GitFlowSettingsService.getInstance(project).getState().getPreferredUsername());
         this.pushOnFinish = new JBCheckBox("Push local branch when finished");
         this.activateTaskCheckBox = new JBCheckBox("Set task as active/started");
@@ -184,7 +182,7 @@ public class NameDialog extends DialogWrapper {
                 TaskManager taskManager = TaskManager.getManager(project);
                 List<Task> allTasks = new ArrayList<>(taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false));
 
-                List<String> projectPaths = getProjectPaths();
+                List<String> projectPaths = taskProjectFilter.getProjectPaths();
                 List<GFTask> tasks = new ArrayList<>();
                 tasks.add(null);
 
@@ -194,7 +192,7 @@ public class NameDialog extends DialogWrapper {
                             .toList());
                 } else {
                     tasks.addAll(allTasks.stream()
-                            .filter(task -> isTaskFromProject(task, projectPaths))
+                            .filter(task -> taskProjectFilter.isTaskFromProject(task, projectPaths))
                             .map(GFTask::new)
                             .toList());
                 }
@@ -206,123 +204,13 @@ public class NameDialog extends DialogWrapper {
         });
     }
 
-    private List<String> getProjectPaths() {
-        List<String> paths = new ArrayList<>();
-        GitRepositoryManager manager = GitRepositoryManager.getInstance(project);
-        for (GitRepository repository : manager.getRepositories()) {
-            for (GitRemote remote : repository.getRemotes()) {
-                for (String url : remote.getUrls()) {
-                    String path = extractProjectPath(url);
-                    if (path != null) {
-                        paths.add(path);
-                    }
-                }
-            }
-        }
-        return paths;
-    }
-
-    private String extractProjectPath(String url) {
-        if (url == null) return null;
-        String path = url;
-        // Remove protocol
-        if (path.contains("://")) {
-            path = path.substring(path.indexOf("://") + 3);
-        } else if (path.contains("@")) {
-            path = path.substring(path.indexOf("@") + 1);
-        }
-
-        // Remove host
-        if (path.contains("/")) {
-            path = path.substring(path.indexOf("/") + 1);
-        } else if (path.contains(":")) {
-            path = path.substring(path.indexOf(":") + 1);
-        }
-
-        // Remove .git at the end
-        if (path.endsWith(".git")) {
-            path = path.substring(0, path.length() - 4);
-        }
-
-        return path.toLowerCase();
-    }
-
     private void updateTaskDetailPanel(GFTask task) {
         if (taskDetailScrollPane == null) return;
 
-        // Adds padding/margin to the body tag so the text does not stick to the panel borders
-        StringBuilder sb = new StringBuilder("<html><body style='font-family: sans-serif; font-size: 11pt; margin: 12px;'>");
-
-        // Task header (ID + Summary) highlighted
-        sb.append("<h2 style='margin-top: 0; margin-bottom: 8px; font-weight: normal;'>");
-        sb.append("<b>").append(task.getPresentableId()).append("</b> &mdash; ");
-        sb.append(task.getSummary());
-        sb.append("</h2>");
-
-        // Subtle separator line
-        sb.append("<hr style='border: 0; border-top: 1px solid #888888; margin-bottom: 12px;'>");
-
-        // Uses a table to perfectly align labels and values
-        sb.append("<table border='0' cellpadding='4' cellspacing='0'>");
-
-        // Inserts custom data (Assignee, State, Description, etc.)
-        appendMyIssueData(sb, task);
-
-        sb.append("</table>");
-        sb.append("</body></html>");
-
-        taskDescriptionPane.setText(sb.toString());
+        taskDescriptionPane.setText(taskFormatter.formatTaskDetail(task));
         taskDescriptionPane.setCaretPosition(0);
         taskDetailScrollPane.setVisible(true);
         pack();
-    }
-
-    public void appendMyIssueData(StringBuilder sb, GFTask gfTask) {
-        //assumes only one issue tracker per project (why more than one?)
-        if (trackerConnector.isEmpty())
-            trackerConnector = TrackerFactory.getConnector(project, gfTask.getTask());
-        if (gfTask.getAssignees().isEmpty()) {
-            trackerConnector.ifPresent(connector -> {
-                String issueId = gfTask.getLocalId();
-                if (issueId.isEmpty()) issueId = gfTask.getId();
-                IssueResponse issue = connector.getIssue(issueId);
-                gfTask.setAssignees(issue.getAssigneesAsString());
-            });
-        }
-        appendToTable(sb, "Assignees", gfTask.getAssignees());
-        appendToTable(sb, "State", gfTask.getState());
-        appendToTable(sb, "Description", gfTask.getDescriptionAsHtml());
-
-        if (gfTask.getIssueUrl() != null) {
-            appendLinkToTable(sb, "URL", gfTask.getIssueUrl());
-        }
-    }
-
-    private void appendLinkToTable(StringBuilder sb, String label, String value) {
-        String link = "<a href=\""+value+"\">"+value+"</a>";
-        appendToTable(sb, label, link);
-    }
-
-    private void appendToTable(StringBuilder sb, String label, String value) {
-        if (value != null && !value.isEmpty()) {
-            sb.append("<tr>");
-            sb.append("<td valign='top' style='color: #888888;'><b>").append(label).append(":</b></td>");
-            sb.append("<td valign='top'>").append(value).append("</td>");
-            sb.append("</tr>");
-        }
-    }
-
-    private boolean isTaskFromProject(Task task, List<String> projectPaths) {
-        String issueUrl = task.getIssueUrl();
-        if (issueUrl == null) return true; // Keep local tasks or tasks without URL
-
-        String lowerUrl = issueUrl.toLowerCase();
-        for (String path : projectPaths) {
-            if (lowerUrl.contains(path.toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override

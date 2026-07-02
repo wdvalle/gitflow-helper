@@ -1,6 +1,5 @@
 package br.com.gitflowhelper.dialog;
 
-import br.com.gitflowhelper.util.PluginInfoUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationInfo;

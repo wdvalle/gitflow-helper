@@ -350,7 +350,7 @@
                 id="GitFlowWidget"
                 implementation="br.com.gitflowhelper.statusbar.GitFlowStatusBarWidgetFactory"/>
         <toolWindow
-                id="GitFlowOutput"
+                id="GitFlow"
                 anchor="bottom"
                 icon="/icons/gitflow_gray.svg"
                 factoryClass="br.com.gitflowhelper.toolwindow.GitFlowToolWindowFactory"/>

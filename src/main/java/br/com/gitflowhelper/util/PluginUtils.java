@@ -2,6 +2,7 @@ package br.com.gitflowhelper.util;
 
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.toolwindow.ToolWindowPanel;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -36,9 +37,10 @@ public class PluginUtils {
     private static void logToMyWindow(Project project, String message) {
         SwingUtilities.invokeLater(() -> {
             ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-            ToolWindow toolWindow = toolWindowManager.getToolWindow("GitFlowOutput");
+            ToolWindow toolWindow = toolWindowManager.getToolWindow("GitFlow");
 
             if (toolWindow != null && toolWindow.getContentManager().getContentCount() > 0) {
+                toolWindow.setIcon(icons.PluginIcons.GitFlowGrayLive);
                 Content content = toolWindow.getContentManager().getContent(0);
 
                 if (content != null && content.getComponent() instanceof ToolWindowPanel) {
