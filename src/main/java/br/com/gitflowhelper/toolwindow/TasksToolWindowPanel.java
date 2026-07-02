@@ -2,8 +2,10 @@ package br.com.gitflowhelper.toolwindow;
 
 import br.com.gitflow.tracker.GFTask;
 import br.com.gitflowhelper.util.ExceptionUtil;
+import br.com.gitflowhelper.util.PluginUtils;
 import br.com.gitflowhelper.util.TaskFormatter;
-import br.com.gitflowhelper.util.TaskProjectFilter;
+import com.intellij.ide.ActivityTracker;
+//import br.com.gitflowhelper.util.TaskProjectFilter;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -30,14 +32,12 @@ public class TasksToolWindowPanel extends JPanel {
     private final JBList<GFTask> taskList;
     private final JEditorPane taskDescriptionPane;
     private final TaskFormatter taskFormatter;
-    private final TaskProjectFilter taskProjectFilter;
-    private boolean showAllIssues = false;
+    private boolean loading;
 
     public TasksToolWindowPanel(Project project) {
         super(new BorderLayout());
         this.project = project;
         this.taskFormatter = new TaskFormatter(project);
-        this.taskProjectFilter = new TaskProjectFilter(project);
 
         taskList = new JBList<>(new CollectionListModel<>());
         taskList.getEmptyText().setText("No tasks found");
@@ -94,26 +94,25 @@ public class TasksToolWindowPanel extends JPanel {
 
     private void setupToolbar() {
         DefaultActionGroup actionGroup = new DefaultActionGroup();
-        
-        ToggleAction toggleFilterAction = new ToggleAction("Show All Issues", "Show all issues or only project issues", AllIcons.General.Filter) {
+        AnAction act = new AnAction("Reload Tasks", "Reload tasks from server", AllIcons.Actions.Refresh) {
             @Override
-            public boolean isSelected(@NotNull AnActionEvent e) {
-                return showAllIssues;
-            }
-
-            @Override
-            public void setSelected(@NotNull AnActionEvent e, boolean state) {
-                showAllIssues = state;
+            public void actionPerformed(@NotNull AnActionEvent e) {
                 loadTasksAsync();
             }
 
             @Override
+            public void update(@NotNull AnActionEvent e) {
+                e.getPresentation().setEnabled(!loading);
+            }
+
+            @Override
             public @NotNull ActionUpdateThread getActionUpdateThread() {
-                return ActionUpdateThread.EDT;
+                return ActionUpdateThread.BGT;
             }
         };
 
-        actionGroup.add(toggleFilterAction);
+        actionGroup.add(act);
+        act.getTemplatePresentation().setEnabled(false);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar(
                 "TasksToolWindowToolbar",
@@ -127,11 +126,22 @@ public class TasksToolWindowPanel extends JPanel {
     }
 
     private void loadTasksAsync() {
+        loading = true;
+        ActivityTracker.getInstance().inc();
+        PluginUtils.setLoading(true, project);
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            PluginUtils.setProgress(4, project);
             List<GFTask> tasks = getTasks();
+            PluginUtils.setProgress(8, project);
             ApplicationManager.getApplication().invokeLater(() -> {
-                if (!project.isDisposed()) {
-                    taskList.setModel(new CollectionListModel<>(tasks));
+                try {
+                    if (!project.isDisposed()) {
+                        taskList.setModel(new CollectionListModel<>(tasks));
+                    }
+                } finally {
+                    loading = false;
+                    ActivityTracker.getInstance().inc();
+                    PluginUtils.setLoading(false, project);
                 }
             });
         });
@@ -141,19 +151,9 @@ public class TasksToolWindowPanel extends JPanel {
         return ApplicationManager.getApplication().runReadAction((Computable<List<GFTask>>) () -> {
             try {
                 TaskManager taskManager = TaskManager.getManager(project);
-                List<Task> allTasks = new ArrayList<>(taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false));
-
-                List<String> projectPaths = taskProjectFilter.getProjectPaths();
-                List<GFTask> tasks = new ArrayList<>();
-
-                if (showAllIssues || projectPaths.isEmpty()) {
-                    tasks.addAll(allTasks.stream().map(GFTask::new).toList());
-                } else {
-                    tasks.addAll(allTasks.stream()
-                            .filter(task -> taskProjectFilter.isTaskFromProject(task, projectPaths))
-                            .map(GFTask::new).toList());
-                }
-                return tasks;
+                //TODO Não acessar pela rede
+                List<Task> allTasks = taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false);
+                return allTasks.stream().map(GFTask::new).toList();
             } catch (Exception ex) {
                 ExceptionUtil.handleException(project, ex);
             }

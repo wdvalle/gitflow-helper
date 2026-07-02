@@ -25,11 +25,22 @@ public class GFTask {
     }
 
     public String getState() {
-        return getField("state") != null ? getField("state") : "";
+        String state = getValue("state");
+        if (state.isEmpty()) {
+            state = getValue("status");
+        }
+        return state;
     }
 
     public String getDescription() {
-        return getField("description") != null ? getField("description") : "";
+        if (task.getDescription() != null) {
+            return task.getDescription();
+        }
+        String description = getValue("description");
+        if (description.isEmpty()) {
+            description = getValue("body");
+        }
+        return description;
     }
 
     public String getPresentableId() {
@@ -53,7 +64,14 @@ public class GFTask {
     }
 
     public String getLocalId() {
-        return getField("localId");
+        String localId = getValue("localId");
+        if (localId.isEmpty()) {
+            localId = getValue("iid");
+        }
+        if (localId.isEmpty()) {
+            localId = getValue("number");
+        }
+        return localId;
     }
 
     public String getDescriptionAsHtml() {
@@ -65,21 +83,26 @@ public class GFTask {
     }
 
     public String getAssignees() {
-        if (!getField("assignee").isEmpty()) {
-            this.assignees = getField("assignee");
-        } else if (!getField("assignees").isEmpty()) {
-            this.assignees = getField("assignees");
+        String value = getValue("assignee");
+        if (value.isEmpty()) {
+            value = getValue("assignees");
         }
-        return formatValue(this.assignees);
+        if (!value.isEmpty()) {
+            this.assignees = value;
+        }
+        return this.assignees != null ? this.assignees : "";
     }
 
-    private String getField(String fieldName) {
-        Object myIssue = getFieldValue(task, "myIssue");
-        Object value = myIssue != null ? getFieldValue(myIssue, fieldName) : null;
+    private String getValue(String fieldName) {
+        Object myIssue = getField(task, "myIssue");
+        if (myIssue == null) {
+            myIssue = getField(task, "issue");
+        }
+        Object value = myIssue != null ? getField(myIssue, fieldName) : null;
         return formatValue(value);
     }
 
-    private Object getFieldValue(Object obj, String fieldName) {
+    private Object getField(Object obj, String fieldName) {
         try {
             Field field = findField(obj.getClass(), fieldName);
             if (field != null) {
@@ -126,9 +149,10 @@ public class GFTask {
         // If it is an object, try to get name or username when toString uses the default format (e.g. com.package.Class@hash)
         String str = value.toString();
         if (str.contains("@") && str.contains(value.getClass().getSimpleName())) {
-            Object name = getFieldValue(value, "name");
-            if (name == null) name = getFieldValue(value, "username");
-            if (name == null) name = getFieldValue(value, "title");
+            Object name = getField(value, "name");
+            if (name == null) name = getField(value, "username");
+            if (name == null) name = getField(value, "login");
+            if (name == null) name = getField(value, "title");
             if (name != null) return name.toString();
         }
         return str;

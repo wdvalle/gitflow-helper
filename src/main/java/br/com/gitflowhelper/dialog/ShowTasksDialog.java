@@ -4,7 +4,6 @@ import br.com.gitflow.tracker.GFTask;
 import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.PluginUtils;
 import br.com.gitflowhelper.util.TaskFormatter;
-import br.com.gitflowhelper.util.TaskProjectFilter;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
@@ -36,7 +35,6 @@ public class ShowTasksDialog extends DialogWrapper {
     private JBScrollPane taskDetailScrollPane;
     private JBCheckBox showAllIssuesCheckBox;
     private final TaskFormatter taskFormatter;
-    private final TaskProjectFilter taskProjectFilter;
     private boolean isComboLoading = false;
     private Timer loadingTimer;
     private int loadingDots = 0;
@@ -45,7 +43,6 @@ public class ShowTasksDialog extends DialogWrapper {
         super(project);
         this.project = project;
         this.taskFormatter = new TaskFormatter(project);
-        this.taskProjectFilter = new TaskProjectFilter(project);
         setTitle("Show project tasks");
         init();
     }
@@ -182,20 +179,12 @@ public class ShowTasksDialog extends DialogWrapper {
                 List<Task> allTasks = new ArrayList<>(taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false));
 
                 boolean showAll = showAllIssuesCheckBox.isSelected();
-                List<String> projectPaths = taskProjectFilter.getProjectPaths();
                 List<GFTask> tasks = new ArrayList<>();
                 tasks.add(null);
 
-                if (showAll || projectPaths.isEmpty()) {
-                    tasks.addAll(allTasks.stream()
-                            .map(GFTask::new)
-                            .toList());
-                } else {
-                    tasks.addAll(allTasks.stream()
-                            .filter(task -> taskProjectFilter.isTaskFromProject(task, projectPaths))
-                            .map(GFTask::new)
-                            .toList());
-                }
+                tasks.addAll(allTasks.stream()
+                        .map(GFTask::new)
+                        .toList());
                 return tasks;
             } catch (Exception ex) {
                 ExceptionUtil.handleException(project, ex);

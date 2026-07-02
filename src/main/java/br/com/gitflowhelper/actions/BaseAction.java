@@ -85,42 +85,15 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
     public GitRepository getRepo(Project project, AnAction action) { return ActionParamsService.getRepo(project, action); }
 
     public void setLoading(boolean loading, Project project) {
-        setLoading(loading, false, project);
+        PluginUtils.setLoading(loading, project);
     }
 
     public void setLoading(boolean loading, boolean progress, Project project) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
-            if (statusBar != null) {
-                GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
-                if (sbw != null) {
-                    sbw.setLoading(loading);
-                    if (progress) {
-                        setProgressImpl(0, statusBar, sbw);
-                    } else {
-                        sbw.setCurrentValue("GitFlowHelper");
-                    }
-                    statusBar.updateWidget("GitFlowWidget");
-                }
-            }
-        }, project.getDisposed());
+        PluginUtils.setLoading(loading, progress, project);
     }
 
     public void setProgress(Integer value, Project project) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
-            if (statusBar != null) {
-                GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
-                if (sbw != null) {
-                    setProgressImpl(value, statusBar, sbw);
-                }
-            }
-        }, project.getDisposed());
-    }
-
-    private void setProgressImpl(Integer value, StatusBar statusBar, GitFlowStatusBarWidget sbw) {
-        sbw.setProgress(value);
-        statusBar.updateWidget("GitFlowWidget");
+        PluginUtils.setProgress(value, project);
     }
 
     protected void doStartTask(GFTask selectedTask, boolean isActivateTask, String userName, Project project) {

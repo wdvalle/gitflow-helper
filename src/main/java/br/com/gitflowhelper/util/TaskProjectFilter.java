@@ -9,6 +9,7 @@ import git4idea.repo.GitRepositoryManager;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class TaskProjectFilter {
     private final Project project;
 

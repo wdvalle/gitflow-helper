@@ -1,11 +1,14 @@
 package br.com.gitflowhelper.util;
 
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import br.com.gitflowhelper.statusbar.GitFlowStatusBarWidget;
 import br.com.gitflowhelper.toolwindow.ToolWindowPanel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.content.Content;
 
 import javax.swing.*;
@@ -56,6 +59,45 @@ public class PluginUtils {
         PrintWriter pw = new PrintWriter(sw);
         throwable.printStackTrace(pw);
         return sw.toString();
+    }
+
+    public static void setLoading(boolean loading, Project project) {
+        setLoading(loading, false, project);
+    }
+
+    public static void setLoading(boolean loading, boolean progress, Project project) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+            if (statusBar != null) {
+                GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
+                if (sbw != null) {
+                    sbw.setLoading(loading);
+                    if (progress) {
+                        setProgressImpl(0, statusBar, sbw);
+                    } else {
+                        sbw.setCurrentValue("GitFlowHelper");
+                    }
+                    statusBar.updateWidget("GitFlowWidget");
+                }
+            }
+        }, project.getDisposed());
+    }
+
+    public static void setProgress(Integer value, Project project) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+            if (statusBar != null) {
+                GitFlowStatusBarWidget sbw = (GitFlowStatusBarWidget) statusBar.getWidget("GitFlowWidget");
+                if (sbw != null) {
+                    setProgressImpl(value, statusBar, sbw);
+                }
+            }
+        }, project.getDisposed());
+    }
+
+    private static void setProgressImpl(Integer value, StatusBar statusBar, GitFlowStatusBarWidget sbw) {
+        sbw.setProgress(value);
+        statusBar.updateWidget("GitFlowWidget");
     }
 
 }
