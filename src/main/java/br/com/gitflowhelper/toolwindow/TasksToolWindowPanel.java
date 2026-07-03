@@ -12,7 +12,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Computable;
 import com.intellij.tasks.Task;
 import com.intellij.tasks.TaskManager;
 import com.intellij.ui.*;
@@ -148,16 +147,13 @@ public class TasksToolWindowPanel extends JPanel {
     }
 
     private List<GFTask> getTasks() {
-        return ApplicationManager.getApplication().runReadAction((Computable<List<GFTask>>) () -> {
-            try {
-                TaskManager taskManager = TaskManager.getManager(project);
-                //TODO Não acessar pela rede
-                List<Task> allTasks = taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false);
-                return allTasks.stream().map(GFTask::new).toList();
-            } catch (Exception ex) {
-                ExceptionUtil.handleException(project, ex);
-            }
-            return new ArrayList<>();
-        });
+        try {
+            TaskManager taskManager = TaskManager.getManager(project);
+            List<Task> allTasks = taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false);
+            return allTasks.stream().map(GFTask::new).toList();
+        } catch (Exception ex) {
+            ExceptionUtil.handleException(project, ex);
+        }
+        return new ArrayList<>();
     }
 }

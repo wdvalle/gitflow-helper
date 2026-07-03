@@ -11,7 +11,6 @@ import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.util.Computable;
 import com.intellij.tasks.Task;
 import com.intellij.tasks.TaskManager;
 import com.intellij.ui.CollectionComboBoxModel;
@@ -173,24 +172,22 @@ public class ShowTasksDialog extends DialogWrapper {
     }
 
     private List<GFTask> getTaskModel() {
-        return ApplicationManager.getApplication().runReadAction((Computable<List<GFTask>>) () -> {
-            try {
-                TaskManager taskManager = TaskManager.getManager(project);
-                List<Task> allTasks = new ArrayList<>(taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false));
+        try {
+            TaskManager taskManager = TaskManager.getManager(project);
+            List<Task> allTasks = new ArrayList<>(taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false));
 
-                boolean showAll = showAllIssuesCheckBox.isSelected();
-                List<GFTask> tasks = new ArrayList<>();
-                tasks.add(null);
+            boolean showAll = showAllIssuesCheckBox.isSelected();
+            List<GFTask> tasks = new ArrayList<>();
+            tasks.add(null);
 
-                tasks.addAll(allTasks.stream()
-                        .map(GFTask::new)
-                        .toList());
-                return tasks;
-            } catch (Exception ex) {
-                ExceptionUtil.handleException(project, ex);
-            }
-            return null;
-        });
+            tasks.addAll(allTasks.stream()
+                    .map(GFTask::new)
+                    .toList());
+            return tasks;
+        } catch (Exception ex) {
+            ExceptionUtil.handleException(project, ex);
+        }
+        return null;
     }
 
     @Override
