@@ -18,6 +18,7 @@ import com.intellij.ui.*;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.ComponentWithEmptyText;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.StatusText;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,8 +34,10 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
     public static final DataKey<GFTask> SELECTED_TASK = DataKey.create("SELECTED_TASK");
     private final Project project;
     private final JBList<GFTask> taskList;
+    private final SearchTextField searchField;
     private final JBHtmlEditorPane taskDescriptionPane;
     private final TaskFormatter taskFormatter;
+    private final List<GFTask> allTasks = new ArrayList<>();
     private boolean loading;
 
     public TasksToolWindowPanel(Project project) {
@@ -63,6 +66,14 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
             }
         });
 
+        searchField = new SearchTextField();
+        searchField.addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull javax.swing.event.DocumentEvent e) {
+                filterTasks();
+            }
+        });
+
         taskDescriptionPane = new JBHtmlEditorPane();
         taskDescriptionPane.getEmptyText().setText("Select a task to see its description");
         taskDescriptionPane.setEditable(false);
@@ -87,8 +98,15 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
             }
         });
 
+        JPanel listPanel = new JPanel(new BorderLayout());
+        JPanel searchPanel = new JPanel(new BorderLayout());
+        searchPanel.add(searchField, BorderLayout.CENTER);
+        searchPanel.setBorder(JBUI.Borders.empty(2));
+        listPanel.add(searchPanel, BorderLayout.NORTH);
+        listPanel.add(new JBScrollPane(taskList), BorderLayout.CENTER);
+
         OnePixelSplitter splitter = new OnePixelSplitter(false, 0.3f);
-        splitter.setFirstComponent(new JBScrollPane(taskList));
+        splitter.setFirstComponent(listPanel);
         splitter.setSecondComponent(new JBScrollPane(taskDescriptionPane));
 
         add(splitter, BorderLayout.CENTER);
@@ -151,7 +169,9 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
             ApplicationManager.getApplication().invokeLater(() -> {
                 try {
                     if (!project.isDisposed()) {
-                        taskList.setModel(new CollectionListModel<>(tasks));
+                        allTasks.clear();
+                        allTasks.addAll(tasks);
+                        filterTasks();
                     }
                 } finally {
                     loading = false;
@@ -160,6 +180,15 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
                 }
             });
         });
+    }
+
+    private void filterTasks() {
+        String query = searchField.getText().toLowerCase();
+        List<GFTask> filtered = allTasks.stream()
+                .filter(task -> task.getPresentableId().toLowerCase().contains(query) ||
+                                task.getSummary().toLowerCase().contains(query))
+                .toList();
+        taskList.setModel(new CollectionListModel<>(filtered));
     }
 
     private List<GFTask> getTasks() {
