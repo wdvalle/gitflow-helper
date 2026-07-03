@@ -17,6 +17,7 @@ import com.intellij.tasks.TaskManager;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.ui.ComponentWithEmptyText;
 import com.intellij.util.ui.StatusText;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +33,7 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
     public static final DataKey<GFTask> SELECTED_TASK = DataKey.create("SELECTED_TASK");
     private final Project project;
     private final JBList<GFTask> taskList;
-    private final JEditorPane taskDescriptionPane;
+    private final JBHtmlEditorPane taskDescriptionPane;
     private final TaskFormatter taskFormatter;
     private boolean loading;
 
@@ -62,7 +63,8 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
             }
         });
 
-        taskDescriptionPane = new JEditorPane("text/html", "");
+        taskDescriptionPane = new JBHtmlEditorPane();
+        taskDescriptionPane.getEmptyText().setText("Select a task to see its description");
         taskDescriptionPane.setEditable(false);
         taskDescriptionPane.setBackground(taskList.getBackground());
         taskDescriptionPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
@@ -177,5 +179,29 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
             return taskList.getSelectedValue();
         }
         return null;
+    }
+
+    private static class JBHtmlEditorPane extends JEditorPane implements ComponentWithEmptyText {
+        private final StatusText emptyText = new StatusText(this) {
+            @Override
+            protected boolean isStatusVisible() {
+                return getDocument().getLength() == 0;
+            }
+        };
+
+        public JBHtmlEditorPane() {
+            super("text/html", "");
+        }
+
+        @Override
+        public @NotNull StatusText getEmptyText() {
+            return emptyText;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            emptyText.paint(this, g);
+        }
     }
 }
