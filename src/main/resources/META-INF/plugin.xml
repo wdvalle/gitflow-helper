@@ -315,7 +315,7 @@
                 class="br.com.gitflowhelper.actions.HotfixStartAction"
                 text="Hotfix Start"
                 description="Creates a new local hotfix branch (git flow hotfix start)."
-                icon="AllIcons.Toolwindows.ToolWindowRun">
+                icon="/icons/toolWindowRun.svg">
             <keyboard-shortcut
                     keymap="$default"
                     first-keystroke="ctrl alt 7"/>

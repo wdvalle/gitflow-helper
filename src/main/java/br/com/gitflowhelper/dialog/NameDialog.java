@@ -47,19 +47,25 @@ public class NameDialog extends DialogWrapper {
     private final boolean showPush;
     private final Project project;
     private final GitFlowBranchType branchType;
+    private final GFTask preSelectedTask;
     private boolean isComboLoading = false;
     private Timer loadingTimer;
     private int loadingDots = 0;
     private final TaskFormatter taskFormatter;
 
     public NameDialog(Project project, String titleText, String label, boolean showPush, boolean showIntegration, Consumer<NameResponse> onOk) {
-        this(project, titleText, label, showPush, showIntegration, null, onOk);
+        this(project, titleText, label, showPush, showIntegration, null, null, onOk);
     }
 
     public NameDialog(Project project, String titleText, String label, boolean showPush, boolean showIntegration, GitFlowBranchType branchType, Consumer<NameResponse> onOk) {
+        this(project, titleText, label, showPush, showIntegration, branchType, null, onOk);
+    }
+
+    public NameDialog(Project project, String titleText, String label, boolean showPush, boolean showIntegration, GitFlowBranchType branchType, GFTask preSelectedTask, Consumer<NameResponse> onOk) {
         super(project);
         this.project = project;
         this.onOk = onOk;
+        this.preSelectedTask = preSelectedTask;
         setTitle(titleText);
         this.label = label;
         this.showPush = showPush;
@@ -93,6 +99,11 @@ public class NameDialog extends DialogWrapper {
 
         initTasks();
         init();
+
+        if (preSelectedTask != null) {
+            taskComboBox.setSelectedItem(preSelectedTask);
+            taskComboBox.setEnabled(false);
+        }
     }
 
     private void initTasks() {
@@ -102,19 +113,26 @@ public class NameDialog extends DialogWrapper {
         }
 
         taskComboBox = new ComboBox<>();
-        taskComboBox.setModel(new CollectionComboBoxModel<>(new ArrayList<>()));
-        taskComboBox.setSelectedItem(null);
+        if (preSelectedTask != null) {
+            List<GFTask> tasks = new ArrayList<>();
+            tasks.add(preSelectedTask);
+            taskComboBox.setModel(new CollectionComboBoxModel<>(tasks));
+            isComboLoading = false;
+        } else {
+            taskComboBox.setModel(new CollectionComboBoxModel<>(new ArrayList<>()));
+            taskComboBox.setSelectedItem(null);
 
-        loadTasksAsync();
+            loadTasksAsync();
 
-        if (isComboLoading) {
-            loadingTimer = new Timer(250, e -> {
-                loadingDots = (loadingDots + 1) % 4;
-                if (taskComboBox != null) {
-                    taskComboBox.repaint();
-                }
-            });
-            loadingTimer.start();
+            if (isComboLoading) {
+                loadingTimer = new Timer(250, e -> {
+                    loadingDots = (loadingDots + 1) % 4;
+                    if (taskComboBox != null) {
+                        taskComboBox.repaint();
+                    }
+                });
+                loadingTimer.start();
+            }
         }
 
         taskComboBox.setRenderer(new DefaultListCellRenderer() {
@@ -141,9 +159,7 @@ public class NameDialog extends DialogWrapper {
             try {
                 GFTask selectedTask = (GFTask) taskComboBox.getSelectedItem();
                 if (selectedTask != null) {
-                    if (branchType != GitFlowBranchType.HOTFIX) {
-                        nameField.setText(BranchNameRefiner.slugify(selectedTask));
-                    }
+                    nameField.setText(BranchNameRefiner.slugify(selectedTask));
                     updateTaskDetailPanel(selectedTask);
                 } else {
                     if (taskDetailScrollPane != null) {

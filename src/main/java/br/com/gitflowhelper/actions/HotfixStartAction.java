@@ -8,10 +8,10 @@ import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
+import br.com.gitflowhelper.toolwindow.TasksToolWindowPanel;
 import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.GitFlowBranchType;
 import br.com.gitflowhelper.util.NotificationUtil;
-import com.G.G.B.B.GF;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
@@ -39,12 +39,13 @@ public class HotfixStartAction extends BaseAction {
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, true, GitFlowBranchType.HOTFIX, response ->
+        GFTask preSelectedTask = e.getData(TasksToolWindowPanel.SELECTED_TASK);
+
+        new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, true, GitFlowBranchType.HOTFIX, preSelectedTask, response ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);
                 try {
-
                     hotfixStart(project, response.getName(), response.getPushOnFinish());
 
                     doStartTask(response.getSelectedTask(), response.isActivateTask(), response.getUsername(), project);
@@ -64,10 +65,15 @@ public class HotfixStartAction extends BaseAction {
     @Override
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
-        presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
-                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getMainBranch(e.getProject()))
-        );
+        boolean enabled = StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getMainBranch(e.getProject()));
+
+        if (enabled && "TasksToolWindowToolbar".equals(e.getPlace())) {
+            GFTask selectedTask = e.getData(TasksToolWindowPanel.SELECTED_TASK);
+            enabled = selectedTask != null;
+        }
+
+        presentation.setEnabled(enabled);
     }
 
     private List<GitResult> hotfixStart(Project project, String hotfixName, boolean pushOnFinish) {

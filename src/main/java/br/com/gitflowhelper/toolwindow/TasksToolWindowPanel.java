@@ -20,13 +20,16 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.StatusText;
 import org.jetbrains.annotations.NotNull;
 
+import org.jetbrains.annotations.Nullable;
+
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TasksToolWindowPanel extends JPanel {
+public class TasksToolWindowPanel extends JPanel implements DataProvider {
+    public static final DataKey<GFTask> SELECTED_TASK = DataKey.create("SELECTED_TASK");
     private final Project project;
     private final JBList<GFTask> taskList;
     private final JEditorPane taskDescriptionPane;
@@ -78,6 +81,7 @@ public class TasksToolWindowPanel extends JPanel {
                 } else {
                     taskDescriptionPane.setText("");
                 }
+                ActivityTracker.getInstance().inc();
             }
         });
 
@@ -112,6 +116,16 @@ public class TasksToolWindowPanel extends JPanel {
 
         actionGroup.add(act);
         act.getTemplatePresentation().setEnabled(false);
+
+        AnAction featureStartAction = ActionManager.getInstance().getAction("GitFlowHelper.FeatureStartAction");
+        if (featureStartAction != null) {
+            actionGroup.add(featureStartAction);
+        }
+
+        AnAction hotfixStartAction = ActionManager.getInstance().getAction("GitFlowHelper.HotfixStartAction");
+        if (hotfixStartAction != null) {
+            actionGroup.add(hotfixStartAction);
+        }
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar(
                 "TasksToolWindowToolbar",
@@ -155,5 +169,13 @@ public class TasksToolWindowPanel extends JPanel {
             ExceptionUtil.handleException(project, ex);
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public @Nullable Object getData(@NotNull String dataId) {
+        if (SELECTED_TASK.is(dataId)) {
+            return taskList.getSelectedValue();
+        }
+        return null;
     }
 }

@@ -1,9 +1,11 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflow.tracker.GFTask;
 import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
+import br.com.gitflowhelper.toolwindow.TasksToolWindowPanel;
 import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.GitFlowBranchType;
 import br.com.gitflowhelper.util.NotificationUtil;
@@ -30,7 +32,9 @@ public class FeatureStartAction extends BaseAction {
 
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false,true, GitFlowBranchType.FEATURE, response ->
+        GFTask preSelectedTask = e.getData(TasksToolWindowPanel.SELECTED_TASK);
+
+        new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false,true, GitFlowBranchType.FEATURE, preSelectedTask, response ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);
@@ -54,10 +58,15 @@ public class FeatureStartAction extends BaseAction {
     @Override
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
-        presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
-                        getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getDevelopBranch(e.getProject()))
-        );
+        boolean enabled = StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getDevelopBranch(e.getProject()));
+
+        if (enabled && "TasksToolWindowToolbar".equals(e.getPlace())) {
+            GFTask selectedTask = e.getData(TasksToolWindowPanel.SELECTED_TASK);
+            enabled = selectedTask != null;
+        }
+
+        presentation.setEnabled(enabled);
     }
 
     private List<GitResult> featureStart(Project project, String featureName) {
