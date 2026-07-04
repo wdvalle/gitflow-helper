@@ -30,6 +30,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class TasksToolWindowPanel extends JPanel implements DataProvider, Disposable {
@@ -191,6 +192,7 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
         List<GFTask> filtered = allTasks.stream()
                 .filter(task -> task.getPresentableId().toLowerCase().contains(query) ||
                                 task.getSummary().toLowerCase().contains(query))
+                .sorted(Comparator.comparing(GFTask::getPresentableId, String.CASE_INSENSITIVE_ORDER))
                 .toList();
         taskList.setModel(new CollectionListModel<>(filtered));
     }

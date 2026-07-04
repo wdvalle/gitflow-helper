@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import java.util.Optional;
 
 public class TaskFormatter {
-    private Optional<IssueTrackerConnector> trackerConnector = Optional.empty();
     private final Project project;
 
     public TaskFormatter(Project project) {
@@ -42,10 +41,8 @@ public class TaskFormatter {
     }
 
     private void appendMyIssueData(StringBuilder sb, GFTask gfTask) {
-        //assumes only one issue tracker per project (why more than one?)
-        if (trackerConnector.isEmpty())
-            trackerConnector = TrackerFactory.getConnector(project, gfTask.getTask());
         if (gfTask.getAssignees().isEmpty()) {
+            Optional<IssueTrackerConnector> trackerConnector = TrackerFactory.getConnector(project, gfTask.getTask());
             trackerConnector.ifPresent(connector -> {
                 String issueId = gfTask.getLocalId();
                 if (issueId.isEmpty()) issueId = gfTask.getId();

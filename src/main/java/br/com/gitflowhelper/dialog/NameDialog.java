@@ -17,6 +17,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.tasks.Task;
 import com.intellij.tasks.TaskManager;
 import com.intellij.ui.CollectionComboBoxModel;
+import com.intellij.ui.ContextHelpLabel;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
@@ -29,6 +30,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -198,6 +200,7 @@ public class NameDialog extends DialogWrapper {
 
             tasks.addAll(allTasks.stream()
                     .map(GFTask::new)
+                    .sorted(Comparator.comparing(GFTask::getPresentableId, String.CASE_INSENSITIVE_ORDER))
                     .toList());
             return tasks;
         } catch (Exception ex) {
@@ -230,7 +233,11 @@ public class NameDialog extends DialogWrapper {
             gbc.gridx = 0;
             gbc.gridy = currentGridY;
             gbc.weightx = 0;
-            panel.add(new JLabel("Prefered userame:"), gbc);
+
+            JPanel usernameLabelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+            usernameLabelPanel.add(new JLabel("Preferred username:"));
+            usernameLabelPanel.add(ContextHelpLabel.create("Your login on the task server"));
+            panel.add(usernameLabelPanel, gbc);
 
             gbc.gridx = 1;
             gbc.gridy = currentGridY;

@@ -29,6 +29,7 @@ public class GitHubConnector extends IssueTrackerConnector {
 
     @Override
     public boolean closeIssue(String issueId) {
+        deleteRequest("/repos/" + repo + "/issues/" + issueId + "/labels/in-progress");
         return patchRequest("/repos/" + repo + "/issues/" + issueId, "{\"state\":\"closed\"}");
     }
 
@@ -88,6 +89,21 @@ public class GitHubConnector extends IssueTrackerConnector {
                     .build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             return response.statusCode() == 200;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean deleteRequest(String path) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(this.baseUrl + path))
+                    .header("Authorization", "Bearer " + this.token)
+                    .header("Accept", "application/vnd.github+json")
+                    .DELETE()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
             return false;
         }
