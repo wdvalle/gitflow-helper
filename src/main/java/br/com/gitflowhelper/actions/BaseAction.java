@@ -3,6 +3,7 @@ package br.com.gitflowhelper.actions;
 import br.com.gitflow.tracker.GFTask;
 import br.com.gitflow.tracker.IssueTrackerConnector;
 import br.com.gitflow.tracker.TrackerFactory;
+import br.com.gitflowhelper.events.GitFlowTaskListener;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.statusbar.GitFlowStatusBarWidget;
 import br.com.gitflowhelper.util.ActionParamsService;
@@ -142,6 +143,7 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
                     }
                 }
             }
+            project.getMessageBus().syncPublisher(GitFlowTaskListener.TOPIC).tasksChanged();
         }
     }
 

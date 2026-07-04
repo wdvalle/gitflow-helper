@@ -1,10 +1,12 @@
 package br.com.gitflowhelper.toolwindow;
 
 import br.com.gitflow.tracker.GFTask;
+import br.com.gitflowhelper.events.GitFlowTaskListener;
 import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.PluginUtils;
 import br.com.gitflowhelper.util.TaskFormatter;
 import com.intellij.ide.ActivityTracker;
+import com.intellij.openapi.Disposable;
 //import br.com.gitflowhelper.util.TaskProjectFilter;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -30,7 +32,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TasksToolWindowPanel extends JPanel implements DataProvider {
+public class TasksToolWindowPanel extends JPanel implements DataProvider, Disposable {
     public static final DataKey<GFTask> SELECTED_TASK = DataKey.create("SELECTED_TASK");
     private final Project project;
     private final JBList<GFTask> taskList;
@@ -110,6 +112,8 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
         splitter.setSecondComponent(new JBScrollPane(taskDescriptionPane));
 
         add(splitter, BorderLayout.CENTER);
+
+        project.getMessageBus().connect(this).subscribe(GitFlowTaskListener.TOPIC, this::loadTasksAsync);
 
         setupToolbar();
         loadTasksAsync();
@@ -208,6 +212,10 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider {
             return taskList.getSelectedValue();
         }
         return null;
+    }
+
+    @Override
+    public void dispose() {
     }
 
     private static class JBHtmlEditorPane extends JEditorPane implements ComponentWithEmptyText {

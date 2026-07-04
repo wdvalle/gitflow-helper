@@ -20,6 +20,7 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
         // New Issues folder
         TasksToolWindowPanel tasksPanel = new TasksToolWindowPanel(project);
         Content tasksContent = contentFactory.createContent(tasksPanel, "Issues", false);
+        tasksContent.setDisposer(tasksPanel);
         toolWindow.getContentManager().addContent(tasksContent);
     }
 }
