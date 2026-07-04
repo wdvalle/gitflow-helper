@@ -64,6 +64,19 @@ public class GitHubConnector extends IssueTrackerConnector {
         }
     }
 
+    public static String extractGitHubRepo(String repoUrl) {
+        try {
+            URI uri = new URI(repoUrl);
+            String path = uri.getPath().substring(0, uri.getPath().indexOf("/issues")); // Returns "/owner/my-repo"
+            if (path != null && path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            return path;
+        } catch (Exception e) {
+            return repoUrl; // Unsafe fallback, but avoids immediate crash
+        }
+    }
+
     private boolean patchRequest(String path, String jsonBody) {
         try {
             HttpRequest request = HttpRequest.newBuilder()

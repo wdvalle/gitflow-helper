@@ -1,13 +1,10 @@
 package br.com.gitflow.tracker;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.tasks.LocalTask;
 import com.intellij.tasks.Task;
 import com.intellij.tasks.TaskManager;
 import com.intellij.tasks.TaskRepository;
-import com.intellij.tasks.impl.LocalTaskImpl;
 
-import java.net.URI;
 import java.util.Optional;
 
 public class TrackerFactory {
@@ -28,13 +25,13 @@ public class TrackerFactory {
                     if (typeName.equalsIgnoreCase("GitLab")) {
                         // In IntelliJ's GitLab, the URL usually points to the root.
                         // The project ID may be embedded or need to be extracted from the task URL.
-                        String projectId = extractGitLabProjectId(task);
+                        String projectId = GitLabConnector.extractGitLabProjectId(task);
                         return Optional.of(new GitLabConnector(url, projectId, token));
                         
                     } else if (typeName.equalsIgnoreCase("GitHub")) {
                         // We need to convert the repository URL (e.g., https://github.com/owner/repo) 
                         // to the "owner/repo" format
-                        String repoName = extractGitHubRepo(url);
+                        String repoName = GitHubConnector.extractGitHubRepo(task.getIssueUrl());
                         return Optional.of(new GitHubConnector(repoName, token));
                         
                     } else if (typeName.equalsIgnoreCase("Redmine")) {
@@ -91,73 +88,6 @@ public class TrackerFactory {
                 current = current.getSuperclass();
             }
         }
-        return null;
-    }
-
-    private static String extractGitHubRepo(String repoUrl) {
-        try {
-            URI uri = new URI(repoUrl);
-            String path = uri.getPath(); // Returns "/owner/my-repo"
-            if (path != null && path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            return path;
-        } catch (Exception e) {
-            return repoUrl; // Unsafe fallback, but avoids immediate crash
-        }
-    }
-
-    private static String extractGitLabProjectId(Task task) {
-        try {
-            // 1. Try to get the project ID via reflection (myIssue field of GitlabTask)
-            if (task instanceof LocalTaskImpl) {
-                Task theTask = task.getRepository().getIssues(task.getId(), 0, 1, false)[0];
-                Object myIssue = getFieldValue(theTask, "myIssue");
-                Object projectId = getFieldValue(myIssue, "projectId");
-                if (projectId != null) return projectId.toString();
-            }
-            Object myIssue = getFieldValue(task, "myIssue");
-            if (myIssue != null) {
-                Object projectId = getFieldValue(myIssue, "projectId");
-                if (projectId == null) projectId = getFieldValue(myIssue, "project_id");
-                if (projectId != null) return projectId.toString();
-            }
-
-            String taskUrl = task.getIssueUrl();
-            if (taskUrl == null) return "";
-
-            // 2. Fallback: Extraction via issue URL
-            // Example url: https://gitlab.com/my-group/my-project/-/issues/123
-            URI uri = new URI(taskUrl);
-            String path = uri.getPath();
-            
-            // We remove the final part related to issues to get only the namespace
-            if (path.contains("/-/issues/")) {
-                path = path.substring(0, path.indexOf("/-/issues/"));
-            } else if (path.contains("/issues/")) {
-                path = path.substring(0, path.indexOf("/issues/"));
-            }
-            
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            
-            // GitLab accepts the encoded "Namespace/Project" instead of the numeric ID!
-            return path;
-        } catch (Exception e) {
-            return "";
-        }
-    }
-
-    private static Object getFieldValue(Object obj, String fieldName) {
-        if (obj == null) return null;
-        try {
-            java.lang.reflect.Field field = findField(obj.getClass(), fieldName);
-            if (field != null) {
-                field.setAccessible(true);
-                return field.get(obj);
-            }
-        } catch (Exception ignored) {}
         return null;
     }
 }

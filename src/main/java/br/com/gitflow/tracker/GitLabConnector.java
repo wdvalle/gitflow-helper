@@ -3,6 +3,8 @@ package br.com.gitflow.tracker;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.tasks.Task;
+import com.intellij.tasks.impl.LocalTaskImpl;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -98,5 +100,71 @@ public class GitLabConnector extends IssueTrackerConnector {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static String extractGitLabProjectId(Task task) {
+        try {
+            // 1. Try to get the project ID via reflection (myIssue field of GitlabTask)
+            if (task instanceof LocalTaskImpl) {
+                Task theTask = task.getRepository().getIssues(task.getId(), 0, 1, false)[0];
+                Object myIssue = getFieldValue(theTask, "myIssue");
+                Object projectId = getFieldValue(myIssue, "projectId");
+                if (projectId != null) return projectId.toString();
+            }
+            Object myIssue = getFieldValue(task, "myIssue");
+            if (myIssue != null) {
+                Object projectId = getFieldValue(myIssue, "projectId");
+                if (projectId == null) projectId = getFieldValue(myIssue, "project_id");
+                if (projectId != null) return projectId.toString();
+            }
+
+            String taskUrl = task.getIssueUrl();
+            if (taskUrl == null) return "";
+
+            // 2. Fallback: Extraction via issue URL
+            // Example url: https://gitlab.com/my-group/my-project/-/issues/123
+            URI uri = new URI(taskUrl);
+            String path = uri.getPath();
+
+            // We remove the final part related to issues to get only the namespace
+            if (path.contains("/-/issues/")) {
+                path = path.substring(0, path.indexOf("/-/issues/"));
+            } else if (path.contains("/issues/")) {
+                path = path.substring(0, path.indexOf("/issues/"));
+            }
+
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+
+            // GitLab accepts the encoded "Namespace/Project" instead of the numeric ID!
+            return path;
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private static Object getFieldValue(Object obj, String fieldName) {
+        if (obj == null) return null;
+        try {
+            java.lang.reflect.Field field = findField(obj.getClass(), fieldName);
+            if (field != null) {
+                field.setAccessible(true);
+                return field.get(obj);
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    private static java.lang.reflect.Field findField(Class<?> clazz, String fieldName) {
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            try {
+                return current.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                current = current.getSuperclass();
+            }
+        }
+        return null;
     }
 }

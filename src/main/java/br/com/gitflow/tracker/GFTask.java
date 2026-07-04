@@ -1,5 +1,6 @@
 package br.com.gitflow.tracker;
 
+import com.intellij.lang.javascript.boilerplate.GithubProjectGeneratorPeer;
 import com.intellij.tasks.Task;
 
 import javax.swing.*;
@@ -13,7 +14,30 @@ public class GFTask {
     private String assignees;
 
     public GFTask(Task task) {
+        System.out.println("GFTask: " + task.getClass());
         this.task = task;
+
+        try {
+            // Substitua 'seuObjeto' pela variável que você está inspecionando
+            Object obj = task;
+
+            java.lang.reflect.Field[] fields = obj.getClass().getDeclaredFields();
+
+            System.out.println("--- Atributos Privados de: " + obj.getClass().getSimpleName() + " ---");
+
+            for (java.lang.reflect.Field field : fields) {
+                // Filtra apenas o que for privado
+//                if (java.lang.reflect.Modifier.isPrivate(field.getModifiers())) {
+                    String nome = field.getName();
+                    String tipo = field.getType().getCanonicalName();
+
+                    System.out.println("Nome: " + nome + " | Tipo: " + tipo);
+//                }
+            }
+            System.out.println("------------------------------------------------");
+        } catch (Exception e) {
+            System.out.println("Erro ao inspecionar o objeto: " + e.getMessage());
+        }
     }
 
     public Task getTask() {
@@ -83,6 +107,9 @@ public class GFTask {
     }
 
     public String getAssignees() {
+        if (this.assignees != null) {
+            return this.assignees;
+        }
         String value = getValue("assignee");
         if (value.isEmpty()) {
             value = getValue("assignees");
@@ -96,7 +123,7 @@ public class GFTask {
     private String getValue(String fieldName) {
         Object myIssue = getField(task, "myIssue");
         if (myIssue == null) {
-            myIssue = getField(task, "issue");
+            myIssue = getField(task, "val$issue");
         }
         Object value = myIssue != null ? getField(myIssue, fieldName) : null;
         return formatValue(value);
