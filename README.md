@@ -123,16 +123,28 @@ The plugin follows the standard Git Flow strategy:
 
 ---
 
-### 🔗 Task Servers Integration
+### 🔗 Task Management & Integration
 
-- Integrate GitFlow Helper with your task servers to simplify issue management.
-- This feature allows you to fetch and link existing tasks when creating new feature, hotfix, or release branches.
-- Currently supports:
-    - **GitHub**
-    - **GitLab**
-- Support for the following is coming soon:
-    - **Redmine**
-    - **Jira**
+The **GitFlow Helper** centralizes your workflow, allowing you to 
+start and finish tasks directly from your IDE.
+
+#### **Task Tool Window**
+Access the new **dedicated Tool Window** to view all your open tasks in a rich, intuitive layout:
+* **Detailed View:** Click on any task in the list to display comprehensive details, descriptions, and comments in a side-by-side view.
+* **Integrated Git Flow Actions:** Kick off a new **Feature** or **Hotfix** directly from the task detail screen.
+* **Workflow Automation:** When you start a task, the plugin automatically:
+  * **Assigns the task** to you in your task server.
+  * **Updates the status** to "In Progress."
+
+#### **Task Server Integration**
+Simplify your issue management by connecting your favorite platforms:
+
+* **Currently Supported:**
+  * **GitHub**
+  * **GitLab**
+* **Coming Soon:**
+  * **Redmine**
+  * **Jira**
 
 ---
 
