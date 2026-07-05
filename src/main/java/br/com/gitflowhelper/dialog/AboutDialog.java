@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBScrollPane;
@@ -86,22 +87,31 @@ public class AboutDialog extends DialogWrapper {
         root.add(header, BorderLayout.NORTH);
 
         // Center: description
+        JPanel descPanel = new JPanel(new VerticalLayout(0));
+        descPanel.setOpaque(false);
+        descPanel.setBorder(JBUI.Borders.emptyTop(10));
+
         JBTextArea desc = new JBTextArea();
         desc.setEditable(false);
         desc.setLineWrap(true);
         desc.setWrapStyleWord(true);
         desc.setOpaque(false);
-        desc.setBorder(JBUI.Borders.emptyTop(10));
         desc.setText(
                 "Implements the classic Git Flow workflow inside the IDE.\n\n" +
                 "• Init Git Flow (main/develop, prefixes)\n" +
                 "• Feature / Release / Hotfix actions\n" +
                 "• Local and remote branch navigation\n" +
-                "• Command tracking tool window\n\n" +
-                "Project: " + GITHUB_URL
+                "• Command tracking tool window\n" +
+                "• Integration with Task Servers\n\n"
         );
+        descPanel.add(desc);
 
-        JBScrollPane scroll = new JBScrollPane(desc);
+        HyperlinkLabel projectLink = new HyperlinkLabel();
+        projectLink.setHyperlinkText("Project: ", GITHUB_URL, "");
+        projectLink.addHyperlinkListener(e -> BrowserUtil.browse(GITHUB_URL));
+        descPanel.add(projectLink);
+
+        JBScrollPane scroll = new JBScrollPane(descPanel);
         scroll.setBorder(null);
         root.add(scroll, BorderLayout.CENTER);
 

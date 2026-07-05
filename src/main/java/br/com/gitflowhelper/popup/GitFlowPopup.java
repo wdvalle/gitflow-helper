@@ -3,6 +3,7 @@ package br.com.gitflowhelper.popup;
 import br.com.gitflowhelper.actions.*;
 import br.com.gitflowhelper.actions.branches.DeleteLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.DeleteRemoteBranchAction;
+import br.com.gitflowhelper.events.GitFlowTaskListener;
 import br.com.gitflowhelper.gittree.GitBranchPopupBuilder;
 import br.com.gitflowhelper.util.ActionParamsService;
 import br.com.gitflowhelper.actions.branches.CheckoutLocalBranchAction;
@@ -118,16 +119,16 @@ public final class GitFlowPopup {
 
                 if (!currentSetting) {
                     DialogBuilder builder = new DialogBuilder(p);
-                    builder.setTitle("Enable Task Integration");
+                    builder.setTitle("Enable Tasks Integration");
 
                     JPanel panel = new JPanel(new BorderLayout(15, 0));
                     panel.add(new JLabel(Messages.getQuestionIcon()), BorderLayout.WEST);
 
                     JLabel label = new JLabel("<html><body>" +
-                            "Task integration links Git Flow branches with your issue tracker (Jira, GitHub, GitLab, etc.).<br><br>" +
-                            "&bull; <b>Starting a branch</b>: Select a task to auto-generate the branch name and optionally mark it as 'In Progress' in the IDE.<br>" +
-                            "&bull; <b>Finishing a feature</b>: Option to close the associated task and switch back to the default context.<br><br>" +
-                            "Note: You must configure your Task Servers at: <b>Settings -> Tools -> Tasks -> Servers</b>.<br><br>" +
+                            "Task integration links Git Flow branches with your issue tracker <span style='color:orange'>(at this time <b>GitHub and GitLab</b>, more trackers comming soon)</span>.<br><br>" +
+                            "&bull; <b>Starting a feature or hotfix</b>: Select a task to auto-generate the branch name and optionally mark it as 'In Progress'.<br>" +
+                            "&bull; <b>Finishing a feature or hotfix</b>: Option to merge the branch in develop or main, close the associated task and switch back to the default context.<br><br>" +
+                            "Note: You must configure your Task Servers at:  <b>Settings &#x2192; Tools &#x2192; Tasks &#x2192; Servers</b>.<br><br>" +
                             "Enable task integration now?</body></html>");
                     panel.add(label, BorderLayout.CENTER);
                     panel.setPreferredSize(new Dimension(500, 200));
@@ -138,11 +139,20 @@ public final class GitFlowPopup {
 
                     if (builder.show() == DialogWrapper.OK_EXIT_CODE) {
                         settings.setIntegrateWithTasks(true);
+                        p.getMessageBus().syncPublisher(GitFlowTaskListener.TOPIC).tasksChanged();
                         NotificationUtil.showGitFlowSuccessNotification(p, "Git Flow Helper", "Task integration enabled successfully.");
                     }
                 } else {
-                    settings.setIntegrateWithTasks(false);
-                    NotificationUtil.showGitFlowSuccessNotification(p, "Git Flow Helper", "Task integration disabled successfully.");
+                    if (Messages.showYesNoDialog(p,
+                            "Are you sure you want to disable Tasks integration? You can re-enable it at any time.",
+                            "Disable Tasks Integration",
+                            "Disable",
+                            "Cancel",
+                            Messages.getQuestionIcon()) == Messages.YES) {
+                        settings.setIntegrateWithTasks(false);
+                        p.getMessageBus().syncPublisher(GitFlowTaskListener.TOPIC).tasksChanged();
+                        NotificationUtil.showGitFlowSuccessNotification(p, "Git Flow Helper", "Task integration disabled successfully.");
+                    }
                 }
             }
         });

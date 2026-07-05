@@ -2,6 +2,7 @@ package br.com.gitflowhelper.toolwindow;
 
 import br.com.gitflow.tracker.GFTask;
 import br.com.gitflowhelper.events.GitFlowTaskListener;
+import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.PluginUtils;
 import br.com.gitflowhelper.util.TaskFormatter;
@@ -49,12 +50,7 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
         this.taskFormatter = new TaskFormatter(project);
 
         taskList = new JBList<>(new CollectionListModel<>());
-        taskList.getEmptyText().setText("No tasks found");
-        taskList.getEmptyText().appendLine("Go to ");
-        taskList.getEmptyText().appendText("Settings -> Tools -> Tasks -> Servers", SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES, e -> {
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, "Tasks");
-        });
-        taskList.getEmptyText().appendLine(" to configure access to a task server.");
+        updateEmptyText();
 
         taskList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         taskList.setCellRenderer(new DefaultListCellRenderer() {
@@ -130,7 +126,8 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
 
             @Override
             public void update(@NotNull AnActionEvent e) {
-                e.getPresentation().setEnabled(!loading);
+                boolean integrate = GitFlowSettingsService.getInstance(project).isIntegrateWithTasks();
+                e.getPresentation().setEnabled(!loading && integrate);
             }
 
             @Override
@@ -164,6 +161,12 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
     }
 
     private void loadTasksAsync() {
+        if (!GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+            allTasks.clear();
+            filterTasks();
+            updateEmptyText();
+            return;
+        }
         loading = true;
         ActivityTracker.getInstance().inc();
         PluginUtils.setLoading(true, project);
@@ -195,6 +198,22 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
                 .sorted(Comparator.comparing(GFTask::getPresentableId, String.CASE_INSENSITIVE_ORDER))
                 .toList();
         taskList.setModel(new CollectionListModel<>(filtered));
+    }
+
+    private void updateEmptyText() {
+        StatusText emptyText = taskList.getEmptyText();
+        emptyText.clear();
+        if (!GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
+            emptyText.setText("Task integration is disabled");
+            emptyText.appendLine("Enable it in Git Flow Helper settings");
+        } else {
+            emptyText.setText("No tasks found");
+            emptyText.appendLine("Go to ");
+            emptyText.appendText("Settings -> Tools -> Tasks -> Servers", SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES, e -> {
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, "Tasks");
+            });
+            emptyText.appendLine(" to configure access to a task server.");
+        }
     }
 
     private List<GFTask> getTasks() {
