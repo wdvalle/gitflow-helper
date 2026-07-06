@@ -4,6 +4,7 @@ import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBScrollPane;
@@ -28,6 +29,7 @@ public class ActionChoiceDialog extends DialogWrapper {
     private String targetBranch;
     private String log;
     private Project project;
+    private java.util.List<String> warnings;
     
     public static final String INTEGRATE = "Integrate immediately";
     public static final String AUTO_CREATE = "Create merge request (Gitlab only)";
@@ -97,10 +99,25 @@ public class ActionChoiceDialog extends DialogWrapper {
         explanationLabel.setComponentStyle(UIUtil.ComponentStyle.SMALL);
         explanationLabel.setFontColor(UIUtil.FontColor.BRIGHTER);
         explanationLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        
+
         // Cria o layout usando FormBuilder (padrão do IntelliJ para alinhamento)
-        FormBuilder builder = FormBuilder.createFormBuilder()
-                .addComponent(branchLabel)
+        FormBuilder builder = FormBuilder.createFormBuilder();
+
+        if (warnings != null && !warnings.isEmpty()) {
+            JBLabel warningTitle = new JBLabel("Warnings:");
+            warningTitle.setForeground(JBColor.RED);
+            warningTitle.setFont(warningTitle.getFont().deriveFont(Font.BOLD));
+            builder.addComponent(warningTitle);
+            for (String warning : warnings) {
+                JBLabel wLabel = new JBLabel("• " + warning);
+                wLabel.setForeground(JBColor.RED);
+                wLabel.setComponentStyle(UIUtil.ComponentStyle.SMALL);
+                builder.addComponent(wLabel);
+            }
+            builder.addVerticalGap(10);
+        }
+
+        builder.addComponent(branchLabel)
                 .addLabeledComponent("What to do when finished:", actionComboBox)
                 .addComponent(explanationLabel)
                 .addVerticalGap(10)
@@ -130,4 +147,5 @@ public class ActionChoiceDialog extends DialogWrapper {
     public String getCommitMessage() { return commitMessage.getText(); }
     public String getLog() { return log; }
     public void setLog(String log) { this.log = log; }
+    public void setWarnings(java.util.List<String> warnings) { this.warnings = warnings; }
 }

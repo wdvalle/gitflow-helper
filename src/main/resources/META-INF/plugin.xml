@@ -404,5 +404,7 @@
 
         <notificationGroup id="GitFlowNotificationGroup"
                            displayType="BALLOON" />
+
+        <checkinHandlerFactory implementation="br.com.gitflowhelper.checkin.GitFlowCheckinHandlerFactory"/>
     </extensions>
 </idea-plugin>
