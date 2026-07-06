@@ -146,6 +146,9 @@ Simplify your issue management by connecting your favorite platforms:
   * **Redmine**
   * **Jira**
 
+![Toolwindow Screen](src/main/resources/screens/11-task-server-config.png)
+![Toolwindow Screen](src/main/resources/screens/12-tasks-view.png)
+
 ---
 
 ## 🛠️ Implementation Details
