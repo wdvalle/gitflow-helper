@@ -2,3 +2,4 @@ build/
 .gradle/
 /.idea/gitflow-helper.xml
 .intellijPlatform/
+.DS_Store
