@@ -238,6 +238,12 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.1.0</b></li>
+                <ul>
+                    <li>Sync actions.</li>
+                    <li>Security checks on commit.</li>
+                    <li>Graph view of branches.</li>
+                </ul>
                 <li><b>2.0.0</b></li>
                 <ul>
                     <li>Integration with task servers (Wow!).</li>
@@ -409,9 +415,6 @@
                     first-keystroke="ctrl alt 9"/>
         </action>
 
-
-
-    </actions>
 
 
     </actions>

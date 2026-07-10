@@ -11,7 +11,21 @@ java {
 }
 
 group 'br.com.gitflowhelper'
-version '2.0.0'
+version '2.1.0'
+    
+intellijPlatform {
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = '242'
+            untilBuild = null
+        }
+    }
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
+}
 
 repositories {
     mavenCentral()
@@ -30,8 +44,7 @@ dependencies {
 }
 
 tasks {
-    patchPluginXml {
-        sinceBuild = '242'
-        untilBuild = null
+    buildSearchableOptions {
+        enabled = false
     }
 }
