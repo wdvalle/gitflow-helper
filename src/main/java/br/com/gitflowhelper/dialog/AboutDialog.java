@@ -107,7 +107,7 @@ public class AboutDialog extends DialogWrapper {
         descPanel.add(desc);
 
         HyperlinkLabel projectLink = new HyperlinkLabel();
-        projectLink.setHyperlinkText("Project: ", GITHUB_URL, "");
+        projectLink.setHtmlText("Project: <a href=\"" + GITHUB_URL + "\">" + GITHUB_URL + "</a>");
         projectLink.addHyperlinkListener(e -> BrowserUtil.browse(GITHUB_URL));
         descPanel.add(projectLink);
 
