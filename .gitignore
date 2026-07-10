@@ -2,4 +2,8 @@ build/
 .gradle/
 /.idea/gitflow-helper.xml
 .intellijPlatform/
-.DS_Store
+*.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.bak
