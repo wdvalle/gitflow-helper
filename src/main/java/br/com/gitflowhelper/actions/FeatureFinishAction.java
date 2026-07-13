@@ -13,8 +13,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.tasks.LocalTask;
 import com.intellij.tasks.TaskManager;
@@ -28,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -40,23 +43,39 @@ public class FeatureFinishAction extends BaseAction {
     @Override
     public void actionPerformedImpl(@NotNull AnActionEvent e) {
         final String[] featureCommits = {""};
+        final List<String> warnings = new ArrayList<>();
         String[] postAction = new String[1];
         Project project = e.getProject();
         String branchName = getBranchName(project);
-        ActionChoiceDialog dialog = new ActionChoiceDialog(project, branchName, getDevelopBranch(project));
+        String developBranch = getDevelopBranch(project);
+        ActionChoiceDialog dialog = new ActionChoiceDialog(project, branchName, developBranch);
 
         var future = ApplicationManager.getApplication().executeOnPooledThread(() -> {
             GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
             try {
                 for (GitRepository repository : repoManager.getRepositories()) {
-                    VirtualFile root = repository.getRoot();
+                    // Check for uncommitted changes
+                    if (!ChangeListManager.getInstance(project).getChangesIn(repository.getRoot()).isEmpty()) {
+                        warnings.add("Repository '" + repository.getRoot().getName() + "' has uncommitted changes.");
+                    }
+
+                    // Check if behind develop
+                    try {
+                        List<GitCommit> commitsBehind = GitHistoryUtils.history(project, repository.getRoot(), branchName + ".." + developBranch);
+                        if (!commitsBehind.isEmpty()) {
+                            warnings.add("Branch '" + branchName + "' is behind '" + developBranch + "' by " + commitsBehind.size() + " commits.");
+                        }
+                    } catch (VcsException vcsEx) {
+                        // ignore
+                    }
+
                     //grabs from the first
                     if (featureCommits[0].equals("")) {
-                        featureCommits[0] = getFeatureCommits(project, repository, getDevelopBranch(project), branchName);
-                        break;
+                        featureCommits[0] = getFeatureCommits(project, repository, developBranch, branchName);
                     }
                 }
                 dialog.setLog(featureCommits[0]);
+                dialog.setWarnings(warnings);
             } catch (Exception ex) {
                 ExceptionUtil.handleException(project, ex);
             }
@@ -64,6 +83,7 @@ public class FeatureFinishAction extends BaseAction {
 
         try {
             future.get();
+
             if (dialog.showAndGet()) {
                 ApplicationManager.getApplication().executeOnPooledThread(() -> {
                     setLoading(true, true, project);

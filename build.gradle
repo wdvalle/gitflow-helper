@@ -30,8 +30,7 @@ dependencies {
 }
 
 tasks {
-    patchPluginXml {
-        sinceBuild = '242'
-        untilBuild = null
+    buildSearchableOptions {
+        enabled = false
     }
 }
