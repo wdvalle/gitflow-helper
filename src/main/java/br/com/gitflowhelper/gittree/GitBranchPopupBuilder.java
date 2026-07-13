@@ -44,7 +44,7 @@ public class GitBranchPopupBuilder {
 
     private static JBPopup jbPopup = null;
 
-    public static JBPopup createPopup(Project project) {
+    public static JBPopup createPopup(Project project, GitRepository repo) {
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("ROOT");
         DefaultMutableTreeNode localRoot = new DefaultMutableTreeNode("Local");
@@ -53,13 +53,9 @@ public class GitBranchPopupBuilder {
         root.add(localRoot);
         root.add(remoteRoot);
 
-        GitRepositoryManager manager = GitRepositoryManager.getInstance(project);
-        List<GitRepository> repositories = manager.getRepositories();
 
-        for (GitRepository repo : repositories) {
-            groupLocalBranches(repo, localRoot, project);
-            groupRemoteBranches(repo, remoteRoot, project);
-        }
+        groupLocalBranches(repo, localRoot, project);
+        groupRemoteBranches(repo, remoteRoot, project);
 
         Tree tree = new Tree(new DefaultTreeModel(root));
         tree.setRootVisible(false);
@@ -82,7 +78,7 @@ public class GitBranchPopupBuilder {
 
         JPanel panel = new JPanel(new BorderLayout());
 
-        JLabel title = new JLabel("Git Branches", PluginIcons.GitFlow, SwingConstants.CENTER);
+        JLabel title = new JLabel("Git Branches of "+repo.getRoot().getName(), PluginIcons.GitFlow, SwingConstants.CENTER);
         title.setHorizontalTextPosition(SwingConstants.RIGHT);
         title.setBorder(JBUI.Borders.empty(8, 8));
 
