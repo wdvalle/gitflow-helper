@@ -3,25 +3,21 @@ package br.com.gitflowhelper.popup;
 import br.com.gitflowhelper.actions.*;
 import br.com.gitflowhelper.actions.branches.DeleteLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.DeleteRemoteBranchAction;
-import br.com.gitflowhelper.events.GitFlowTaskListener;
 import br.com.gitflowhelper.gittree.GitBranchPopupBuilder;
 import br.com.gitflowhelper.util.ActionParamsService;
 import br.com.gitflowhelper.actions.branches.CheckoutLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.CheckoutRemoteBranchAction;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.GitFlowDescriptions;
-import br.com.gitflowhelper.util.NotificationUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogBuilder;
-import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.*;
 import com.intellij.ui.awt.RelativePoint;
 import git4idea.GitLocalBranch;
 import git4idea.GitRemoteBranch;
+import git4idea.repo.GitRemote;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import icons.PluginIcons;
@@ -82,81 +78,13 @@ public final class GitFlowPopup {
         group.add(new InitAction("Init..."));
         group.addSeparator();
 
-        group.add(new BaseAction("Show as tree...", GitFlowDescriptions.SHOW_AS_TREE.getValue(), AllIcons.General.Layout) {
-            @Override
-            protected void updateImpl(@NotNull AnActionEvent e) {
-            }
-            @Override
-            public void actionPerformedImpl(@NotNull AnActionEvent e) {
-                JBPopup tree = GitBranchPopupBuilder.createPopup(project);
-                tree.show(new RelativePoint(local));
-            }
-        });
-        group.addSeparator();
-
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         for (GitRepository repository : repoManager.getRepositories()) {
             group.add(repositoryBranchGroup(repository, project));
         }
 
         group.addSeparator();
-        group.add(new BaseAction("Integrate with tasks", "Enable/Disable Task integration", AllIcons.Actions.Checked) {
-            @Override
-            protected void updateImpl(@NotNull AnActionEvent e) {
-                Project p = e.getProject();
-                if (p == null) return;
-                boolean integrate = GitFlowSettingsService.getInstance(p).isIntegrateWithTasks();
-                e.getPresentation().setIcon(integrate ? AllIcons.Diff.GutterCheckBoxSelected : AllIcons.Diff.GutterCheckBox);
-                e.getPresentation().setText("Tasks integration");
-            }
-
-            @Override
-            public void actionPerformedImpl(@NotNull AnActionEvent e) {
-                Project p = e.getProject();
-                if (p == null) return;
-                GitFlowSettingsService settings = GitFlowSettingsService.getInstance(p);
-                boolean currentSetting = settings.isIntegrateWithTasks();
-
-                if (!currentSetting) {
-                    DialogBuilder builder = new DialogBuilder(p);
-                    builder.setTitle("Enable Tasks Integration");
-
-                    JPanel panel = new JPanel(new BorderLayout(15, 0));
-                    panel.add(new JLabel(Messages.getQuestionIcon()), BorderLayout.WEST);
-
-                    JLabel label = new JLabel("<html><body>" +
-                            "Task integration links Git Flow branches with your issue tracker <span style='color:orange'>(at this time <b>GitHub and GitLab</b>, more trackers comming soon)</span>.<br><br>" +
-                            "&bull; <b>Starting a feature or hotfix</b>: Select a task to auto-generate the branch name and optionally mark it as 'In Progress'.<br>" +
-                            "&bull; <b>Finishing a feature or hotfix</b>: Option to merge the branch in develop or main, close the associated task and switch back to the default context.<br><br>" +
-                            "Note: You must configure your Task Servers at:  <b>Settings &#x2192; Tools &#x2192; Tasks &#x2192; Servers</b>.<br><br>" +
-                            "Enable task integration now?</body></html>");
-                    panel.add(label, BorderLayout.CENTER);
-                    panel.setPreferredSize(new Dimension(500, 200));
-
-                    builder.setCenterPanel(panel);
-                    builder.addOkAction().setText("Enable");
-                    builder.addCancelAction().setText("Cancel");
-
-                    if (builder.show() == DialogWrapper.OK_EXIT_CODE) {
-                        settings.setIntegrateWithTasks(true);
-                        p.getMessageBus().syncPublisher(GitFlowTaskListener.TOPIC).tasksChanged();
-                        NotificationUtil.showGitFlowSuccessNotification(p, "Git Flow Helper", "Task integration enabled successfully.");
-                    }
-                } else {
-                    if (Messages.showYesNoDialog(p,
-                            "Are you sure you want to disable Tasks integration? You can re-enable it at any time.",
-                            "Disable Tasks Integration",
-                            "Disable",
-                            "Cancel",
-                            Messages.getQuestionIcon()) == Messages.YES) {
-                        settings.setIntegrateWithTasks(false);
-                        p.getMessageBus().syncPublisher(GitFlowTaskListener.TOPIC).tasksChanged();
-                        NotificationUtil.showGitFlowSuccessNotification(p, "Git Flow Helper", "Task integration disabled successfully.");
-                    }
-                }
-            }
-        });
-//        group.add(new ShowTasksAction());
+        group.add(new IntegrateWithTasksAction());
         group.add(new ViewTaskAction());
 
         group.addSeparator();
@@ -185,31 +113,28 @@ public final class GitFlowPopup {
     private AnAction flowAction(String type, String action) {
         String actionClassName = type+action+"Action";
         return ActionManager.getInstance().getAction("GitFlowHelper."+actionClassName);
-//        BaseAction act = ActionBuilder.createActionInstance(
-//                actionClassName,
-//                action);
-//
-//        assert act != null;
-//        ActionManager.getInstance().registerAction("GitFlowHelper."+actionClassName, act);
-//        if (shortcuts.get(actionClassName) != null) {
-//            KeymapManager
-//                    .getInstance()
-//                    .getActiveKeymap().addShortcut(
-//                            "GitFlowHelper."+actionClassName,
-//                            shortcuts.get(actionClassName)
-//                    );
-//        }
-//        return act;
     }
 
     private DefaultActionGroup repositoryBranchGroup(GitRepository repository, Project project) {
         DefaultActionGroup group = new DefaultActionGroup(
-                repository.getProject().getName(),
+                "<html>" + repository.getRoot().getName() + "   <font color='#888888'>\u2387" + repository.getCurrentBranch().getName() +"</font></html>",
                 GitFlowDescriptions.REPO_GROUP.getValue(),
-                AllIcons.Actions.ProjectDirectory);
+                PluginIcons.GitFlowGray);
         group.setPopup(true);
 
         String currentBranch = repository.getCurrentBranchName();
+
+        group.add(new BaseAction("Show as tree...", GitFlowDescriptions.SHOW_AS_TREE.getValue(), AllIcons.General.Layout) {
+            @Override
+            protected void updateImpl(@NotNull AnActionEvent e) {
+            }
+            @Override
+            public void actionPerformedImpl(@NotNull AnActionEvent e) {
+                JBPopup tree = GitBranchPopupBuilder.createPopup(e.getProject(), repository);
+                tree.show(new RelativePoint(local));
+            }
+        });
+        group.addSeparator();
 
         //--------------------------------------------------------------------------------------------
 
