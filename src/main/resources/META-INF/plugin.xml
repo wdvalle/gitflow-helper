@@ -238,6 +238,10 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.1.1</b></li>
+                <ul>
+                    <li>Correct icon size.</li>
+                </ul>
                 <li><b>2.1.0</b></li>
                 <ul>
                     <li>Support for multi repo projects.</li>
