@@ -117,7 +117,7 @@ public final class GitFlowPopup {
 
     private DefaultActionGroup repositoryBranchGroup(GitRepository repository, Project project) {
         DefaultActionGroup group = new DefaultActionGroup(
-                "<html>" + repository.getRoot().getName() + "   <font color='#888888'>\u2387" + repository.getCurrentBranch().getName() +"</font></html>",
+                "<html>" + repository.getRoot().getName() + "   <font color='#888888'>" + (repository.getCurrentBranch() != null ? "\u2387 "+repository.getCurrentBranch().getName() : "(No current branch)") +"</font></html>",
                 GitFlowDescriptions.REPO_GROUP.getValue(),
                 PluginIcons.GitFlowGray);
         group.setPopup(true);

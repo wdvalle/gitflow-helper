@@ -238,6 +238,10 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.1.2</b></li>
+                <ul>
+                    <li>NPE when current branch is null.</li>
+                </ul>
                 <li><b>2.1.1</b></li>
                 <ul>
                     <li>Correct icon size.</li>
