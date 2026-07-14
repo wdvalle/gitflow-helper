@@ -1,0 +1,1161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="NPE when current branch is null." />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="module" />
+      <option value="repository" />
+    </option>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="116" />
+    <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="gitflow-helper" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="gitflow-helper" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="gitflow-helper" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="gitflow-helper" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="intellij platform" type="c8890929:TasksNode$1" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Record" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;walterdvalle&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/walterdvalle/gitflow-helper.git&quot;,
+    &quot;accountId&quot;: &quot;b6a6f382-8ae5-4234-9997-4dd3bbd631ef&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/FeatureFinishAction.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/git/GitCommandExecutor.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="jar://$USER_HOME$/.gradle/caches/9.3.1/transforms/4ef27b8b22a1965a97060184fa568157/transformed/ideaIC-2024.2.4-aarch64/lib/app-client.jar!/com/intellij/icons/AllIcons.class" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.gradle/caches/9.3.1/transforms/4ef27b8b22a1965a97060184fa568157/transformed/ideaIC-2024.2.4-aarch64/lib/app-client.jar!/com/intellij/ide/IdeEventQueue.class" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.gradle/caches/9.3.1/transforms/4ef27b8b22a1965a97060184fa568157/transformed/ideaIC-2024.2.4-aarch64/lib/app-client.jar!/com/intellij/openapi/ui/DialogWrapper.class" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.gradle/caches/9.3.1/transforms/4ef27b8b22a1965a97060184fa568157/transformed/ideaIC-2024.2.4-aarch64/lib/util-8.jar!/com/intellij/openapi/application/ApplicationManager.class" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.sdkman/candidates/java/17.0.13-tem/lib/src.zip!/java.desktop/java/awt/Component.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.sdkman/candidates/java/17.0.13-tem/lib/src.zip!/java.desktop/java/awt/Container.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.sdkman/candidates/java/17.0.13-tem/lib/src.zip!/java.desktop/java/awt/Robot.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.sdkman/candidates/java/17.0.13-tem/lib/src.zip!/java.desktop/java/beans/PropertyChangeSupport.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.sdkman/candidates/java/17.0.13-tem/lib/src.zip!/java.desktop/javax/swing/JComponent.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.sdkman/candidates/java/21.0.5-tem/lib/src.zip!/java.base/java/lang/System.java" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0268315565049353" />
+      <entry key="MS500" value="1.5541597880970937" />
+      <entry key="S2" value="2.8131043086830836" />
+      <entry key="S5" value="4.606776197894746" />
+      <entry key="S10" value="6.121415045189573" />
+      <entry key="S30" value="7.96035737444244" />
+      <entry key="S60" value="10.887367500248965" />
+      <entry key="M2" value="19.155586512789046" />
+      <entry key="M5" value="33.63069700000767" />
+      <entry key="M10" value="41.93696586743957" />
+      <entry key="M15" value="45.27807812924076" />
+      <entry key="M30" value="48.95443294184521" />
+      <entry key="H1" value="50.92881085351229" />
+      <entry key="H2" value="51.95255566688713" />
+      <entry key="H4" value="52.88057932375752" />
+      <entry key="D1" value="572.4063399626357" />
+      <entry key="W1" value="6731.482522091583" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="4.582975380155059E-139" />
+      <entry key="M10" value="1.2978900916221417E-69" />
+      <entry key="M15" value="2.000445246103964E-46" />
+      <entry key="M30" value="3.443715750647833E-23" />
+      <entry key="H1" value="1.522770645650414E-11" />
+      <entry key="H2" value="1.0598755133648151E-5" />
+      <entry key="H4" value="0.009539003473338442" />
+      <entry key="D1" value="9.49658503410951" />
+      <entry key="W1" value="126.93640347910394" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.9650835003628541" />
+      <entry key="MS500" value="1.5363163365695427" />
+      <entry key="S2" value="2.8051474229924316" />
+      <entry key="S5" value="4.60105072629234" />
+      <entry key="S10" value="6.117247201764069" />
+      <entry key="S30" value="7.958268014563712" />
+      <entry key="S60" value="10.8855149408018" />
+      <entry key="M2" value="19.15373742675751" />
+      <entry key="M5" value="33.629407932449105" />
+      <entry key="M10" value="41.936176021698145" />
+      <entry key="M15" value="45.277513698142116" />
+      <entry key="M30" value="48.95413019640851" />
+      <entry key="H1" value="50.9286540277948" />
+      <entry key="H2" value="51.95248644118666" />
+      <entry key="H4" value="52.890075236933995" />
+      <entry key="D1" value="581.902257430571" />
+      <entry key="W1" value="6858.417701823642" />
+    </decayedShown>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="37OZ5boTt5FZJqIWNkkhQaXDl7P" />
+  <component name="ProjectViewState">
+    <option name="autoscrollFromSource" value="true" />
+    <option name="flattenPackages" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.GeminiBot.executor&quot;: &quot;Coverage&quot;,
+    &quot;Gradle./Users/walterdovalle/Desenvolvimento/projetos/gitflow-helper/settings.gradle.executor&quot;: &quot;Debug&quot;,
+    &quot;Gradle.Build gitflow-helper.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Upgrade Gradle wrapper.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow helper.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [:GeminiBot.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [:MonitorGlobal.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [:MouseMonitor.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [:br.com.gitflowhelper.util.BatchBookPageCropper.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [:br.com.gitflowhelper.util.ImageCropper.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [:example.GeminiBatchImageEnhancer.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [assemble].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [buildDependents].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [buildEnvironment].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [buildNeeded].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [buildPlugin].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [buildSearchableOptions].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [build] (1).executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [check].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [classes].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [compileJava].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [dependencies].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [dependencyInsight].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [help].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [javaToolchains].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [patchPluginXml].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [properties].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [runIde].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [runPluginVerifier].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [setupDependencies].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [tasks].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [verifyPluginConfiguration].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.gitflow-helper [verifyPlugin].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/walterdovalle/Desenvolvimento/projetos/gitflow-helper/src/main/resources/icons&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.41884816&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="br.com.gitflowhelper.actions" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/icons" />
+      <recent name="$PROJECT_DIR$/src/main/resources/screens" />
+      <recent name="$PROJECT_DIR$/src/main/java/br/com/gitflow/tracker/gemini" />
+      <recent name="$PROJECT_DIR$/src/main/java" />
+      <recent name="$PROJECT_DIR$/src/main/resources/META-INF" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/screens" />
+      <recent name="$PROJECT_DIR$/.gradle" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="br.com.gitflowhelper.settings" />
+      <recent name="br.com.gitflowhelper.util" />
+      <recent name="icons" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="br.com.gitflowhelper.actions.branches" />
+      <recent name="br.com.gitflowhelper.util" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Gradle.gitflow-helper [buildPlugin]">
+    <configuration name="BatchBookPageCropper" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="br.com.gitflowhelper.util.BatchBookPageCropper" />
+      <module name="gitflow-helper.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="br.com.gitflowhelper.util.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ImageCropper" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="br.com.gitflowhelper.util.ImageCropper" />
+      <module name="gitflow-helper.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="br.com.gitflowhelper.util.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gitflow-helper [buildPlugin]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="buildPlugin" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <GradleProfilingDisabled>false</GradleProfilingDisabled>
+      <GradleCoverageDisabled>false</GradleCoverageDisabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="gitflow-helper [build]" type="GradleRunConfiguration" factoryName="Gradle">
+      <ExternalSystemSettings>
+        <option name="env">
+          <map>
+            <entry key="GRADLE_USER_HOME" value="/opt/homebrew/Cellar/gradle/9.3.1/bin" />
+          </map>
+        </option>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <GradleProfilingDisabled>false</GradleProfilingDisabled>
+      <GradleCoverageDisabled>false</GradleCoverageDisabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="gitflow-helper [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <GradleProfilingDisabled>false</GradleProfilingDisabled>
+      <GradleCoverageDisabled>false</GradleCoverageDisabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="gitflow-helper [runIde]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="runIde" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <GradleProfilingDisabled>false</GradleProfilingDisabled>
+      <GradleCoverageDisabled>false</GradleCoverageDisabled>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.BatchBookPageCropper" />
+      <item itemvalue="Application.ImageCropper" />
+      <item itemvalue="Gradle.gitflow-helper [build]" />
+      <item itemvalue="Gradle.gitflow-helper [buildPlugin]" />
+      <item itemvalue="Gradle.gitflow-helper [runIde]" />
+      <item itemvalue="Gradle.gitflow-helper [clean]" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.gitflow-helper [clean]" />
+        <item itemvalue="Gradle.gitflow-helper [runIde]" />
+        <item itemvalue="Gradle.gitflow-helper [buildPlugin]" />
+        <item itemvalue="Application.ImageCropper" />
+        <item itemvalue="Application.BatchBookPageCropper" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-37e91769500f-intellij.indexing.shared.core-IU-261.26222.65" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-IU-261.26222.65" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="" />
+      <created>1766775896658</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1766775896658</updated>
+      <workItem from="1766775897985" duration="46294000" />
+      <workItem from="1767718308030" duration="31638000" />
+      <workItem from="1768273166052" duration="15704000" />
+      <workItem from="1768323848083" duration="27610000" />
+      <workItem from="1768423114066" duration="14454000" />
+      <workItem from="1768444866154" duration="2688000" />
+      <workItem from="1768447625882" duration="30468000" />
+      <workItem from="1768612257527" duration="36386000" />
+      <workItem from="1769030315159" duration="53000" />
+      <workItem from="1769030377980" duration="23454000" />
+      <workItem from="1769269470979" duration="21121000" />
+      <workItem from="1769356127571" duration="59000" />
+      <workItem from="1769356187304" duration="18924000" />
+      <workItem from="1769714467333" duration="65297000" />
+      <workItem from="1769994019285" duration="22781000" />
+      <workItem from="1770313661552" duration="2301000" />
+      <workItem from="1770315997932" duration="36000" />
+      <workItem from="1770316117619" duration="1199000" />
+      <workItem from="1770317335824" duration="8400000" />
+      <workItem from="1770341106030" duration="648000" />
+      <workItem from="1770341778514" duration="102000" />
+      <workItem from="1770341895887" duration="56000" />
+      <workItem from="1770341967525" duration="1309000" />
+      <workItem from="1770343295709" duration="127000" />
+      <workItem from="1770343439407" duration="3551000" />
+      <workItem from="1770376013437" duration="5098000" />
+      <workItem from="1770391144769" duration="27723000" />
+      <workItem from="1770484870962" duration="29530000" />
+      <workItem from="1770590546906" duration="930000" />
+      <workItem from="1770591526353" duration="1380000" />
+      <workItem from="1770592927762" duration="9666000" />
+      <workItem from="1770690679718" duration="6923000" />
+      <workItem from="1770768346649" duration="2509000" />
+      <workItem from="1770837488007" duration="16527000" />
+      <workItem from="1771037588503" duration="3690000" />
+      <workItem from="1771041297332" duration="3095000" />
+      <workItem from="1771274650576" duration="13000" />
+      <workItem from="1771274697567" duration="9554000" />
+      <workItem from="1771296220491" duration="8870000" />
+      <workItem from="1771348444545" duration="26272000" />
+      <workItem from="1772387280302" duration="48434000" />
+      <workItem from="1772622953015" duration="300000" />
+      <workItem from="1772623271830" duration="4442000" />
+      <workItem from="1773095326637" duration="26000" />
+      <workItem from="1773095355668" duration="28000" />
+      <workItem from="1773095385819" duration="11000" />
+      <workItem from="1773095402224" duration="23000" />
+      <workItem from="1773095435776" duration="28587000" />
+      <workItem from="1773759017612" duration="19327000" />
+      <workItem from="1773792017022" duration="28025000" />
+      <workItem from="1775960258811" duration="1323000" />
+      <workItem from="1778897368474" duration="62000" />
+      <workItem from="1778900544701" duration="33017000" />
+      <workItem from="1779063194027" duration="18484000" />
+      <workItem from="1779113499665" duration="14081000" />
+      <workItem from="1779644800881" duration="198000" />
+      <workItem from="1779645082192" duration="8014000" />
+      <workItem from="1780017329185" duration="6316000" />
+      <workItem from="1780600175146" duration="36115000" />
+      <workItem from="1780759428388" duration="4037000" />
+      <workItem from="1780763861501" duration="5471000" />
+      <workItem from="1780794740276" duration="1170000" />
+      <workItem from="1780796035727" duration="59000" />
+      <workItem from="1780796106560" duration="114000" />
+      <workItem from="1780796224073" duration="20000" />
+      <workItem from="1780796245625" duration="177000" />
+      <workItem from="1780796425973" duration="12000" />
+      <workItem from="1780796440231" duration="33000" />
+      <workItem from="1780796476028" duration="27000" />
+      <workItem from="1780796505186" duration="824000" />
+      <workItem from="1780797360526" duration="184000" />
+      <workItem from="1780797560520" duration="94000" />
+      <workItem from="1780797670804" duration="31000" />
+      <workItem from="1780797712332" duration="81000" />
+      <workItem from="1780797805585" duration="47247000" />
+      <workItem from="1781059581036" duration="174000" />
+      <workItem from="1781059788172" duration="73000" />
+      <workItem from="1781059875443" duration="7693000" />
+      <workItem from="1781216591527" duration="9475000" />
+      <workItem from="1781369813219" duration="727000" />
+      <workItem from="1781382387922" duration="28533000" />
+      <workItem from="1782051911044" duration="3053000" />
+      <workItem from="1782164762598" duration="6394000" />
+      <workItem from="1782327398477" duration="47377000" />
+      <workItem from="1782702616520" duration="33344000" />
+      <workItem from="1782954054733" duration="22000" />
+      <workItem from="1782954084672" duration="15000" />
+      <workItem from="1782954123506" duration="11000" />
+      <workItem from="1782954153043" duration="12000" />
+      <workItem from="1782954189763" duration="44000" />
+      <workItem from="1782954257753" duration="17000" />
+      <workItem from="1782954299572" duration="19000" />
+      <workItem from="1782954336784" duration="25000" />
+      <workItem from="1782954384689" duration="17004000" />
+      <workItem from="1783030701430" duration="308000" />
+      <workItem from="1783031056423" duration="21145000" />
+      <workItem from="1783133010825" duration="5659000" />
+      <workItem from="1783206889260" duration="1131000" />
+      <workItem from="1783208931375" duration="6932000" />
+      <workItem from="1783253913435" duration="1224000" />
+      <workItem from="1783255165770" duration="3361000" />
+      <workItem from="1783296267561" duration="8143000" />
+      <workItem from="1783305607922" duration="9595000" />
+      <workItem from="1783645267031" duration="40000" />
+      <workItem from="1783645330419" duration="164000" />
+      <workItem from="1783645523832" duration="5164000" />
+      <workItem from="1783660763257" duration="16000" />
+      <workItem from="1783660810469" duration="3249000" />
+      <workItem from="1783684311869" duration="7282000" />
+      <workItem from="1783795079404" duration="16654000" />
+      <workItem from="1783903798599" duration="773000" />
+      <workItem from="1783904605608" duration="42000" />
+      <workItem from="1783904671629" duration="242000" />
+      <workItem from="1783904919359" duration="1743000" />
+      <workItem from="1783906693684" duration="25000" />
+      <workItem from="1783906738179" duration="233000" />
+      <workItem from="1783906977483" duration="153000" />
+      <workItem from="1783907136108" duration="6620000" />
+      <workItem from="1784043394218" duration="435000" />
+      <workItem from="1784043843454" duration="167000" />
+      <workItem from="1784044015603" duration="93000" />
+    </task>
+    <task id="LOCAL-00056" summary="Keyboard shortcuts for git flow actions.&#10;Fail on Init does not initialize plugin anymore.&#10;New reset plugin action.&#10;Automatic focus on dialog fields.&#10;(MUCH) Better exception handling.">
+      <option name="closed" value="true" />
+      <created>1779116782020</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1779116782020</updated>
+    </task>
+    <task id="LOCAL-00057" summary="Upgraded IntelliJ platform version.&#10;Removed deprecated code (mark for removal in IntelliJ).">
+      <option name="closed" value="true" />
+      <created>1779632042074</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1779632042074</updated>
+    </task>
+    <task id="LOCAL-00058" summary="Progress bar in IDE status bar.&#10;Better messages in tool window.&#10;Give a like link 😉👍">
+      <option name="closed" value="true" />
+      <created>1780793731288</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1780793731289</updated>
+    </task>
+    <task id="LOCAL-00059" summary="Damn it &quot;marked for removal&quot;! &#10;What am I supposed to use?">
+      <option name="closed" value="true" />
+      <created>1780794983871</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1780794983871</updated>
+    </task>
+    <task id="LOCAL-00060" summary="New limit for &quot;Give a like&quot;">
+      <option name="closed" value="true" />
+      <created>1780796800753</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1780796800754</updated>
+    </task>
+    <task id="LOCAL-00061" summary="Better progress bar">
+      <option name="closed" value="true" />
+      <created>1780840027475</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1780840027475</updated>
+    </task>
+    <task id="LOCAL-00063" summary="Begin using tasks integration">
+      <option name="closed" value="true" />
+      <created>1780955853876</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1780955853876</updated>
+    </task>
+    <task id="LOCAL-00064" summary="Simultaneous projects work fine.&#10;Better progress bar in IDE status bar.">
+      <option name="closed" value="true" />
+      <created>1781056017875</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1781056017875</updated>
+    </task>
+    <task id="LOCAL-00065" summary="Damn it! Are you crazy JetBrains!&#10;What can I read the plugin version without violating your crazy rules?">
+      <option name="closed" value="true" />
+      <created>1781057203881</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1781057203881</updated>
+    </task>
+    <task id="LOCAL-00066" summary="Tracker connectors">
+      <option name="closed" value="true" />
+      <created>1782682091253</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1782682091254</updated>
+    </task>
+    <task id="LOCAL-00067" summary="Doing and Assignee">
+      <option name="closed" value="true" />
+      <created>1782688531017</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1782688531017</updated>
+    </task>
+    <task id="LOCAL-00068" summary="Old connector removed">
+      <option name="closed" value="true" />
+      <created>1782688726489</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1782688726489</updated>
+    </task>
+    <task id="LOCAL-00069" summary="Finish closes issue">
+      <option name="closed" value="true" />
+      <created>1782703313148</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1782703313148</updated>
+    </task>
+    <task id="LOCAL-00070" summary="Only open issues">
+      <option name="closed" value="true" />
+      <created>1782704216881</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1782704216881</updated>
+    </task>
+    <task id="LOCAL-00071" summary="Fast">
+      <option name="closed" value="true" />
+      <created>1782704495039</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1782704495039</updated>
+    </task>
+    <task id="LOCAL-00072" summary="Release without integration">
+      <option name="closed" value="true" />
+      <created>1782705571297</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1782705571297</updated>
+    </task>
+    <task id="LOCAL-00073" summary="Minor bugs">
+      <option name="closed" value="true" />
+      <created>1782708999436</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1782708999436</updated>
+    </task>
+    <task id="LOCAL-00074" summary="In English please">
+      <option name="closed" value="true" />
+      <created>1782709206821</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1782709206821</updated>
+    </task>
+    <task id="LOCAL-00075" summary="Feature start and finish plus hotfix start and finish">
+      <option name="closed" value="true" />
+      <created>1782767084616</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1782767084616</updated>
+    </task>
+    <task id="LOCAL-00076" summary="RC1 with tasks">
+      <option name="closed" value="true" />
+      <created>1782770373685</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1782770373685</updated>
+    </task>
+    <task id="LOCAL-00077" summary="README.md update">
+      <option name="closed" value="true" />
+      <created>1782944154463</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1782944154463</updated>
+    </task>
+    <task id="LOCAL-00078" summary="Issues panel in progress">
+      <option name="closed" value="true" />
+      <created>1782958492639</created>
+      <option name="number" value="00078" />
+      <option name="presentableId" value="LOCAL-00078" />
+      <option name="project" value="LOCAL" />
+      <updated>1782958492640</updated>
+    </task>
+    <task id="LOCAL-00079" summary="Issues panel in progress">
+      <option name="closed" value="true" />
+      <created>1782958503373</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1782958503374</updated>
+    </task>
+    <task id="LOCAL-00080" summary="Issues panel in progress">
+      <option name="closed" value="true" />
+      <created>1783033446161</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1783033446161</updated>
+    </task>
+    <task id="LOCAL-00081" summary="Issues panel in progress">
+      <option name="closed" value="true" />
+      <created>1783044323925</created>
+      <option name="number" value="00081" />
+      <option name="presentableId" value="LOCAL-00081" />
+      <option name="project" value="LOCAL" />
+      <updated>1783044323925</updated>
+    </task>
+    <task id="LOCAL-00082" summary="Issues panel in progress">
+      <option name="closed" value="true" />
+      <created>1783046809033</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1783046809034</updated>
+    </task>
+    <task id="LOCAL-00083" summary="Issues panel in progress">
+      <option name="closed" value="true" />
+      <created>1783047620856</created>
+      <option name="number" value="00083" />
+      <option name="presentableId" value="LOCAL-00083" />
+      <option name="project" value="LOCAL" />
+      <updated>1783047620856</updated>
+    </task>
+    <task id="LOCAL-00084" summary="Search field added to tasks">
+      <option name="closed" value="true" />
+      <created>1783047992878</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1783047992878</updated>
+    </task>
+    <task id="LOCAL-00085" summary="Github RC1">
+      <option name="closed" value="true" />
+      <created>1783131938719</created>
+      <option name="number" value="00085" />
+      <option name="presentableId" value="LOCAL-00085" />
+      <option name="project" value="LOCAL" />
+      <updated>1783131938719</updated>
+    </task>
+    <task id="LOCAL-00086" summary="Update tasks list on finish">
+      <option name="closed" value="true" />
+      <created>1783132877552</created>
+      <option name="number" value="00086" />
+      <option name="presentableId" value="LOCAL-00086" />
+      <option name="project" value="LOCAL" />
+      <updated>1783132877552</updated>
+    </task>
+    <task id="LOCAL-00087" summary="Probably final with Gitalb and Github">
+      <option name="closed" value="true" />
+      <created>1783206500803</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1783206500804</updated>
+    </task>
+    <task id="LOCAL-00088" summary="Minor improvements in interface">
+      <option name="closed" value="true" />
+      <created>1783216753491</created>
+      <option name="number" value="00088" />
+      <option name="presentableId" value="LOCAL-00088" />
+      <option name="project" value="LOCAL" />
+      <updated>1783216753491</updated>
+    </task>
+    <task id="LOCAL-00089" summary="Descriptions">
+      <option name="closed" value="true" />
+      <created>1783218301732</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1783218301732</updated>
+    </task>
+    <task id="LOCAL-00090" summary="Better descriptions">
+      <option name="closed" value="true" />
+      <created>1783255253528</created>
+      <option name="number" value="00090" />
+      <option name="presentableId" value="LOCAL-00090" />
+      <option name="project" value="LOCAL" />
+      <updated>1783255253528</updated>
+    </task>
+    <task id="LOCAL-00091" summary="Images">
+      <option name="closed" value="true" />
+      <created>1783303469239</created>
+      <option name="number" value="00091" />
+      <option name="presentableId" value="LOCAL-00091" />
+      <option name="project" value="LOCAL" />
+      <updated>1783303469239</updated>
+    </task>
+    <task id="LOCAL-00092" summary="Images">
+      <option name="closed" value="true" />
+      <created>1783303864267</created>
+      <option name="number" value="00092" />
+      <option name="presentableId" value="LOCAL-00092" />
+      <option name="project" value="LOCAL" />
+      <updated>1783303864267</updated>
+    </task>
+    <task id="LOCAL-00093" summary="Checks on commit">
+      <option name="closed" value="true" />
+      <created>1783307867751</created>
+      <option name="number" value="00093" />
+      <option name="presentableId" value="LOCAL-00093" />
+      <option name="project" value="LOCAL" />
+      <updated>1783307867752</updated>
+    </task>
+    <task id="LOCAL-00094" summary="Easy branch sync actions">
+      <option name="closed" value="true" />
+      <created>1783308006178</created>
+      <option name="number" value="00094" />
+      <option name="presentableId" value="LOCAL-00094" />
+      <option name="project" value="LOCAL" />
+      <updated>1783308006179</updated>
+    </task>
+    <task id="LOCAL-00095" summary="Graph view of branches">
+      <option name="closed" value="true" />
+      <created>1783308095657</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1783308095657</updated>
+    </task>
+    <task id="LOCAL-00096" summary="Absent GitFlowTaskListener">
+      <option name="closed" value="true" />
+      <created>1783308153023</created>
+      <option name="number" value="00096" />
+      <option name="presentableId" value="LOCAL-00096" />
+      <option name="project" value="LOCAL" />
+      <updated>1783308153023</updated>
+    </task>
+    <task id="LOCAL-00097" summary="Improvements in build.gradle">
+      <option name="closed" value="true" />
+      <created>1783647547043</created>
+      <option name="number" value="00097" />
+      <option name="presentableId" value="LOCAL-00097" />
+      <option name="project" value="LOCAL" />
+      <updated>1783647547043</updated>
+    </task>
+    <task id="LOCAL-00098" summary="Removed deprecated API">
+      <option name="closed" value="true" />
+      <created>1783659433382</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1783659433382</updated>
+    </task>
+    <task id="LOCAL-00099" summary="Removed deprecated API">
+      <option name="closed" value="true" />
+      <created>1783659933028</created>
+      <option name="number" value="00099" />
+      <option name="presentableId" value="LOCAL-00099" />
+      <option name="project" value="LOCAL" />
+      <updated>1783659933028</updated>
+    </task>
+    <task id="LOCAL-00100" summary=".DS_store in .gitignore">
+      <option name="closed" value="true" />
+      <created>1783660212420</created>
+      <option name="number" value="00100" />
+      <option name="presentableId" value="LOCAL-00100" />
+      <option name="project" value="LOCAL" />
+      <updated>1783660212420</updated>
+    </task>
+    <task id="LOCAL-00101" summary=".gitignore">
+      <option name="closed" value="true" />
+      <created>1783660385693</created>
+      <option name="number" value="00101" />
+      <option name="presentableId" value="LOCAL-00101" />
+      <option name="project" value="LOCAL" />
+      <updated>1783660385693</updated>
+    </task>
+    <task id="LOCAL-00102" summary="Support for multi repo projects">
+      <option name="closed" value="true" />
+      <created>1783904026087</created>
+      <option name="number" value="00102" />
+      <option name="presentableId" value="LOCAL-00102" />
+      <option name="project" value="LOCAL" />
+      <updated>1783904026087</updated>
+    </task>
+    <task id="LOCAL-00103" summary="Icon size">
+      <option name="closed" value="true" />
+      <created>1783906045901</created>
+      <option name="number" value="00103" />
+      <option name="presentableId" value="LOCAL-00103" />
+      <option name="project" value="LOCAL" />
+      <updated>1783906045902</updated>
+    </task>
+    <task id="LOCAL-00104" summary=".">
+      <option name="closed" value="true" />
+      <created>1783907411067</created>
+      <option name="number" value="00104" />
+      <option name="presentableId" value="LOCAL-00104" />
+      <option name="project" value="LOCAL" />
+      <updated>1783907411068</updated>
+    </task>
+    <task id="LOCAL-00105" summary="NPE when current branch is null.">
+      <option name="closed" value="true" />
+      <created>1784043754778</created>
+      <option name="number" value="00105" />
+      <option name="presentableId" value="LOCAL-00105" />
+      <option name="project" value="LOCAL" />
+      <updated>1784043754778</updated>
+    </task>
+    <option name="localTasksCounter" value="106" />
+    <servers>
+      <Gitlab url="https://gitlabdesenv.jfpr.jus.br">
+        <option name="currentProject">
+          <GitlabProject id="313" />
+        </option>
+      </Gitlab>
+    </servers>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="985b481d-2b9e-4203-8d13-05861f455006" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="985b481d-2b9e-4203-8d13-05861f455006">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="roots">
+                    <value>
+                      <list>
+                        <option value="$PROJECT_DIR$" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+            </State>
+          </value>
+        </entry>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="In English please" />
+    <MESSAGE value="Feature start and finish plus hotfix start and finish" />
+    <MESSAGE value="RC1 with tasks" />
+    <MESSAGE value="README.md update" />
+    <MESSAGE value="Issues panel in progress" />
+    <MESSAGE value="Search field added to tasks" />
+    <MESSAGE value="Github RC1" />
+    <MESSAGE value="Update tasks list on finish" />
+    <MESSAGE value="Probably final with Gitalb and Github" />
+    <MESSAGE value="Minor improvements in interface" />
+    <MESSAGE value="Descriptions" />
+    <MESSAGE value="Better descriptions" />
+    <MESSAGE value="Images" />
+    <MESSAGE value="Checks on commit" />
+    <MESSAGE value="Easy branch sync actions" />
+    <MESSAGE value="Graph view of branches" />
+    <MESSAGE value="Absent GitFlowTaskListener" />
+    <MESSAGE value="Improvements in build.gradle" />
+    <MESSAGE value="Removed deprecated API" />
+    <MESSAGE value=".DS_store in .gitignore" />
+    <MESSAGE value=".gitignore" />
+    <MESSAGE value="Support for multi repo projects" />
+    <MESSAGE value="Icon size" />
+    <MESSAGE value="." />
+    <MESSAGE value="NPE when current branch is null." />
+    <option name="LAST_COMMIT_MESSAGE" value="NPE when current branch is null." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/NameDialog.java</url>
+          <line>33</line>
+          <option name="timeStamp" value="77" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/FeaturePublishAction.java</url>
+          <line>29</line>
+          <option name="timeStamp" value="83" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/FeaturePublishAction.java</url>
+          <line>30</line>
+          <option name="timeStamp" value="84" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/FeaturePublishAction.java</url>
+          <line>32</line>
+          <option name="timeStamp" value="85" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/FeaturePublishAction.java</url>
+          <line>53</line>
+          <option name="timeStamp" value="86" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/renderer/SubMenuStep.java</url>
+          <line>38</line>
+          <option name="timeStamp" value="90" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/branches/CheckoutRemoteBranchAction.java</url>
+          <line>36</line>
+          <option name="timeStamp" value="91" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/branches/CheckoutRemoteBranchAction.java</url>
+          <line>87</line>
+          <option name="timeStamp" value="127" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/branches/CheckoutRemoteBranchAction.java</url>
+          <line>52</line>
+          <option name="timeStamp" value="128" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/branches/CheckoutRemoteBranchAction.java</url>
+          <line>56</line>
+          <option name="timeStamp" value="133" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/GitFlowSettingsService.java</url>
+          <line>90</line>
+          <option name="timeStamp" value="154" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/util/PluginInfoUtil.java</url>
+          <line>11</line>
+          <option name="timeStamp" value="180" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/util/PluginUtils.java</url>
+          <line>22</line>
+          <option name="timeStamp" value="209" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflow/tracker/GitLabConnector.java</url>
+          <line>40</line>
+          <option name="timeStamp" value="215" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflow/tracker/GitLabConnector.java</url>
+          <line>61</line>
+          <option name="timeStamp" value="216" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/gittree/GitBranchPopupBuilder.java</url>
+          <line>48</line>
+          <option name="timeStamp" value="220" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ActionChoiceDialog.java</url>
+          <line>30</line>
+          <properties class="br.com.gitflowhelper.dialog.ActionChoiceDialog">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="87" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="com.intellij.tasks.gitlab.model.GitlabIssue$TimeStats" memberName="total_time_spent" />
+        <PinnedItemInfo parentTag="com.intellij.openapi.editor.impl.EditorComponentImpl" memberName="x" />
+        <PinnedItemInfo parentTag="com.intellij.tasks.gitlab.model.GitlabIssue" memberName="createdAt" />
+      </pinned-members>
+    </pin-to-top-manager>
+    <watches-manager>
+      <configuration name="GradleRunConfiguration">
+        <watch expression="repos" />
+        <watch expression="(isCurrent ?&#10;                            AllIcons.Gutter.Bookmark :&#10;                            branch.getName().equals(GitFlow" />
+        <watch expression="branch.getName()" />
+        <watch expression="repo.getCurrentBranchName()" />
+        <watch expression="branchNode.getPanel()" />
+        <watch expression="UIUtil.getTreeSelectionBackground()" />
+        <watch expression="ActionManager.getInstance().getAction(&quot;GitFlowHelper.&quot;+actionClassName)" />
+        <watch expression="ActionParamsService.getProject()" />
+        <watch expression="StringUtil.isNotEmpty(getMainBranch()) &amp;&amp;&#10;                            getBranchName() != null &amp;&amp; getBranchName().equals(getDevelopBranch()" />
+        <watch expression="getMainBranch()" />
+        <watch expression="getDevelopBranch()" />
+        <watch expression="getBranchName()" />
+        <watch expression="branchName" />
+        <watch expression="GitFlowSettingsService.getInstance(project).getShowDetails()" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/gitflow_helper$gitflow_helper__runIde_.ic" NAME="gitflow-helper [runIde] Coverage Results" MODIFIED="1778943092295" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true" />
+    <SUITE FILE_PATH="coverage/gitflow_helper$gitflow_helper__build_.ic" NAME="gitflow-helper [build] Coverage Results" MODIFIED="1770341684017" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true" />
+    <SUITE FILE_PATH="coverage/gitflow_helper$GeminiBot.ic" NAME="GeminiBot Coverage Results" MODIFIED="1773792578022" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true" />
+  </component>
+</project>
