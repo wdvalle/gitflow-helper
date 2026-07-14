@@ -328,6 +328,13 @@
                     first-keystroke="ctrl alt 2"/>
         </action>
         <action
+                id="GitFlowHelper.FeatureSyncAction"
+                class="br.com.gitflowhelper.actions.FeatureSyncAction"
+                text="Feature Sync"
+                description="Syncs the current feature branch with develop."
+                icon="AllIcons.Actions.Refresh">
+        </action>
+        <action
                 id="GitFlowHelper.FeatureFinishAction"
                 class="br.com.gitflowhelper.actions.FeatureFinishAction"
                 text="Feature Finish"
@@ -357,6 +364,13 @@
             <keyboard-shortcut
                     keymap="$default"
                     first-keystroke="ctrl alt 5"/>
+        </action>
+        <action
+                id="GitFlowHelper.ReleaseSyncAction"
+                class="br.com.gitflowhelper.actions.ReleaseSyncAction"
+                text="Release Sync"
+                description="Syncs the current release branch with develop."
+                icon="AllIcons.Actions.Refresh">
         </action>
         <action
                 id="GitFlowHelper.ReleaseFinishAction"
@@ -390,6 +404,13 @@
                     first-keystroke="ctrl alt 8"/>
         </action>
         <action
+                id="GitFlowHelper.HotfixSyncAction"
+                class="br.com.gitflowhelper.actions.HotfixSyncAction"
+                text="Hotfix Sync"
+                description="Syncs the current hotfix branch with main."
+                icon="AllIcons.Actions.Refresh">
+        </action>
+        <action
                 id="GitFlowHelper.HotfixFinishAction"
                 class="br.com.gitflowhelper.actions.HotfixFinishAction"
                 text="Hotfix Finish"
@@ -416,5 +437,7 @@
 
         <notificationGroup id="GitFlowNotificationGroup"
                            displayType="BALLOON" />
+
+        <checkinHandlerFactory implementation="br.com.gitflowhelper.checkin.GitFlowCheckinHandlerFactory"/>
     </extensions>
 </idea-plugin>

@@ -106,6 +106,7 @@ public final class GitFlowPopup {
         group.setPopup(true);
         group.add(flowAction(type, "Start"));
         group.add(flowAction(type, "Publish"));
+        group.add(flowAction(type, "Sync"));
         group.add(flowAction(type, "Finish"));
         return group;
     }
