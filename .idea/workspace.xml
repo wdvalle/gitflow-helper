@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="NPE when current branch is null." />
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="NPE when current branch is null.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/AboutDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/AboutDialog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -111,23 +116,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0268315565049353" />
-      <entry key="MS500" value="1.5541597880970937" />
-      <entry key="S2" value="2.8131043086830836" />
-      <entry key="S5" value="4.606776197894746" />
-      <entry key="S10" value="6.121415045189573" />
-      <entry key="S30" value="7.96035737444244" />
-      <entry key="S60" value="10.887367500248965" />
-      <entry key="M2" value="19.155586512789046" />
-      <entry key="M5" value="33.63069700000767" />
-      <entry key="M10" value="41.93696586743957" />
-      <entry key="M15" value="45.27807812924076" />
-      <entry key="M30" value="48.95443294184521" />
-      <entry key="H1" value="50.92881085351229" />
-      <entry key="H2" value="51.95255566688713" />
-      <entry key="H4" value="52.88057932375752" />
-      <entry key="D1" value="572.4063399626357" />
-      <entry key="W1" value="6731.482522091583" />
+      <entry key="MS100" value="1.0147821507300874" />
+      <entry key="MS500" value="1.430474594169452" />
+      <entry key="S2" value="1.810003570948935" />
+      <entry key="S5" value="1.9215436493363058" />
+      <entry key="S10" value="2.027664956003" />
+      <entry key="S30" value="2.636937056539293" />
+      <entry key="S60" value="3.150623228005842" />
+      <entry key="M2" value="4.257009817543544" />
+      <entry key="M5" value="12.987025369493505" />
+      <entry key="M10" value="25.82535015125788" />
+      <entry key="M15" value="33.31957515106637" />
+      <entry key="M30" value="43.40603400199841" />
+      <entry key="H1" value="49.69580148758882" />
+      <entry key="H2" value="53.21182351936799" />
+      <entry key="H4" value="55.46704606746327" />
+      <entry key="D1" value="573.8352207090795" />
+      <entry key="W1" value="6731.15592432814" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -138,34 +143,34 @@
       <entry key="S30" value="0.0" />
       <entry key="S60" value="0.0" />
       <entry key="M2" value="0.0" />
-      <entry key="M5" value="4.582975380155059E-139" />
-      <entry key="M10" value="1.2978900916221417E-69" />
-      <entry key="M15" value="2.000445246103964E-46" />
-      <entry key="M30" value="3.443715750647833E-23" />
-      <entry key="H1" value="1.522770645650414E-11" />
-      <entry key="H2" value="1.0598755133648151E-5" />
-      <entry key="H4" value="0.009539003473338442" />
-      <entry key="D1" value="9.49658503410951" />
-      <entry key="W1" value="126.93640347910394" />
+      <entry key="M5" value="1.2538266233015102E-139" />
+      <entry key="M10" value="6.788641871345605E-70" />
+      <entry key="M15" value="1.298643630849472E-46" />
+      <entry key="M30" value="2.774654787441465E-23" />
+      <entry key="H1" value="1.366864066883202E-11" />
+      <entry key="H2" value="1.004153887085578E-5" />
+      <entry key="H4" value="0.009284867585073799" />
+      <entry key="D1" value="9.453941543507286" />
+      <entry key="W1" value="126.8548183999226" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9650835003628541" />
-      <entry key="MS500" value="1.5363163365695427" />
-      <entry key="S2" value="2.8051474229924316" />
-      <entry key="S5" value="4.60105072629234" />
-      <entry key="S10" value="6.117247201764069" />
-      <entry key="S30" value="7.958268014563712" />
-      <entry key="S60" value="10.8855149408018" />
-      <entry key="M2" value="19.15373742675751" />
-      <entry key="M5" value="33.629407932449105" />
-      <entry key="M10" value="41.936176021698145" />
-      <entry key="M15" value="45.277513698142116" />
-      <entry key="M30" value="48.95413019640851" />
-      <entry key="H1" value="50.9286540277948" />
-      <entry key="H2" value="51.95248644118666" />
-      <entry key="H4" value="52.890075236933995" />
-      <entry key="D1" value="581.902257430571" />
-      <entry key="W1" value="6858.417701823642" />
+      <entry key="MS100" value="0.9015341248596362" />
+      <entry key="MS500" value="1.394252488676412" />
+      <entry key="S2" value="1.797976658938454" />
+      <entry key="S5" value="1.9163865789771228" />
+      <entry key="S10" value="2.024966863793254" />
+      <entry key="S30" value="2.6358554550309727" />
+      <entry key="S60" value="3.150006993473628" />
+      <entry key="M2" value="4.256603569668803" />
+      <entry key="M5" value="12.986531042384101" />
+      <entry key="M10" value="25.824864681144405" />
+      <entry key="M15" value="33.3191601606657" />
+      <entry key="M30" value="43.405765610743465" />
+      <entry key="H1" value="49.69564844098781" />
+      <entry key="H2" value="53.21175178318195" />
+      <entry key="H4" value="55.47628591494427" />
+      <entry key="D1" value="583.2884971706904" />
+      <entry key="W1" value="6858.009519694204" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -181,68 +186,69 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.GeminiBot.executor&quot;: &quot;Coverage&quot;,
-    &quot;Gradle./Users/walterdovalle/Desenvolvimento/projetos/gitflow-helper/settings.gradle.executor&quot;: &quot;Debug&quot;,
-    &quot;Gradle.Build gitflow-helper.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Upgrade Gradle wrapper.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow helper.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [:GeminiBot.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [:MonitorGlobal.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [:MouseMonitor.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [:br.com.gitflowhelper.util.BatchBookPageCropper.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [:br.com.gitflowhelper.util.ImageCropper.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [:example.GeminiBatchImageEnhancer.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [assemble].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [buildDependents].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [buildEnvironment].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [buildNeeded].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [buildPlugin].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [buildSearchableOptions].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [build] (1).executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [build].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [check].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [classes].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [compileJava].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [dependencies].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [dependencyInsight].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [help].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [javaToolchains].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [patchPluginXml].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [properties].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [runIde].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [runPluginVerifier].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [setupDependencies].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [tasks].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [verifyPluginConfiguration].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.gitflow-helper [verifyPlugin].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/walterdovalle/Desenvolvimento/projetos/gitflow-helper/src/main/resources/icons&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.41884816&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.GeminiBot.executor": "Coverage",
+    "Gradle./Users/walterdovalle/Desenvolvimento/projetos/gitflow-helper/settings.gradle.executor": "Debug",
+    "Gradle.Build gitflow-helper.executor": "Run",
+    "Gradle.Upgrade Gradle wrapper.executor": "Run",
+    "Gradle.gitflow helper.executor": "Run",
+    "Gradle.gitflow-helper [:GeminiBot.main()].executor": "Run",
+    "Gradle.gitflow-helper [:MonitorGlobal.main()].executor": "Run",
+    "Gradle.gitflow-helper [:MouseMonitor.main()].executor": "Run",
+    "Gradle.gitflow-helper [:br.com.gitflowhelper.util.BatchBookPageCropper.main()].executor": "Run",
+    "Gradle.gitflow-helper [:br.com.gitflowhelper.util.ImageCropper.main()].executor": "Run",
+    "Gradle.gitflow-helper [:example.GeminiBatchImageEnhancer.main()].executor": "Run",
+    "Gradle.gitflow-helper [assemble].executor": "Run",
+    "Gradle.gitflow-helper [buildDependents].executor": "Run",
+    "Gradle.gitflow-helper [buildEnvironment].executor": "Run",
+    "Gradle.gitflow-helper [buildNeeded].executor": "Run",
+    "Gradle.gitflow-helper [buildPlugin].executor": "Run",
+    "Gradle.gitflow-helper [buildSearchableOptions].executor": "Run",
+    "Gradle.gitflow-helper [build] (1).executor": "Run",
+    "Gradle.gitflow-helper [build].executor": "Run",
+    "Gradle.gitflow-helper [check].executor": "Run",
+    "Gradle.gitflow-helper [classes].executor": "Run",
+    "Gradle.gitflow-helper [clean].executor": "Run",
+    "Gradle.gitflow-helper [compileJava].executor": "Run",
+    "Gradle.gitflow-helper [dependencies].executor": "Run",
+    "Gradle.gitflow-helper [dependencyInsight].executor": "Run",
+    "Gradle.gitflow-helper [help].executor": "Run",
+    "Gradle.gitflow-helper [javaToolchains].executor": "Run",
+    "Gradle.gitflow-helper [patchPluginXml].executor": "Run",
+    "Gradle.gitflow-helper [properties].executor": "Run",
+    "Gradle.gitflow-helper [runIde].executor": "Run",
+    "Gradle.gitflow-helper [runPluginVerifier].executor": "Run",
+    "Gradle.gitflow-helper [setupDependencies].executor": "Run",
+    "Gradle.gitflow-helper [tasks].executor": "Run",
+    "Gradle.gitflow-helper [verifyPluginConfiguration].executor": "Run",
+    "Gradle.gitflow-helper [verifyPlugin].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "feature/version__2.3.0",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/walterdovalle/Desenvolvimento/projetos/gitflow-helper/src/main/resources/icons",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.41884816",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="br.com.gitflowhelper.actions" />
@@ -269,7 +275,7 @@
       <recent name="br.com.gitflowhelper.util" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.gitflow-helper [buildPlugin]">
+  <component name="RunManager" selected="Gradle.gitflow-helper [runIde]">
     <configuration name="BatchBookPageCropper" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="br.com.gitflowhelper.util.BatchBookPageCropper" />
       <module name="gitflow-helper.main" />
@@ -411,9 +417,9 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.gitflow-helper [clean]" />
         <item itemvalue="Gradle.gitflow-helper [runIde]" />
         <item itemvalue="Gradle.gitflow-helper [buildPlugin]" />
+        <item itemvalue="Gradle.gitflow-helper [clean]" />
         <item itemvalue="Application.ImageCropper" />
         <item itemvalue="Application.BatchBookPageCropper" />
       </list>
@@ -1099,12 +1105,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflow/tracker/GitLabConnector.java</url>
-          <line>40</line>
+          <line>41</line>
           <option name="timeStamp" value="215" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflow/tracker/GitLabConnector.java</url>
-          <line>61</line>
+          <line>62</line>
           <option name="timeStamp" value="216" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -1114,7 +1120,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ActionChoiceDialog.java</url>
-          <line>30</line>
+          <line>32</line>
           <properties class="br.com.gitflowhelper.dialog.ActionChoiceDialog">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
