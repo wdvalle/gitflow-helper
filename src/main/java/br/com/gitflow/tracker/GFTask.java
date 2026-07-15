@@ -72,6 +72,9 @@ public class GFTask {
         if (localId.isEmpty()) {
             localId = getValue("number");
         }
+        if (localId.isEmpty()) {
+            localId = getValue("id");
+        }
         return localId;
     }
 

@@ -36,7 +36,8 @@ public class GitLabConnector extends IssueTrackerConnector {
         return putRequest("/api/v4/projects/" + projectId + "/issues/" + issueId, "{\"state_event\":\"close\", \"remove_labels\":\"Doing\"}");
     }
 
-    private String getUserId(String username) {
+    @Override
+    public String getUserId(String username) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(this.baseUrl + "/api/v4/users?username=" + username))
