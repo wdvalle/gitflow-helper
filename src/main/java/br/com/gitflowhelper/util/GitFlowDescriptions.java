@@ -4,6 +4,7 @@ public enum GitFlowDescriptions {
 
     INIT("Initializes current repo to use Git Flow (git flow init)."),
     RESET("Resets plugin configuration."),
+    USAGE("How to use this plugin."),
     ABOUT("About this plugin."),
     SHOW_AS_TREE("Show all branches as a tree."),
     REPO_GROUP("Manage local and remote branches in this project."),

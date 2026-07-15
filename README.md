@@ -142,8 +142,8 @@ Simplify your issue management by connecting your favorite platforms:
 * **Currently Supported:**
   * **GitHub**
   * **GitLab**
-* **Coming Soon:**
   * **Redmine**
+* **Coming Soon:**
   * **Jira**
 
 ![Toolwindow Screen](src/main/resources/screens/11-task-server-config.png)

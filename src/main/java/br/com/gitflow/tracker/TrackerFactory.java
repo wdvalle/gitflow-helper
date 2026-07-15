@@ -35,7 +35,7 @@ public class TrackerFactory {
                         return Optional.of(new GitHubConnector(repoName, token));
                         
                     } else if (typeName.equalsIgnoreCase("Redmine")) {
-                        return Optional.of(new RedmineConnector(url, token));
+                        return Optional.of(new RedmineConnector(url, username, token));
                         
                     } else if (typeName.equalsIgnoreCase("Jira")) {
                         // Jira requires email (username) + token

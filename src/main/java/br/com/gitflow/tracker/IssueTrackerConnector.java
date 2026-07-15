@@ -23,6 +23,9 @@ public abstract class IssueTrackerConnector {
     public abstract boolean assignIssue(String issueId, String assignee);
     public abstract boolean closeIssue(String issueId);
     public abstract IssueResponse getIssue(String issueId);
+    public String getUserId(String username) {
+        return username;
+    }
     public String issueToJson(IssueResponse issue) {
         return gson.toJson(issue);
     }

@@ -93,6 +93,7 @@ public final class GitFlowPopup {
         group.add(flowGroup("Hotfix", AllIcons.General.ExternalTools, GitFlowDescriptions.HOTFIX_GROUP.getValue()));
         group.addSeparator();
         group.add(new ResetAction("Reset"));
+        group.add(new UsageAction("Usage"));
         group.add(new ShowAboutAction("About..."));
         return group;
     }

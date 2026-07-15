@@ -29,7 +29,7 @@ public class JiraConnector extends IssueTrackerConnector {
 
     @Override
     public boolean assignIssue(String issueId, String accountId) {
-        return putRequest("/rest/api/3/issue/" + issueId + "/assignee", "{\"accountId\":\"" + accountId + "\"\"}");
+        return putRequest("/rest/api/3/issue/" + issueId + "/assignee", "{\"accountId\":\"" + accountId + "\"}");
     }
 
     @Override

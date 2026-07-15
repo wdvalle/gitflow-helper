@@ -203,11 +203,11 @@
                         <ul style="padding-left: 2em;">
                             <li style="margin: 0.5em 0;"><strong>GitHub</strong></li>
                             <li style="margin: 0.5em 0;"><strong>GitLab</strong></li>
+                            <li style="margin: 0.5em 0;"><strong>Redmine</strong></li>
                         </ul>
                     </li>
                     <li style="margin: 0.5em 0;"><strong>Coming Soon:</strong>
                         <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;"><strong>Redmine</strong></li>
                             <li style="margin: 0.5em 0;"><strong>Jira</strong></li>
                         </ul>
                     </li>
@@ -330,7 +330,7 @@
         <action
                 id="GitFlowHelper.FeatureSyncAction"
                 class="br.com.gitflowhelper.actions.FeatureSyncAction"
-                text="Feature Sync"
+                text="&lt;html&gt;Feature Sync &lt;font size=&apos;2&apos; color=&apos;#999999&apos;&gt;beta&lt;/font&gt;&lt;/html&gt;"
                 description="Syncs the current feature branch with develop."
                 icon="AllIcons.Actions.Refresh">
         </action>
@@ -368,7 +368,7 @@
         <action
                 id="GitFlowHelper.ReleaseSyncAction"
                 class="br.com.gitflowhelper.actions.ReleaseSyncAction"
-                text="Release Sync"
+                text="&lt;html&gt;Release Sync &lt;font size=&apos;2&apos; color=&apos;#999999&apos;&gt;beta&lt;/font&gt;&lt;/html&gt;"
                 description="Syncs the current release branch with develop."
                 icon="AllIcons.Actions.Refresh">
         </action>
@@ -406,7 +406,7 @@
         <action
                 id="GitFlowHelper.HotfixSyncAction"
                 class="br.com.gitflowhelper.actions.HotfixSyncAction"
-                text="Hotfix Sync"
+                text="&lt;html&gt;Hotfix Sync &lt;font size=&apos;2&apos; color=&apos;#999999&apos;&gt;beta&lt;/font&gt;&lt;/html&gt;"
                 description="Syncs the current hotfix branch with main."
                 icon="AllIcons.Actions.Refresh">
         </action>
@@ -421,7 +421,13 @@
                     first-keystroke="ctrl alt 9"/>
         </action>
 
-
+        <action
+                id="GitFlowHelper.UsageAction"
+                class="br.com.gitflowhelper.actions.UsageAction"
+                text="Usage"
+                description="How to use this plugin."
+                icon="AllIcons.General.ContextHelp">
+        </action>
 
     </actions>
 
