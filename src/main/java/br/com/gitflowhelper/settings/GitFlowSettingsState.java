@@ -16,6 +16,11 @@ public class GitFlowSettingsState {
     private Boolean integrateWithTasks = false;
     private String preferredUsername;
 
+    private boolean integrateWithCI = false;
+    private String ciType = "Jenkins";
+    private String ciUrl = "";
+    private String ciToken = "";
+
     public GitFlowSettingsState() {
     }
 
@@ -90,6 +95,38 @@ public class GitFlowSettingsState {
         this.preferredUsername = preferredUsername;
     }
 
+    public boolean isIntegrateWithCI() {
+        return integrateWithCI;
+    }
+
+    public void setIntegrateWithCI(boolean integrateWithCI) {
+        this.integrateWithCI = integrateWithCI;
+    }
+
+    public String getCiType() {
+        return ciType;
+    }
+
+    public void setCiType(String ciType) {
+        this.ciType = ciType;
+    }
+
+    public String getCiUrl() {
+        return ciUrl;
+    }
+
+    public void setCiUrl(String ciUrl) {
+        this.ciUrl = ciUrl;
+    }
+
+    public String getCiToken() {
+        return ciToken;
+    }
+
+    public void setCiToken(String ciToken) {
+        this.ciToken = ciToken;
+    }
+
     @Override
     public String toString() {
         return "GitFlowSettingsState{" +
@@ -101,6 +138,10 @@ public class GitFlowSettingsState {
                 ", developBranch='" + developBranch + '\'' +
                 ", showDetails=" + showDetails +
                 ", integrateWithTasks=" + integrateWithTasks +
+                ", integrateWithCI=" + integrateWithCI +
+                ", ciType='" + ciType + '\'' +
+                ", ciUrl='" + ciUrl + '\'' +
+                ", ciToken='" + ciToken + '\'' +
                 ", preferredUsername='" + preferredUsername + '\'' +
                 '}';
     }
@@ -117,12 +158,16 @@ public class GitFlowSettingsState {
                 Objects.equals(counter, that.counter) &&
                 Objects.equals(showDetails, that.showDetails) &&
                 Objects.equals(integrateWithTasks, that.integrateWithTasks) &&
+                Objects.equals(integrateWithCI, that.integrateWithCI) &&
+                Objects.equals(ciType, that.ciType) &&
+                Objects.equals(ciUrl, that.ciUrl) &&
+                Objects.equals(ciToken, that.ciToken) &&
                 Objects.equals(preferredUsername, that.preferredUsername);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch,
-                developBranch, counter, showDetails, integrateWithTasks, preferredUsername);
+                developBranch, counter, showDetails, integrateWithTasks, integrateWithCI, ciType, ciUrl, ciToken, preferredUsername);
     }
 }

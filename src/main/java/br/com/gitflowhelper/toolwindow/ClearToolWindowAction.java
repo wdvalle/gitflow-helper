@@ -47,8 +47,8 @@ public class ClearToolWindowAction extends AnAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        // Exemplo: habilitar/desabilitar dinamicamente
-        boolean hasData = true; // substitua por lógica real
+        // Example: enable/disable dynamically
+        boolean hasData = true; // replace with real logic
         e.getPresentation().setEnabled(hasData);
     }
 

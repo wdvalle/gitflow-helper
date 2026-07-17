@@ -32,7 +32,8 @@ public class ToolWindowPanel extends JPanel {
         textPane = new JTextPane();
         textPane.setContentType("text/html");
         textPane.setText(htmlContent);
-        textPane.setEditable(false); // Impede edição pelo usuário
+        textPane.setEditable(false); // Prevents user editing
+        textPane.setFocusable(false); // Prevent caret from appearing when focused
 
         doc = (HTMLDocument) textPane.getDocument();
         kit = (HTMLEditorKit) textPane.getEditorKit();

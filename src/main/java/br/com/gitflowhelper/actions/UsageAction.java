@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 public class UsageAction extends BaseAction {
 
     public UsageAction() {
-        this("Usage");
+        this("Usage...");
     }
 
     public UsageAction(String actionTitle) {

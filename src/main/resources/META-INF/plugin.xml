@@ -429,14 +429,6 @@
                     first-keystroke="ctrl alt 9"/>
         </action>
 
-        <action
-                id="GitFlowHelper.UsageAction"
-                class="br.com.gitflowhelper.actions.UsageAction"
-                text="Usage"
-                description="How to use this plugin."
-                icon="AllIcons.General.ContextHelp">
-        </action>
-
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
