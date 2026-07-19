@@ -2,6 +2,7 @@ package br.com.gitflowhelper.actions;
 
 import br.com.gitflowhelper.events.GitFlowTaskListener;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import br.com.gitflowhelper.toolwindow.TasksToolWindowPanel;
 import br.com.gitflowhelper.util.NotificationUtil;
 import br.com.gitflowhelper.util.PluginUtils;
 import com.intellij.icons.AllIcons;
@@ -11,6 +12,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.Content;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -152,6 +156,7 @@ public class IntegrateWithTasksAction extends BaseAction {
         if (builder.show() == DialogWrapper.OK_EXIT_CODE) {
             settings.setIntegrateWithTasks(true);
             project.getMessageBus().syncPublisher(GitFlowTaskListener.TOPIC).tasksChanged();
+            refreshTasksPanel(project);
             NotificationUtil.showGitFlowSuccessNotification(project, "Git Flow Helper", "Task integration enabled successfully.");
         }
     }
@@ -166,6 +171,28 @@ public class IntegrateWithTasksAction extends BaseAction {
             settings.setIntegrateWithTasks(false);
             project.getMessageBus().syncPublisher(GitFlowTaskListener.TOPIC).tasksChanged();
             NotificationUtil.showGitFlowSuccessNotification(project, "Git Flow Helper", "Task integration disabled successfully.");
+        }
+    }
+
+    /**
+     * Refreshes the {@link TasksToolWindowPanel} immediately, without waiting for the
+     * message bus event to be processed.
+     * <p>
+     * The panel is only instantiated when the tool window is opened for the first time
+     * (lazy factory). If it already exists, this drives a direct reload so the "Issues"
+     * tab updates right after the user enables Tasks integration, without requiring
+     * them to switch to that tab manually.
+     * </p>
+     */
+    private void refreshTasksPanel(Project project) {
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("GitFlow");
+        if (toolWindow == null) return;
+
+        for (Content content : toolWindow.getContentManager().getContents()) {
+            if (content.getComponent() instanceof TasksToolWindowPanel panel) {
+                panel.loadTasksAsync();
+                return;
+            }
         }
     }
 }

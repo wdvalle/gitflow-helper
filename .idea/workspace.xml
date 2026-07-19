@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Detect Task Management plugin installation">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/tasks/TasksBridge.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/tasks/TasksBridge.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/util/PluginUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/util/PluginUtils.java" afterDir="false" />
-    </list>
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Detect Task Management plugin installation" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -274,7 +270,7 @@
       <recent name="br.com.gitflowhelper.util" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.gitflow-helper [buildPlugin]">
+  <component name="RunManager" selected="Gradle.gitflow-helper [runIde]">
     <configuration name="BatchBookPageCropper" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="br.com.gitflowhelper.util.BatchBookPageCropper" />
       <module name="gitflow-helper.main" />
@@ -416,9 +412,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.gitflow-helper [runIde]" />
         <item itemvalue="Gradle.gitflow-helper [buildPlugin]" />
         <item itemvalue="Gradle.gitflow-helper [clean]" />
-        <item itemvalue="Gradle.gitflow-helper [runIde]" />
         <item itemvalue="Application.ImageCropper" />
         <item itemvalue="Application.BatchBookPageCropper" />
       </list>
@@ -560,14 +556,6 @@
       <workItem from="1784043394218" duration="435000" />
       <workItem from="1784043843454" duration="167000" />
       <workItem from="1784044015603" duration="93000" />
-    </task>
-    <task id="LOCAL-00057" summary="Upgraded IntelliJ platform version.&#10;Removed deprecated code (mark for removal in IntelliJ).">
-      <option name="closed" value="true" />
-      <created>1779632042074</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1779632042074</updated>
     </task>
     <task id="LOCAL-00058" summary="Progress bar in IDE status bar.&#10;Better messages in tool window.&#10;Give a like link 😉👍">
       <option name="closed" value="true" />
@@ -953,7 +941,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784466027099</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="Detect Task Management plugin installation">
+      <option name="closed" value="true" />
+      <created>1784491648908</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1784491648908</updated>
+    </task>
+    <option name="localTasksCounter" value="108" />
     <servers>
       <Gitlab url="https://gitlabdesenv.jfpr.jus.br">
         <option name="currentProject">

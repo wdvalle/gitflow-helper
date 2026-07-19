@@ -158,7 +158,7 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
         add(toolbar.getComponent(), BorderLayout.NORTH);
     }
 
-    private void loadTasksAsync() {
+    public void loadTasksAsync() {
         if (!GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
             allTasks.clear();
             filterTasks();
