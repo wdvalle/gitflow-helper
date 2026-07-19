@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="NPE when current branch is null.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/AboutDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/AboutDialog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" afterDir="false" />
-    </list>
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Detect Task Management plugin installation" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,7 +17,7 @@
     </option>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="116" />
+    <option name="cachedIndexableFilesCount" value="128" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="ExternalProjectsData">
@@ -116,23 +111,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0147821507300874" />
-      <entry key="MS500" value="1.430474594169452" />
-      <entry key="S2" value="1.810003570948935" />
-      <entry key="S5" value="1.9215436493363058" />
-      <entry key="S10" value="2.027664956003" />
-      <entry key="S30" value="2.636937056539293" />
-      <entry key="S60" value="3.150623228005842" />
-      <entry key="M2" value="4.257009817543544" />
-      <entry key="M5" value="12.987025369493505" />
-      <entry key="M10" value="25.82535015125788" />
-      <entry key="M15" value="33.31957515106637" />
-      <entry key="M30" value="43.40603400199841" />
-      <entry key="H1" value="49.69580148758882" />
-      <entry key="H2" value="53.21182351936799" />
-      <entry key="H4" value="55.46704606746327" />
-      <entry key="D1" value="573.8352207090795" />
-      <entry key="W1" value="6731.15592432814" />
+      <entry key="MS100" value="1.0000000135230893" />
+      <entry key="MS500" value="1.0266826438707242" />
+      <entry key="S2" value="1.4808000564617905" />
+      <entry key="S5" value="2.7434046016379265" />
+      <entry key="S10" value="4.493903415459339" />
+      <entry key="S30" value="6.990582860883625" />
+      <entry key="S60" value="7.912289164777945" />
+      <entry key="M2" value="8.440401517311557" />
+      <entry key="M5" value="9.353784563149635" />
+      <entry key="M10" value="12.16595557933111" />
+      <entry key="M15" value="16.235141979570564" />
+      <entry key="M30" value="29.1414113285935" />
+      <entry key="H1" value="45.25042484628185" />
+      <entry key="H2" value="58.42203859086682" />
+      <entry key="H4" value="67.25197909707228" />
+      <entry key="D1" value="579.8900570931679" />
+      <entry key="W1" value="6727.717645057815" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -143,34 +138,34 @@
       <entry key="S30" value="0.0" />
       <entry key="S60" value="0.0" />
       <entry key="M2" value="0.0" />
-      <entry key="M5" value="1.2538266233015102E-139" />
-      <entry key="M10" value="6.788641871345605E-70" />
-      <entry key="M15" value="1.298643630849472E-46" />
-      <entry key="M30" value="2.774654787441465E-23" />
-      <entry key="H1" value="1.366864066883202E-11" />
-      <entry key="H2" value="1.004153887085578E-5" />
-      <entry key="H4" value="0.009284867585073799" />
-      <entry key="D1" value="9.453941543507286" />
-      <entry key="W1" value="126.8548183999226" />
+      <entry key="M5" value="1.112654352234925E-142" />
+      <entry key="M10" value="2.0222939861362837E-71" />
+      <entry key="M15" value="1.247951146814955E-47" />
+      <entry key="M30" value="8.601273447465178E-24" />
+      <entry key="H1" value="7.610307853108643E-12" />
+      <entry key="H2" value="7.492706535948797E-6" />
+      <entry key="H4" value="0.008020379885640656" />
+      <entry key="D1" value="9.2260566451604" />
+      <entry key="W1" value="126.41340807061887" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9015341248596362" />
-      <entry key="MS500" value="1.394252488676412" />
-      <entry key="S2" value="1.797976658938454" />
-      <entry key="S5" value="1.9163865789771228" />
-      <entry key="S10" value="2.024966863793254" />
-      <entry key="S30" value="2.6358554550309727" />
-      <entry key="S60" value="3.150006993473628" />
-      <entry key="M2" value="4.256603569668803" />
-      <entry key="M5" value="12.986531042384101" />
-      <entry key="M10" value="25.824864681144405" />
-      <entry key="M15" value="33.3191601606657" />
-      <entry key="M30" value="43.405765610743465" />
-      <entry key="H1" value="49.69564844098781" />
-      <entry key="H2" value="53.21175178318195" />
-      <entry key="H4" value="55.47628591494427" />
-      <entry key="D1" value="583.2884971706904" />
-      <entry key="W1" value="6858.009519694204" />
+      <entry key="MS100" value="0.9726549606570737" />
+      <entry key="MS500" value="1.0210420635179631" />
+      <entry key="S2" value="1.4741148522173428" />
+      <entry key="S5" value="2.7037319917609275" />
+      <entry key="S10" value="4.440584250846236" />
+      <entry key="S30" value="6.9560139252290085" />
+      <entry key="S60" value="7.89186709931609" />
+      <entry key="M2" value="8.429300261263661" />
+      <entry key="M5" value="9.349069479780912" />
+      <entry key="M10" value="12.163465723324794" />
+      <entry key="M15" value="16.23339971568449" />
+      <entry key="M30" value="29.14043708003645" />
+      <entry key="H1" value="45.2498802824575" />
+      <entry key="H2" value="58.42175129272613" />
+      <entry key="H4" value="67.25984258719646" />
+      <entry key="D1" value="589.1154448578937" />
+      <entry key="W1" value="6854.12983151331" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -232,7 +227,7 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "feature/version__2.3.0",
+    "git-widget-placeholder": "feature/detect__tasks__management",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/walterdovalle/Desenvolvimento/projetos/gitflow-helper/src/main/resources/icons",
@@ -561,14 +556,6 @@
       <workItem from="1784043394218" duration="435000" />
       <workItem from="1784043843454" duration="167000" />
       <workItem from="1784044015603" duration="93000" />
-    </task>
-    <task id="LOCAL-00056" summary="Keyboard shortcuts for git flow actions.&#10;Fail on Init does not initialize plugin anymore.&#10;New reset plugin action.&#10;Automatic focus on dialog fields.&#10;(MUCH) Better exception handling.">
-      <option name="closed" value="true" />
-      <created>1779116782020</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1779116782020</updated>
     </task>
     <task id="LOCAL-00057" summary="Upgraded IntelliJ platform version.&#10;Removed deprecated code (mark for removal in IntelliJ).">
       <option name="closed" value="true" />
@@ -954,7 +941,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784043754778</updated>
     </task>
-    <option name="localTasksCounter" value="106" />
+    <task id="LOCAL-00106" summary="Detect Task Management plugin installation">
+      <option name="closed" value="true" />
+      <created>1784466027099</created>
+      <option name="number" value="00106" />
+      <option name="presentableId" value="LOCAL-00106" />
+      <option name="project" value="LOCAL" />
+      <updated>1784466027099</updated>
+    </task>
+    <option name="localTasksCounter" value="107" />
     <servers>
       <Gitlab url="https://gitlabdesenv.jfpr.jus.br">
         <option name="currentProject">
@@ -1008,7 +1003,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="In English please" />
     <MESSAGE value="Feature start and finish plus hotfix start and finish" />
     <MESSAGE value="RC1 with tasks" />
     <MESSAGE value="README.md update" />
@@ -1033,14 +1027,15 @@
     <MESSAGE value="Icon size" />
     <MESSAGE value="." />
     <MESSAGE value="NPE when current branch is null." />
-    <option name="LAST_COMMIT_MESSAGE" value="NPE when current branch is null." />
+    <MESSAGE value="Detect Task Management plugin installation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Detect Task Management plugin installation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/NameDialog.java</url>
-          <line>33</line>
+          <line>30</line>
           <option name="timeStamp" value="77" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -1100,7 +1095,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/util/PluginUtils.java</url>
-          <line>22</line>
+          <line>25</line>
           <option name="timeStamp" value="209" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
