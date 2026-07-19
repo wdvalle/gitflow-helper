@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="CI/CD monitoring actions">
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="CI/CD">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -565,15 +564,7 @@
       <workItem from="1784166799985" duration="10279000" />
       <workItem from="1784244515477" duration="12578000" />
       <workItem from="1784259520315" duration="394000" />
-      <workItem from="1784259952364" duration="8939000" />
-    </task>
-    <task id="LOCAL-00058" summary="Progress bar in IDE status bar.&#10;Better messages in tool window.&#10;Give a like link 😉👍">
-      <option name="closed" value="true" />
-      <created>1780793731288</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1780793731289</updated>
+      <workItem from="1784259952364" duration="10761000" />
     </task>
     <task id="LOCAL-00059" summary="Damn it &quot;marked for removal&quot;! &#10;What am I supposed to use?">
       <option name="closed" value="true" />
@@ -959,7 +950,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784257307683</updated>
     </task>
-    <option name="localTasksCounter" value="108" />
+    <task id="LOCAL-00108" summary="CI/CD">
+      <option name="closed" value="true" />
+      <created>1784461270631</created>
+      <option name="number" value="00108" />
+      <option name="presentableId" value="LOCAL-00108" />
+      <option name="project" value="LOCAL" />
+      <updated>1784461270631</updated>
+    </task>
+    <option name="localTasksCounter" value="109" />
     <servers>
       <Redmine url="https://redmine.jfsc.jus.br">
         <option name="currentProject">
@@ -1020,7 +1019,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="RC1 with tasks" />
     <MESSAGE value="README.md update" />
     <MESSAGE value="Issues panel in progress" />
     <MESSAGE value="Search field added to tasks" />
@@ -1045,7 +1043,8 @@
     <MESSAGE value="NPE when current branch is null." />
     <MESSAGE value="New version." />
     <MESSAGE value="CI/CD monitoring actions" />
-    <option name="LAST_COMMIT_MESSAGE" value="CI/CD monitoring actions" />
+    <MESSAGE value="CI/CD" />
+    <option name="LAST_COMMIT_MESSAGE" value="CI/CD" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
