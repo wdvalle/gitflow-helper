@@ -1,12 +1,10 @@
 package br.com.gitflowhelper.toolwindow;
 
 import br.com.gitflow.cicd.JenkinsConnector;
-import br.com.gitflowhelper.actions.ConfigAction;
+import br.com.gitflowhelper.dialog.ConfigDialog;
 import br.com.gitflowhelper.events.GitFlowSettingsListener;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleTextAttributes;
@@ -131,12 +129,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         if (!GitFlowSettingsService.getInstance(project).isIntegrateWithCI()) {
             emptyText.setText("CI/CD integration is disabled.");
             emptyText.appendLine("Enable it in Git Flow Helper settings", SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES, e -> {
-                AnActionEvent event = AnActionEvent.createFromDataContext(
-                        "CIDataToolWindowPanel",
-                        null,
-                        SimpleDataContext.getProjectContext(project)
-                );
-                new ConfigAction().actionPerformed(event);
+                new ConfigDialog(project).show();
             });
         } else {
             emptyText.setText("No CI/CD data to display.");

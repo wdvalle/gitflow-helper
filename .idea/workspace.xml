@@ -4,25 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="New version.">
-      <change afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflow/cicd/JenkinsConnector.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/ConfigAction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/events/GitFlowSettingsListener.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/ClearCIAction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/ToggleCIAction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="CI/CD monitoring actions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/UsageAction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/UsageAction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/popup/GitFlowPopup.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/popup/GitFlowPopup.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/GitFlowSettingsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/GitFlowSettingsService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/GitFlowSettingsState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/GitFlowSettingsState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/ClearToolWindowAction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/ClearToolWindowAction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowGraphPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowGraphPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowToolWindowFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowToolWindowFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/ToolWindowPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/ToolWindowPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,61 +114,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="9.45436121275402E-42" />
-      <entry key="MS500" value="6.2391645275684185E-9" />
-      <entry key="S2" value="0.008887540842753942" />
-      <entry key="S5" value="0.15118637143151012" />
-      <entry key="S10" value="0.38882691706144795" />
-      <entry key="S30" value="0.7298810821876291" />
-      <entry key="S60" value="0.8543307803114841" />
-      <entry key="M2" value="0.924300157061675" />
-      <entry key="M5" value="0.9691262383716351" />
-      <entry key="M10" value="1.043116600518446" />
-      <entry key="M15" value="2.059266201224942" />
-      <entry key="M30" value="28.157112169146423" />
-      <entry key="H1" value="144.82106813728325" />
-      <entry key="H2" value="335.7623648043379" />
-      <entry key="H4" value="529.0318326909174" />
-      <entry key="D1" value="1221.1465126233913" />
-      <entry key="W1" value="7202.480051935712" />
-    </decayedCancelled>
-    <decayedSelected>
       <entry key="MS100" value="1.0" />
       <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0" />
-      <entry key="S10" value="1.0" />
-      <entry key="S30" value="1.0000000360738093" />
-      <entry key="S60" value="1.0002037125317067" />
-      <entry key="M2" value="1.0175463880792566" />
-      <entry key="M5" value="1.2875643629295046" />
-      <entry key="M10" value="1.758438498633915" />
-      <entry key="M15" value="2.078978203543966" />
-      <entry key="M30" value="2.7029026113786196" />
-      <entry key="H1" value="3.40846568352861" />
-      <entry key="H2" value="4.029601952663263" />
-      <entry key="H4" value="4.458875194310059" />
-      <entry key="D1" value="9.645481005286388" />
-      <entry key="W1" value="119.94294350059826" />
+      <entry key="S2" value="1.0000095360151788" />
+      <entry key="S5" value="1.0179122759338068" />
+      <entry key="S10" value="1.2294207376544226" />
+      <entry key="S30" value="2.2844219076649788" />
+      <entry key="S60" value="3.2161367366152955" />
+      <entry key="M2" value="4.569168648836473" />
+      <entry key="M5" value="6.544644168304653" />
+      <entry key="M10" value="7.844446986013835" />
+      <entry key="M15" value="8.776460452929049" />
+      <entry key="M30" value="19.768446482725654" />
+      <entry key="H1" value="97.2428028298321" />
+      <entry key="H2" value="270.89823301697606" />
+      <entry key="H4" value="476.8239015773361" />
+      <entry key="D1" value="1207.193361137586" />
+      <entry key="W1" value="7192.4584298365035" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="1.6110745754379943E-161" />
+      <entry key="S10" value="4.0138193475018224E-81" />
+      <entry key="S30" value="1.5892270786640374E-27" />
+      <entry key="S60" value="3.9873231348932815E-14" />
+      <entry key="M2" value="2.0316584658777507E-7" />
+      <entry key="M5" value="0.0026908379363818013" />
+      <entry key="M10" value="0.08038712201325654" />
+      <entry key="M15" value="0.2658007084431931" />
+      <entry key="M30" value="0.9664591383104958" />
+      <entry key="H1" value="2.0381468656811292" />
+      <entry key="H2" value="3.1160213384673634" />
+      <entry key="H4" value="3.9209784358261492" />
+      <entry key="D1" value="9.441016276078225" />
+      <entry key="W1" value="119.57637853469403" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.002152158429446504" />
-      <entry key="MS500" value="0.29280254718812004" />
-      <entry key="S2" value="0.742191115976698" />
-      <entry key="S5" value="1.0185381650771224" />
-      <entry key="S10" value="1.306659355933519" />
-      <entry key="S30" value="1.695192392030678" />
-      <entry key="S60" value="1.8358585413585378" />
-      <entry key="M2" value="1.9318536882846484" />
-      <entry key="M5" value="2.251182727673858" />
-      <entry key="M10" value="2.7977121356284753" />
-      <entry key="M15" value="4.135207183651434" />
-      <entry key="M30" value="30.85798328355451" />
-      <entry key="H1" value="148.22815775758085" />
-      <entry key="H2" value="339.7910887769086" />
-      <entry key="H4" value="533.4901918330322" />
-      <entry key="D1" value="1230.7915536086427" />
-      <entry key="W1" value="7322.421870875385" />
+      <entry key="MS100" value="0.9526379980439373" />
+      <entry key="MS500" value="0.9903428719330246" />
+      <entry key="S2" value="0.9975864338299831" />
+      <entry key="S5" value="1.0169208260400642" />
+      <entry key="S10" value="1.2287953313120206" />
+      <entry key="S30" value="2.2839886009724157" />
+      <entry key="S60" value="3.21576569351232" />
+      <entry key="M2" value="4.568810302050712" />
+      <entry key="M5" value="6.547063175625263" />
+      <entry key="M10" value="7.924494114721657" />
+      <entry key="M15" value="9.041753534513873" />
+      <entry key="M30" value="20.734113630890025" />
+      <entry key="H1" value="99.2800922420808" />
+      <entry key="H2" value="274.01355760727273" />
+      <entry key="H4" value="480.7444171662811" />
+      <entry key="D1" value="1216.6339451929807" />
+      <entry key="W1" value="7312.0336870282945" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -258,7 +242,7 @@
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.41884816",
-    "settings.editor.selected.configurable": "com.android.studio.ml.bot.mainConfigurable",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -290,7 +274,7 @@
       <recent name="br.com.gitflowhelper.util" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.gitflow-helper [buildPlugin]">
+  <component name="RunManager" selected="Gradle.gitflow-helper [runIde]">
     <configuration name="BatchBookPageCropper" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="br.com.gitflowhelper.util.BatchBookPageCropper" />
       <module name="gitflow-helper.main" />
@@ -432,8 +416,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.gitflow-helper [buildPlugin]" />
         <item itemvalue="Gradle.gitflow-helper [runIde]" />
+        <item itemvalue="Gradle.gitflow-helper [buildPlugin]" />
         <item itemvalue="Gradle.gitflow-helper [clean]" />
         <item itemvalue="Application.ImageCropper" />
         <item itemvalue="Application.BatchBookPageCropper" />
@@ -579,15 +563,9 @@
       <workItem from="1784125383029" duration="178000" />
       <workItem from="1784127969455" duration="5619000" />
       <workItem from="1784166799985" duration="10279000" />
-      <workItem from="1784244515477" duration="10370000" />
-    </task>
-    <task id="LOCAL-00057" summary="Upgraded IntelliJ platform version.&#10;Removed deprecated code (mark for removal in IntelliJ).">
-      <option name="closed" value="true" />
-      <created>1779632042074</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1779632042074</updated>
+      <workItem from="1784244515477" duration="12578000" />
+      <workItem from="1784259520315" duration="394000" />
+      <workItem from="1784259952364" duration="8939000" />
     </task>
     <task id="LOCAL-00058" summary="Progress bar in IDE status bar.&#10;Better messages in tool window.&#10;Give a like link 😉👍">
       <option name="closed" value="true" />
@@ -973,7 +951,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784122094247</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="CI/CD monitoring actions">
+      <option name="closed" value="true" />
+      <created>1784257307683</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1784257307683</updated>
+    </task>
+    <option name="localTasksCounter" value="108" />
     <servers>
       <Redmine url="https://redmine.jfsc.jus.br">
         <option name="currentProject">
@@ -1034,7 +1020,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Feature start and finish plus hotfix start and finish" />
     <MESSAGE value="RC1 with tasks" />
     <MESSAGE value="README.md update" />
     <MESSAGE value="Issues panel in progress" />
@@ -1059,7 +1044,8 @@
     <MESSAGE value="." />
     <MESSAGE value="NPE when current branch is null." />
     <MESSAGE value="New version." />
-    <option name="LAST_COMMIT_MESSAGE" value="New version." />
+    <MESSAGE value="CI/CD monitoring actions" />
+    <option name="LAST_COMMIT_MESSAGE" value="CI/CD monitoring actions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
