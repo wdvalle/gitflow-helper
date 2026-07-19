@@ -13,10 +13,8 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
-import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.tasks.Task;
-import com.intellij.tasks.TaskManager;
+import br.com.gitflowhelper.tasks.TasksBridge;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
@@ -217,14 +215,12 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
     }
 
     private List<GFTask> getTasks() {
-        try {
-            TaskManager taskManager = TaskManager.getManager(project);
-            List<Task> allTasks = taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false);
-            return allTasks.stream().map(GFTask::new).toList();
-        } catch (Exception ex) {
-            ExceptionUtil.handleException(project, ex);
-        }
-        return new ArrayList<>();
+        TasksBridge bridge = TasksBridge.getInstance();
+        if (bridge == null) return new ArrayList<>();
+        // strip the leading null entry that getAvailableTasks adds for combo boxes
+        return bridge.getAvailableTasks(project).stream()
+                .filter(t -> t != null)
+                .toList();
     }
 
     @Override

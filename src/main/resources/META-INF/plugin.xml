@@ -238,6 +238,10 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.4.0</b></li>
+                <ul>
+                    <li>Previously detect plugin Task Management</li>
+                </ul>
                 <li><b>2.3.0</b></li>
                 <ul>
                     <li>Redmine connector</li>
@@ -313,7 +317,8 @@
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
     <depends>Git4Idea</depends>
-    <depends>com.intellij.tasks</depends>
+    <depends optional="true" config-file="plugin-tasks.xml">com.intellij.tasks</depends>
+
     <actions>
         <action
                 id="GitFlowHelper.FeatureStartAction"

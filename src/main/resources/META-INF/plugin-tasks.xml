@@ -1,0 +1,37 @@
+<idea-plugin>
+    <!--
+        This file is loaded ONLY when the "Task Management" plugin (com.intellij.tasks)
+        is installed and enabled. It registers:
+          - TasksBridgeImpl as an application service (the single point that uses Tasks API)
+          - Actions that are only meaningful when Tasks is present
+    -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService
+                serviceInterface="br.com.gitflowhelper.tasks.TasksBridge"
+                serviceImplementation="br.com.gitflowhelper.tasks.TasksBridgeImpl"/>
+    </extensions>
+
+    <actions>
+        <action
+                id="GitFlowHelper.IntegrateWithTasksAction"
+                class="br.com.gitflowhelper.actions.IntegrateWithTasksAction"
+                text="Tasks Integration"
+                description="Enable or disable Task Management integration."
+                icon="AllIcons.Actions.Checked"/>
+
+        <action
+                id="GitFlowHelper.ShowTasksAction"
+                class="br.com.gitflowhelper.actions.ShowTasksAction"
+                text="Show Project Tasks"
+                description="Show open issues from configured task servers."
+                icon="AllIcons.Actions.Find"/>
+
+        <action
+                id="GitFlowHelper.ViewTaskAction"
+                class="br.com.gitflowhelper.actions.ViewTaskAction"
+                text="Open Current Task"
+                description="Open the URL of the currently active task in the browser."
+                icon="AllIcons.General.Web"/>
+    </actions>
+</idea-plugin>

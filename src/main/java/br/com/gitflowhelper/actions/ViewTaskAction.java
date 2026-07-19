@@ -1,12 +1,10 @@
 package br.com.gitflowhelper.actions;
 
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import br.com.gitflowhelper.tasks.TasksBridge;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.intellij.tasks.LocalTask;
-import com.intellij.tasks.TaskManager;
 import org.jetbrains.annotations.NotNull;
 
 public class ViewTaskAction extends BaseAction {
@@ -27,11 +25,11 @@ public class ViewTaskAction extends BaseAction {
         e.getPresentation().setVisible(integrate);
 
         if (integrate) {
-            LocalTask activeTask = TaskManager.getManager(project).getActiveTask();
-            boolean hasTask = activeTask != null && !activeTask.isDefault();
+            TasksBridge bridge = TasksBridge.getInstance();
+            boolean hasTask = bridge != null && bridge.hasActiveTask(project);
             e.getPresentation().setEnabled(hasTask);
             if (hasTask) {
-                e.getPresentation().setText("Open Task: " + activeTask.getPresentableName());
+                e.getPresentation().setText("Open Task: " + bridge.getActiveTaskName(project));
             } else {
                 e.getPresentation().setText("Open Current Task");
             }
@@ -43,12 +41,9 @@ public class ViewTaskAction extends BaseAction {
         Project project = e.getProject();
         if (project == null) return;
 
-        LocalTask activeTask = TaskManager.getManager(project).getActiveTask();
-        if (activeTask != null && !activeTask.isDefault()) {
-            String url = activeTask.getIssueUrl();
-            if (url != null && !url.isEmpty()) {
-                BrowserUtil.browse(url);
-            }
+        TasksBridge bridge = TasksBridge.getInstance();
+        if (bridge != null) {
+            bridge.openActiveTaskInBrowser(project);
         }
     }
 }

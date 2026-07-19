@@ -21,8 +21,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
-import com.intellij.tasks.Task;
-import com.intellij.tasks.TaskManager;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

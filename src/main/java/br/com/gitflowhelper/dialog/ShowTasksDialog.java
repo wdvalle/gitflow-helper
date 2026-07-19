@@ -7,12 +7,10 @@ import br.com.gitflowhelper.util.TaskFormatter;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.tasks.Task;
-import com.intellij.tasks.TaskManager;
+import br.com.gitflowhelper.tasks.TasksBridge;
 import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBScrollPane;
@@ -172,22 +170,9 @@ public class ShowTasksDialog extends DialogWrapper {
     }
 
     private List<GFTask> getTaskModel() {
-        try {
-            TaskManager taskManager = TaskManager.getManager(project);
-            List<Task> allTasks = new ArrayList<>(taskManager.getIssues("", 0, 100, false, new EmptyProgressIndicator(), false));
-
-            boolean showAll = showAllIssuesCheckBox.isSelected();
-            List<GFTask> tasks = new ArrayList<>();
-            tasks.add(null);
-
-            tasks.addAll(allTasks.stream()
-                    .map(GFTask::new)
-                    .toList());
-            return tasks;
-        } catch (Exception ex) {
-            ExceptionUtil.handleException(project, ex);
-        }
-        return null;
+        TasksBridge bridge = TasksBridge.getInstance();
+        if (bridge == null) return new ArrayList<>();
+        return bridge.getAvailableTasks(project);
     }
 
     @Override
