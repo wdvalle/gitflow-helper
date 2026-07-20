@@ -1,6 +1,7 @@
 build/
 .gradle/
 /.idea/gitflow-helper.xml
+/.idea/workspace.xml
 .intellijPlatform/
 *.DS_Store
 Thumbs.db
