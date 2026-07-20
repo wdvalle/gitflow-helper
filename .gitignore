@@ -2,9 +2,10 @@ build/
 .gradle/
 .idea/gitflow-helper.xml
 .idea/workspace.xml
-.intellijPlatform/
+.le200intellijPlatform/
 *.DS_Store
 Thumbs.db
 *.log
 *.swp
 *.bak
+/.ai/mcp/mcp.json
