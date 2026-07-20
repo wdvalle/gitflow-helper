@@ -18,8 +18,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
-import com.intellij.tasks.Task;
-import com.intellij.tasks.TaskManager;
+import br.com.gitflowhelper.tasks.TasksBridge;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -43,10 +42,8 @@ public class ReleaseStartAction extends BaseAction {
                     releaseStart(project, response.getName(), response.getPushOnFinish());
 
                     GFTask selectedTask = response.getSelectedTask();
-                    if (selectedTask != null && response.isActivateTask() && GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            TaskManager.getManager(project).activateTask(selectedTask.getTask(), true);
-                        }, project.getDisposed());
+                    if (selectedTask != null) {
+                        doStartTask(selectedTask, response.isActivateTask(), response.getUsername(), project);
                     }
 
                     NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New release created successfully");

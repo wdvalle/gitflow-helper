@@ -10,8 +10,8 @@ java {
     }
 }
 
-group 'br.com.gitflowhelper'
-version '2.3.0'
+group = 'br.com.gitflowhelper'
+version = '2.4.0'
 
 repositories {
     mavenCentral()

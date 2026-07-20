@@ -18,8 +18,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.tasks.LocalTask;
-import com.intellij.tasks.TaskManager;
+
 import git4idea.GitCommit;
 import git4idea.commands.GitCommand;
 import git4idea.history.GitHistoryUtils;

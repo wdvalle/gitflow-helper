@@ -2,6 +2,7 @@ package br.com.gitflowhelper.util;
 
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.statusbar.GitFlowStatusBarWidget;
+import br.com.gitflowhelper.tasks.TasksBridge;
 import br.com.gitflowhelper.toolwindow.ToolWindowPanel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -53,6 +54,40 @@ public class PluginUtils {
             }
         });
     }
+
+    // -------------------------------------------------------------------------
+    // Task Management plugin detection
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns {@code true} if the Task Management plugin is installed, enabled,
+     * and fully loaded — detected by checking whether the {@link TasksBridge}
+     * application service is registered.
+     * <p>
+     * {@code TasksBridgeImpl} is registered as an {@code applicationService} only
+     * inside {@code plugin-tasks.xml}, which the IntelliJ Platform loads
+     * <em>conditionally</em> when {@code com.intellij.tasks} is present. If the
+     * service is {@code null}, it means {@code plugin-tasks.xml} was never loaded.
+     * </p>
+     * <p>
+     * This approach uses no deprecated or internal API.
+     * </p>
+     */
+    public static boolean isTasksPluginInstalled() {
+        return ApplicationManager.getApplication().getService(TasksBridge.class) != null;
+    }
+
+    /**
+     * Convenience inverse of {@link #isTasksPluginInstalled()}.
+     * Returns {@code true} when the Task Management plugin is absent or disabled.
+     */
+    public static boolean isTasksPluginMissing() {
+        return !isTasksPluginInstalled();
+    }
+
+    // -------------------------------------------------------------------------
+    // Stack-trace helper
+    // -------------------------------------------------------------------------
 
     public static String getStackTrace(Throwable throwable) {
         StringWriter sw = new StringWriter();

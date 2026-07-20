@@ -1,7 +1,6 @@
 package br.com.gitflowhelper.util;
 
 import br.com.gitflow.tracker.GFTask;
-import com.intellij.tasks.Task;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.Normalizer;

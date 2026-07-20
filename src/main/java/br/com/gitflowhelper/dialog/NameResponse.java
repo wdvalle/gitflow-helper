@@ -1,7 +1,7 @@
 package br.com.gitflowhelper.dialog;
 
 import br.com.gitflow.tracker.GFTask;
-import com.intellij.tasks.Task;
+
 
 public class NameResponse {
 
