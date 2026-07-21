@@ -19,7 +19,7 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
 
         // Logs folder
         ToolWindowPanel logsPanel = new ToolWindowPanel(project);
-        Content logsContent = contentFactory.createContent(logsPanel, "Logs", false);
+        Content logsContent = contentFactory.createContent(logsPanel, "Git Logs", false);
         toolWindow.getContentManager().addContent(logsContent);
 
         // New Issues folder

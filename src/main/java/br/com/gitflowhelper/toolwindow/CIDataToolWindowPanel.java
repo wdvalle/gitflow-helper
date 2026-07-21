@@ -37,7 +37,15 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
         logPane = new JBHtmlEditorPane();
         logPane.setEditable(false);
-        logPane.setFocusable(false); // Prevent caret from appearing when focused
+        // Hide the blinking caret while keeping text selection enabled.
+        // A FocusListener is used instead of setCaret() in the constructor
+        // to avoid potential exceptions during component initialization.
+        logPane.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                logPane.getCaret().setVisible(false);
+            }
+        });
         updateEmptyText();
 
         add(new JBScrollPane(logPane), BorderLayout.CENTER);

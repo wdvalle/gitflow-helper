@@ -33,7 +33,13 @@ public class ToolWindowPanel extends JPanel {
         textPane.setContentType("text/html");
         textPane.setText(htmlContent);
         textPane.setEditable(false); // Prevents user editing
-        textPane.setFocusable(false); // Prevent caret from appearing when focused
+        // Hide the blinking caret while keeping text selection enabled.
+        textPane.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                textPane.getCaret().setVisible(false);
+            }
+        });
 
         doc = (HTMLDocument) textPane.getDocument();
         kit = (HTMLEditorKit) textPane.getEditorKit();
