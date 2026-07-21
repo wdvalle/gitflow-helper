@@ -20,14 +20,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
     private final Project project;
     private final JBHtmlEditorPane logPane;
     private ScheduledExecutorService executor;
-    private final AtomicReference<String> lastStatus = new AtomicReference<>("");
+    private JenkinsConnector jenkinsConnector;
+    private Runnable onStopped;
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
 
@@ -59,8 +59,19 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
         clear();
         appendLog("Starting CI/CD monitoring...");
+
+        if ("Jenkins".equals(settings.getCiType())) {
+            jenkinsConnector = new JenkinsConnector(
+                    settings.getCiUrl(),
+                    settings.getCiLogin(),
+                    settings.getCiToken()
+            );
+        } else {
+            jenkinsConnector = null;
+        }
+
         executor = Executors.newSingleThreadScheduledExecutor();
-        executor.scheduleAtFixedRate(this::checkBuildStatus, 0, 5, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(this::checkBuildStatus, 0, 2, TimeUnit.SECONDS);
     }
 
     private void checkBuildStatus() {
@@ -71,23 +82,20 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             return;
         }
 
-        String ciType = settings.getCiType();
-        String url = settings.getCiUrl();
-        String token = settings.getCiToken();
-        String jobName = project.getName();
+        if (jenkinsConnector != null) {
+            String chunk = jenkinsConnector.fetchNextChunk();
 
-        String status;
-        if ("Jenkins".equals(ciType)) {
-            JenkinsConnector connector = new JenkinsConnector(url, token);
-            status = connector.getBuildStatus(jobName);
+            if (!chunk.isEmpty()) {
+                appendLog(chunk);
+            }
+
+            // Stop when Jenkins signals no more data (build finished or error)
+            if (!jenkinsConnector.hasMoreData()) {
+                stopMonitoring();
+            }
         } else {
-            status = ciType + " not yet supported.";
-        }
-
-        String previousStatus = lastStatus.get();
-        if (!status.equals(previousStatus)) {
-            lastStatus.set(status);
-            appendLog(status);
+            appendLog(settings.getCiType() + " not yet supported.");
+            stopMonitoring();
         }
     }
 
@@ -108,18 +116,26 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         });
     }
 
+    /** Registers a callback invoked on the EDT whenever monitoring stops. */
+    public void setOnStopped(Runnable onStopped) {
+        this.onStopped = onStopped;
+    }
+
     public void stopMonitoring() {
         if (executor != null && !executor.isShutdown()) {
             executor.shutdown();
             appendLog("CI/CD monitoring stopped.");
         }
         executor = null;
+        jenkinsConnector = null;
+        if (onStopped != null) {
+            ApplicationManager.getApplication().invokeLater(onStopped);
+        }
     }
 
     public void clear() {
         ApplicationManager.getApplication().invokeLater(() -> {
             logPane.setText("");
-            lastStatus.set("");
         });
     }
 

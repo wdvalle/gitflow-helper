@@ -17,6 +17,7 @@ public class ConfigDialog extends DialogWrapper {
     private final ComboBox<String> ciTypeComboBox = new ComboBox<>(new String[]{"Jenkins", "GitLab", "GitHub"});
     private final JTextField ciUrlField = new JTextField();
     private final JTextField ciTokenField = new JTextField();
+    private final JTextField ciLoginField = new JTextField();
 
     private final JPanel panel = new JPanel(new GridBagLayout());
     private final GridBagConstraints gbc = new GridBagConstraints();
@@ -31,6 +32,7 @@ public class ConfigDialog extends DialogWrapper {
         updateEnabledState();
 
         integrateWithCICheckBox.addActionListener(e -> updateEnabledState());
+        ciTypeComboBox.addActionListener(e -> updateEnabledState());
     }
 
     private void loadSettings() {
@@ -39,13 +41,16 @@ public class ConfigDialog extends DialogWrapper {
         ciTypeComboBox.setSelectedItem(settings.getCiType());
         ciUrlField.setText(settings.getCiUrl());
         ciTokenField.setText(settings.getCiToken());
+        ciLoginField.setText(settings.getCiLogin());
     }
 
     private void updateEnabledState() {
         boolean enabled = integrateWithCICheckBox.isSelected();
+        boolean isJenkins = "Jenkins".equals(ciTypeComboBox.getSelectedItem());
         ciTypeComboBox.setEnabled(enabled);
         ciUrlField.setEnabled(enabled);
         ciTokenField.setEnabled(enabled);
+        ciLoginField.setEnabled(enabled && isJenkins);
     }
 
     @Override
@@ -54,7 +59,7 @@ public class ConfigDialog extends DialogWrapper {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        panel.setPreferredSize(new Dimension(400, 200));
+        panel.setPreferredSize(new Dimension(560, 220));
 
         gbc.gridy = row++;
         gbc.gridx = 0;
@@ -64,6 +69,7 @@ public class ConfigDialog extends DialogWrapper {
         gbc.gridwidth = 1;
         addRow("CI/CD Platform:", ciTypeComboBox);
         addRow("URL:", ciUrlField);
+        addRow("Login:", ciLoginField);
         addRow("Token:", ciTokenField);
 
         return panel;
@@ -87,6 +93,7 @@ public class ConfigDialog extends DialogWrapper {
         settings.setCiType((String) ciTypeComboBox.getSelectedItem());
         settings.setCiUrl(ciUrlField.getText());
         settings.setCiToken(ciTokenField.getText());
+        settings.setCiLogin(ciLoginField.getText());
         super.doOKAction();
     }
 }

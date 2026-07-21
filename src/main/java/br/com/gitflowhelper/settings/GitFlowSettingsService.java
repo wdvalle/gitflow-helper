@@ -156,6 +156,15 @@ public void setReleasePrefix(String releasePrefix) {
         notifySettingsChanged();
     }
 
+    public String getCiLogin() {
+        return state.getCiLogin();
+    }
+
+    public void setCiLogin(String ciLogin) {
+        state.setCiLogin(ciLogin);
+        notifySettingsChanged();
+    }
+
     public void resetAndDeleteStorage() {
         this.state = new GitFlowSettingsState();
         ApplicationManager.getApplication().saveSettings();

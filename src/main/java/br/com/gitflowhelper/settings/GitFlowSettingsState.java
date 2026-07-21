@@ -20,6 +20,7 @@ public class GitFlowSettingsState {
     private String ciType = "Jenkins";
     private String ciUrl = "";
     private String ciToken = "";
+    private String ciLogin = "";
 
     public GitFlowSettingsState() {
     }
@@ -127,6 +128,14 @@ public class GitFlowSettingsState {
         this.ciToken = ciToken;
     }
 
+    public String getCiLogin() {
+        return ciLogin;
+    }
+
+    public void setCiLogin(String ciLogin) {
+        this.ciLogin = ciLogin;
+    }
+
     @Override
     public String toString() {
         return "GitFlowSettingsState{" +
@@ -142,6 +151,7 @@ public class GitFlowSettingsState {
                 ", ciType='" + ciType + '\'' +
                 ", ciUrl='" + ciUrl + '\'' +
                 ", ciToken='" + ciToken + '\'' +
+                ", ciLogin='" + ciLogin + '\'' +
                 ", preferredUsername='" + preferredUsername + '\'' +
                 '}';
     }
@@ -162,12 +172,13 @@ public class GitFlowSettingsState {
                 Objects.equals(ciType, that.ciType) &&
                 Objects.equals(ciUrl, that.ciUrl) &&
                 Objects.equals(ciToken, that.ciToken) &&
+                Objects.equals(ciLogin, that.ciLogin) &&
                 Objects.equals(preferredUsername, that.preferredUsername);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch,
-                developBranch, counter, showDetails, integrateWithTasks, integrateWithCI, ciType, ciUrl, ciToken, preferredUsername);
+                developBranch, counter, showDetails, integrateWithTasks, integrateWithCI, ciType, ciUrl, ciToken, ciLogin, preferredUsername);
     }
 }

@@ -2,6 +2,7 @@ package br.com.gitflowhelper.toolwindow;
 
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.ActivityTracker;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -16,6 +17,11 @@ public class ToggleCIAction extends AnAction {
     public ToggleCIAction(CIDataToolWindowPanel ciDataToolWindowPanel) {
         super("Start/Stop CI Monitoring", "Start or stop monitoring the CI server", AllIcons.Actions.Execute);
         this.ciDataToolWindowPanel = ciDataToolWindowPanel;
+        // When monitoring stops automatically (build finished / error), reset state and refresh the toolbar button
+        ciDataToolWindowPanel.setOnStopped(() -> {
+            isRunning = false;
+            ActivityTracker.getInstance().inc();
+        });
     }
 
     @Override
