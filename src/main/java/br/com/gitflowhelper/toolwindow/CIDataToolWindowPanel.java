@@ -28,6 +28,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     private ScheduledExecutorService executor;
     private JenkinsConnector jenkinsConnector;
     private Runnable onStopped;
+    private Runnable onNewContent;
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
 
@@ -121,12 +122,20 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             }
             logPane.setText(body + timestamp + ": " + text + "<br>");
             logPane.setCaretPosition(logPane.getDocument().getLength());
+            if (onNewContent != null) {
+                onNewContent.run();
+            }
         });
     }
 
     /** Registers a callback invoked on the EDT whenever monitoring stops. */
     public void setOnStopped(Runnable onStopped) {
         this.onStopped = onStopped;
+    }
+
+    /** Registers a callback invoked on the EDT whenever new log content is appended. */
+    public void setOnNewContent(Runnable onNewContent) {
+        this.onNewContent = onNewContent;
     }
 
     public void stopMonitoring() {

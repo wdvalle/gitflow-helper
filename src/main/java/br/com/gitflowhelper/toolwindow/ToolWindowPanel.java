@@ -23,6 +23,7 @@ public class ToolWindowPanel extends JPanel {
     private final HTMLDocument doc;
     private final HTMLEditorKit kit;
     private final Project project;
+    private Runnable onNewContent;
 
     public ToolWindowPanel(Project project) {
         super(new BorderLayout());
@@ -71,11 +72,19 @@ public class ToolWindowPanel extends JPanel {
         try {
             Element body = doc.getRootElements()[0].getElement(1); // html -> body
             // inserts before body closing
-            kit.insertHTML(doc, body.getEndOffset() - 1, text, 0, 0,null);
+            kit.insertHTML(doc, body.getEndOffset() - 1, text, 0, 0, null);
             // scroll to the end
             textPane.setCaretPosition(doc.getLength());
+            if (onNewContent != null) {
+                onNewContent.run();
+            }
         } catch (BadLocationException | IOException e) {
             PluginUtils.logError(this.project, PluginUtils.getStackTrace(e));
         }
+    }
+
+    /** Registers a callback invoked whenever new content is appended. */
+    public void setOnNewContent(Runnable onNewContent) {
+        this.onNewContent = onNewContent;
     }
 }
