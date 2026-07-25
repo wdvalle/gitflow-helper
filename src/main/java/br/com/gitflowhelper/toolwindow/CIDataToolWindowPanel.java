@@ -3,7 +3,9 @@ package br.com.gitflowhelper.toolwindow;
 import br.com.gitflow.cicd.JenkinsConnector;
 import br.com.gitflowhelper.dialog.ConfigDialog;
 import br.com.gitflowhelper.events.GitFlowSettingsListener;
+import br.com.gitflowhelper.settings.CiServerConfig;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import br.com.gitflowhelper.settings.RepoCiEntry;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -12,6 +14,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.ComponentWithEmptyText;
 import com.intellij.util.ui.StatusText;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,17 +23,22 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
     private final Project project;
     private final JBHtmlEditorPane logPane;
     private ScheduledExecutorService executor;
-    private JenkinsConnector jenkinsConnector;
-    private Runnable onStopped;
-    private Runnable onNewContent;
+    private final AtomicReference<String> lastStatus = new AtomicReference<>("");
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
+    /**
+     * Root path of the Git repository currently selected in the toolbar combo.
+     * {@code null} means "use the first available entry".
+     */
+    @Nullable
+    private String selectedRepoPath = null;
 
     public CIDataToolWindowPanel(Project project) {
         super(new BorderLayout());
@@ -38,15 +46,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
         logPane = new JBHtmlEditorPane();
         logPane.setEditable(false);
-        // Hide the blinking caret while keeping text selection enabled.
-        // A FocusListener is used instead of setCaret() in the constructor
-        // to avoid potential exceptions during component initialization.
-        logPane.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent e) {
-                logPane.getCaret().setVisible(false);
-            }
-        });
+        logPane.setFocusable(false);
         updateEmptyText();
 
         add(new JBScrollPane(logPane), BorderLayout.CENTER);
@@ -54,10 +54,53 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         project.getMessageBus().connect(this).subscribe(GitFlowSettingsListener.TOPIC, this::updateEmptyText);
     }
 
+    // -----------------------------------------------------------------------
+    // Repository selection (called by the toolbar combo)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Sets the repository whose CI/CD server will be monitored.
+     * Stops any running monitor when the selection changes.
+     *
+     * @param repoPath absolute root path of the repository, or {@code null} to use the first.
+     */
+    public void setSelectedRepoPath(@Nullable String repoPath) {
+        if (!java.util.Objects.equals(this.selectedRepoPath, repoPath)) {
+            stopMonitoring();
+            this.selectedRepoPath = repoPath;
+            updateEmptyText();
+        }
+    }
+
+    @Nullable
+    public String getSelectedRepoPath() {
+        return selectedRepoPath;
+    }
+
+    /**
+     * Resolves the {@link CiServerConfig} for the currently selected repository.
+     * Falls back to the first configured entry if the path is not found.
+     */
+    @Nullable
+    private CiServerConfig resolveConfig() {
+        GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
+        if (selectedRepoPath != null) {
+            RepoCiEntry entry = svc.getRepoCiEntry(selectedRepoPath);
+            if (entry != null) return entry.ciServer;
+        }
+        // Fall back to first available
+        java.util.List<RepoCiEntry> entries = svc.getRepoCiEntries();
+        return entries.isEmpty() ? null : entries.get(0).ciServer;
+    }
+
+    // -----------------------------------------------------------------------
+    // Monitoring
+    // -----------------------------------------------------------------------
+
     public void startMonitoring() {
-        GitFlowSettingsService settings = GitFlowSettingsService.getInstance(project);
-        if (!settings.isIntegrateWithCI()) {
-            appendLog("CI/CD integration is disabled.");
+        CiServerConfig cfg = resolveConfig();
+        if (cfg == null || !cfg.isActive()) {
+            appendLog("CI/CD integration is disabled — configure a server URL first.");
             updateEmptyText();
             return;
         }
@@ -67,44 +110,32 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         }
 
         clear();
-        appendLog("Starting CI/CD monitoring...");
-
-        if ("Jenkins".equals(settings.getCiType())) {
-            jenkinsConnector = new JenkinsConnector(
-                    settings.getCiUrl(),
-                    settings.getCiLogin(),
-                    settings.getCiToken()
-            );
-        } else {
-            jenkinsConnector = null;
-        }
-
+        appendLog("Starting CI/CD monitoring (" + cfg.getCiType() + ") ...");
         executor = Executors.newSingleThreadScheduledExecutor();
-        executor.scheduleAtFixedRate(this::checkBuildStatus, 0, 2, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(this::checkBuildStatus, 0, 5, TimeUnit.SECONDS);
     }
 
     private void checkBuildStatus() {
-        GitFlowSettingsService settings = GitFlowSettingsService.getInstance(project);
-        if (!settings.isIntegrateWithCI()) {
+        CiServerConfig cfg = resolveConfig();
+        if (cfg == null || !cfg.isActive()) {
             stopMonitoring();
             appendLog("CI/CD integration disabled. Stopping monitor.");
             return;
         }
 
-        if (jenkinsConnector != null) {
-            String chunk = jenkinsConnector.fetchNextChunk();
-
-            if (!chunk.isEmpty()) {
-                appendLog(chunk);
-            }
-
-            // Stop when Jenkins signals no more data (build finished or error)
-            if (!jenkinsConnector.hasMoreData()) {
-                stopMonitoring();
-            }
+        String jobName = project.getName();
+        String status;
+        if ("Jenkins".equals(cfg.getCiType())) {
+            JenkinsConnector connector = new JenkinsConnector(cfg.getCiUrl(), cfg.getCiToken());
+            status = connector.getBuildStatus(jobName);
         } else {
-            appendLog(settings.getCiType() + " not yet supported.");
-            stopMonitoring();
+            status = cfg.getCiType() + " not yet supported.";
+        }
+
+        String previous = lastStatus.get();
+        if (!status.equals(previous)) {
+            lastStatus.set(status);
+            appendLog(status);
         }
     }
 
@@ -115,27 +146,12 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             String body = "";
             if (currentText != null && currentText.contains("<body>")) {
                 int bodyStart = currentText.indexOf("<body>") + 6;
-                int bodyEnd = currentText.lastIndexOf("</body>");
-                if (bodyEnd > bodyStart) {
-                    body = currentText.substring(bodyStart, bodyEnd);
-                }
+                int bodyEnd   = currentText.lastIndexOf("</body>");
+                if (bodyEnd > bodyStart) body = currentText.substring(bodyStart, bodyEnd);
             }
             logPane.setText(body + timestamp + ": " + text + "<br>");
             logPane.setCaretPosition(logPane.getDocument().getLength());
-            if (onNewContent != null) {
-                onNewContent.run();
-            }
         });
-    }
-
-    /** Registers a callback invoked on the EDT whenever monitoring stops. */
-    public void setOnStopped(Runnable onStopped) {
-        this.onStopped = onStopped;
-    }
-
-    /** Registers a callback invoked on the EDT whenever new log content is appended. */
-    public void setOnNewContent(Runnable onNewContent) {
-        this.onNewContent = onNewContent;
     }
 
     public void stopMonitoring() {
@@ -144,26 +160,24 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             appendLog("CI/CD monitoring stopped.");
         }
         executor = null;
-        jenkinsConnector = null;
-        if (onStopped != null) {
-            ApplicationManager.getApplication().invokeLater(onStopped);
-        }
     }
 
     public void clear() {
         ApplicationManager.getApplication().invokeLater(() -> {
             logPane.setText("");
+            lastStatus.set("");
         });
     }
 
     private void updateEmptyText() {
+        CiServerConfig cfg = resolveConfig();
         StatusText emptyText = logPane.getEmptyText();
         emptyText.clear();
-        if (!GitFlowSettingsService.getInstance(project).isIntegrateWithCI()) {
+        if (cfg == null || !cfg.isActive()) {
             emptyText.setText("CI/CD integration is disabled.");
-            emptyText.appendLine("Enable it in Git Flow Helper settings", SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES, e -> {
-                new ConfigDialog(project).show();
-            });
+            emptyText.appendLine("Configure a server URL in Git Flow Helper settings",
+                    SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES,
+                    e -> new ConfigDialog(project).show());
         } else {
             emptyText.setText("No CI/CD data to display.");
             emptyText.appendLine("Click the 'play' button to start monitoring.");
@@ -174,6 +188,10 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     public void dispose() {
         stopMonitoring();
     }
+
+    // -----------------------------------------------------------------------
+    // Inner – HTML pane with empty-text support
+    // -----------------------------------------------------------------------
 
     private static class JBHtmlEditorPane extends JEditorPane implements ComponentWithEmptyText {
         private final StatusText emptyText = new StatusText(this) {
@@ -191,9 +209,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         }
 
         @Override
-        public @NotNull StatusText getEmptyText() {
-            return emptyText;
-        }
+        public @NotNull StatusText getEmptyText() { return emptyText; }
 
         @Override
         protected void paintComponent(Graphics g) {

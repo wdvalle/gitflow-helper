@@ -39,16 +39,27 @@ public class ToggleCIAction extends AnAction {
     @Override
     public void update(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        if (project != null) {
-            boolean isCiEnabled = GitFlowSettingsService.getInstance(project).isIntegrateWithCI();
-            e.getPresentation().setEnabled(isCiEnabled);
-            if (isRunning) {
-                e.getPresentation().setIcon(AllIcons.Actions.Suspend);
-                e.getPresentation().setText("Stop CI Monitoring");
-            } else {
-                e.getPresentation().setIcon(AllIcons.Actions.Execute);
-                e.getPresentation().setText("Start CI Monitoring");
-            }
+        if (project == null) return;
+
+        // Enabled only when the selected repository has a CI URL configured
+        String selectedPath = ciDataToolWindowPanel.getSelectedRepoPath();
+        boolean isActive;
+        if (selectedPath != null) {
+            isActive = GitFlowSettingsService.getInstance(project)
+                    .isIntegrateWithCIForRepo(selectedPath);
+        } else {
+            // No specific selection → check if any repo has CI configured
+            isActive = GitFlowSettingsService.getInstance(project).isIntegrateWithCI();
+        }
+
+        e.getPresentation().setEnabled(isActive);
+
+        if (isRunning) {
+            e.getPresentation().setIcon(AllIcons.Actions.Suspend);
+            e.getPresentation().setText("Stop CI Monitoring");
+        } else {
+            e.getPresentation().setIcon(AllIcons.Actions.Execute);
+            e.getPresentation().setText("Start CI Monitoring");
         }
     }
 

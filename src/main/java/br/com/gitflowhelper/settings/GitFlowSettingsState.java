@@ -1,140 +1,129 @@
 package br.com.gitflowhelper.settings;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class GitFlowSettingsState {
 
     private String featurePrefix = "feature";
     private String releasePrefix = "release";
-    private String hotfixPrefix = "hotfix";
+    private String hotfixPrefix  = "hotfix";
 
     private String mainBranch;
     private String developBranch;
 
-    private Long counter;
+    private Long    counter;
     private Boolean showDetails;
     private Boolean integrateWithTasks = false;
-    private String preferredUsername;
+    private String  preferredUsername;
 
-    private boolean integrateWithCI = false;
-    private String ciType = "Jenkins";
-    private String ciUrl = "";
-    private String ciToken = "";
-    private String ciLogin = "";
+    /**
+     * CI/CD server configurations, one entry per Git repository root.
+     * Key: repository root path; value: CI/CD server settings.
+     */
+    private List<RepoCiEntry> repoCiEntries = new ArrayList<>();
 
     public GitFlowSettingsState() {
     }
 
-//    public GitFlowSettingsState(String featurePrefix, String releasePrefix, String hotfixPrefix,
-//                                String mainBranch, String developBranch, Long counter) {
-//        this.featurePrefix = featurePrefix;
-//        this.releasePrefix = releasePrefix;
-//        this.hotfixPrefix = hotfixPrefix;
-//        this.mainBranch = mainBranch;
-//        this.developBranch = developBranch;
-//        this.counter = counter;
-//    }
+    // ------------------------------------------------------------------
+    // Prefix / branch
+    // ------------------------------------------------------------------
 
-    public String getFeaturePrefix() {
-        return featurePrefix;
-    }
+    public String getFeaturePrefix() { return featurePrefix; }
+    public void setFeaturePrefix(String v) { this.featurePrefix = v; }
 
-    public void setFeaturePrefix(String featurePrefix) {
-        this.featurePrefix = featurePrefix;
-    }
+    public String getReleasePrefix() { return releasePrefix; }
+    public void setReleasePrefix(String v) { this.releasePrefix = v; }
 
-    public String getReleasePrefix() {
-        return releasePrefix;
-    }
+    public String getHotfixPrefix()  { return hotfixPrefix; }
+    public void setHotfixPrefix(String v)  { this.hotfixPrefix = v; }
 
-    public void setReleasePrefix(String releasePrefix) {
-        this.releasePrefix = releasePrefix;
-    }
+    public String getMainBranch()    { return mainBranch; }
+    public void setMainBranch(String v)    { this.mainBranch = v; }
 
-    public String getHotfixPrefix() {
-        return hotfixPrefix;
-    }
+    public String getDevelopBranch() { return developBranch; }
+    public void setDevelopBranch(String v) { this.developBranch = v; }
 
-    public void setHotfixPrefix(String hotfixPrefix) {
-        this.hotfixPrefix = hotfixPrefix;
-    }
-
-    public String getMainBranch() {return mainBranch;}
-
-    public void setMainBranch(String mainBranch) {this.mainBranch = mainBranch;}
-
-    public String getDevelopBranch() {return developBranch;}
-
-    public void setDevelopBranch(String developBranch) {this.developBranch = developBranch;}
+    // ------------------------------------------------------------------
+    // Counter / display
+    // ------------------------------------------------------------------
 
     public Long getCounter() {
-        if (this.counter == null) {
-            this.counter = 0L;
-        }
+        if (this.counter == null) this.counter = 0L;
         return counter;
     }
+    public void setCounter(Long v) { this.counter = v; }
 
-    public void setCounter(Long counter) {this.counter = counter;}
+    public Boolean getShowDetails()              { return showDetails; }
+    public void setShowDetails(Boolean v)        { this.showDetails = v; }
 
-    public Boolean getShowDetails() {return showDetails;}
+    public Boolean isIntegrateWithTasks()        { return integrateWithTasks; }
+    public void setIntegrateWithTasks(Boolean v) { this.integrateWithTasks = v; }
 
-    public void setShowDetails(Boolean showDetails) {this.showDetails = showDetails;}
+    public String getPreferredUsername()          { return preferredUsername; }
+    public void setPreferredUsername(String v)    { this.preferredUsername = v; }
 
-    public Boolean isIntegrateWithTasks() {
-        return integrateWithTasks;
+    // ------------------------------------------------------------------
+    // Repo CI entries
+    // ------------------------------------------------------------------
+
+    /**
+     * Returns the full list of per-repository CI/CD configurations.
+     * Triggers one-time migration from legacy flat fields if needed.
+     */
+    public List<RepoCiEntry> getRepoCiEntries() {
+        if (repoCiEntries == null) repoCiEntries = new ArrayList<>();
+        return repoCiEntries;
     }
 
-    public void setIntegrateWithTasks(Boolean integrateWithTasks) {
-        this.integrateWithTasks = integrateWithTasks;
+    public void setRepoCiEntries(List<RepoCiEntry> entries) {
+        this.repoCiEntries = entries != null ? entries : new ArrayList<>();
     }
 
-    public String getPreferredUsername() {
-        return preferredUsername;
+    /**
+     * Finds the entry for the given repository root path, or {@code null}.
+     */
+    public RepoCiEntry findEntry(String repoPath) {
+        return getRepoCiEntries().stream()
+                .filter(e -> e.repoPath.equals(repoPath))
+                .findFirst()
+                .orElse(null);
     }
 
-    public void setPreferredUsername(String preferredUsername) {
-        this.preferredUsername = preferredUsername;
+    /**
+     * Returns the {@link CiServerConfig} for the given repo path.
+     * Creates a new (empty) entry if none exists yet.
+     */
+    public CiServerConfig getCiServerForRepo(String repoPath, String repoName) {
+        RepoCiEntry entry = findEntry(repoPath);
+        if (entry == null) {
+            entry = new RepoCiEntry(repoPath, repoName);
+            getRepoCiEntries().add(entry);
+        }
+        return entry.ciServer;
     }
 
-    public boolean isIntegrateWithCI() {
-        return integrateWithCI;
+    /**
+     * Stores a {@link CiServerConfig} for the given repo path.
+     * Updates an existing entry or adds a new one.
+     */
+    public void setCiServerForRepo(String repoPath, String repoName, CiServerConfig cfg) {
+        List<RepoCiEntry> entries = getRepoCiEntries();
+        for (RepoCiEntry e : entries) {
+            if (e.repoPath.equals(repoPath)) {
+                e.repoName = repoName;
+                e.ciServer = cfg != null ? cfg : new CiServerConfig();
+                return;
+            }
+        }
+        RepoCiEntry newEntry = new RepoCiEntry(repoPath, repoName);
+        newEntry.ciServer = cfg != null ? cfg : new CiServerConfig();
+        entries.add(newEntry);
     }
 
-    public void setIntegrateWithCI(boolean integrateWithCI) {
-        this.integrateWithCI = integrateWithCI;
-    }
-
-    public String getCiType() {
-        return ciType;
-    }
-
-    public void setCiType(String ciType) {
-        this.ciType = ciType;
-    }
-
-    public String getCiUrl() {
-        return ciUrl;
-    }
-
-    public void setCiUrl(String ciUrl) {
-        this.ciUrl = ciUrl;
-    }
-
-    public String getCiToken() {
-        return ciToken;
-    }
-
-    public void setCiToken(String ciToken) {
-        this.ciToken = ciToken;
-    }
-
-    public String getCiLogin() {
-        return ciLogin;
-    }
-
-    public void setCiLogin(String ciLogin) {
-        this.ciLogin = ciLogin;
-    }
+    // ------------------------------------------------------------------
 
     @Override
     public String toString() {
@@ -147,11 +136,7 @@ public class GitFlowSettingsState {
                 ", developBranch='" + developBranch + '\'' +
                 ", showDetails=" + showDetails +
                 ", integrateWithTasks=" + integrateWithTasks +
-                ", integrateWithCI=" + integrateWithCI +
-                ", ciType='" + ciType + '\'' +
-                ", ciUrl='" + ciUrl + '\'' +
-                ", ciToken='" + ciToken + '\'' +
-                ", ciLogin='" + ciLogin + '\'' +
+                ", repoCiEntries=" + repoCiEntries +
                 ", preferredUsername='" + preferredUsername + '\'' +
                 '}';
     }
@@ -168,17 +153,14 @@ public class GitFlowSettingsState {
                 Objects.equals(counter, that.counter) &&
                 Objects.equals(showDetails, that.showDetails) &&
                 Objects.equals(integrateWithTasks, that.integrateWithTasks) &&
-                Objects.equals(integrateWithCI, that.integrateWithCI) &&
-                Objects.equals(ciType, that.ciType) &&
-                Objects.equals(ciUrl, that.ciUrl) &&
-                Objects.equals(ciToken, that.ciToken) &&
-                Objects.equals(ciLogin, that.ciLogin) &&
+                Objects.equals(repoCiEntries, that.repoCiEntries) &&
                 Objects.equals(preferredUsername, that.preferredUsername);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch,
-                developBranch, counter, showDetails, integrateWithTasks, integrateWithCI, ciType, ciUrl, ciToken, ciLogin, preferredUsername);
+                developBranch, counter, showDetails, integrateWithTasks,
+                repoCiEntries, preferredUsername);
     }
 }

@@ -8,6 +8,9 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 @Service(Service.Level.PROJECT)
 @State(
@@ -45,116 +48,109 @@ public final class GitFlowSettingsService
         }
     }
 
-    public String getFeaturePrefix() {
-        return state.getFeaturePrefix();
-    }
+    // ------------------------------------------------------------------
+    // Git-flow prefix / branch
+    // ------------------------------------------------------------------
 
-    public void setFeaturePrefix(String featurePrefix) {
-        state.setFeaturePrefix(featurePrefix);
-        notifySettingsChanged();
-    }
+    public String getFeaturePrefix() { return state.getFeaturePrefix(); }
+    public void setFeaturePrefix(String v) { state.setFeaturePrefix(v); notifySettingsChanged(); }
 
-    public String getReleasePrefix() {
-        return state.getReleasePrefix();
-    }
+    public String getReleasePrefix() { return state.getReleasePrefix(); }
+    public void setReleasePrefix(String v) { state.setReleasePrefix(v); notifySettingsChanged(); }
 
-public void setReleasePrefix(String releasePrefix) {
-    state.setReleasePrefix(releasePrefix);
-    notifySettingsChanged();
-}
+    public String getHotfixPrefix() { return state.getHotfixPrefix(); }
+    public void setHotfixPrefix(String v) { state.setHotfixPrefix(v); notifySettingsChanged(); }
 
-    public String getHotfixPrefix() {
-        return state.getHotfixPrefix();
-    }
+    public String getMainBranch()    { return state.getMainBranch(); }
+    public void setMainBranch(String v) { state.setMainBranch(v); notifySettingsChanged(); }
 
-    public void setHotfixPrefix(String hotfixPrefix) {
-        state.setHotfixPrefix(hotfixPrefix);
-        notifySettingsChanged();
-    }
+    public String getDevelopBranch() { return state.getDevelopBranch(); }
+    public void setDevelopBranch(String v) { state.setDevelopBranch(v); notifySettingsChanged(); }
 
-    public String getMainBranch() {
-        return state.getMainBranch();
-    }
+    // ------------------------------------------------------------------
+    // Counter / display
+    // ------------------------------------------------------------------
 
-    public void setMainBranch(String mainBranch) {
-        state.setMainBranch(mainBranch);
-        notifySettingsChanged();
-    }
-
-    public String getDevelopBranch() {
-        return state.getDevelopBranch();
-    }
-
-    public void setDevelopBranch(String developBranch) {
-        state.setDevelopBranch(developBranch);
-        notifySettingsChanged();
-    }
-
-    public Long getCounter() {
-        return state.getCounter();
-    }
-
-    public void setCounter(Long counter) {
-        state.setCounter(counter);
-        notifySettingsChanged();
-    }
+    public Long getCounter() { return state.getCounter(); }
+    public void setCounter(Long v) { state.setCounter(v); notifySettingsChanged(); }
 
     public Boolean getShowDetails() {
-        if (state.getShowDetails() == null) {
-            state.setShowDetails(true);
-        }
+        if (state.getShowDetails() == null) state.setShowDetails(true);
         return state.getShowDetails();
     }
+    public void setShowDetails(Boolean v) { state.setShowDetails(v); notifySettingsChanged(); }
 
-    public void setShowDetails(Boolean showDetails) {
-        state.setShowDetails(showDetails);
+    public boolean isIntegrateWithTasks() { return state.isIntegrateWithTasks(); }
+    public void setIntegrateWithTasks(boolean v) { state.setIntegrateWithTasks(v); notifySettingsChanged(); }
+
+    public String getPreferredUsername() { return state.getPreferredUsername(); }
+    public void setPreferredUsername(String v) { state.setPreferredUsername(v); notifySettingsChanged(); }
+
+    // ------------------------------------------------------------------
+    // CI/CD – per repository
+    // ------------------------------------------------------------------
+
+    /**
+     * Returns all per-repository CI/CD entries for this project.
+     */
+    @NotNull
+    public List<RepoCiEntry> getRepoCiEntries() {
+        return state.getRepoCiEntries();
+    }
+
+    /**
+     * Returns the {@link CiServerConfig} for the given repository root path.
+     * If no entry exists yet, an empty (inactive) config is created on demand.
+     *
+     * @param repoPath absolute path of the repository root
+     * @param repoName display name (directory name / remote name)
+     */
+    @NotNull
+    public CiServerConfig getCiServerForRepo(@NotNull String repoPath, @NotNull String repoName) {
+        return state.getCiServerForRepo(repoPath, repoName);
+    }
+
+    /**
+     * Persists the {@link CiServerConfig} for a given repository and notifies listeners.
+     *
+     * @param repoPath absolute path of the repository root
+     * @param repoName display name
+     * @param cfg      configuration to store
+     */
+    public void setCiServerForRepo(@NotNull String repoPath,
+                                   @NotNull String repoName,
+                                   @NotNull CiServerConfig cfg) {
+        state.setCiServerForRepo(repoPath, repoName, cfg);
         notifySettingsChanged();
     }
 
-    public boolean isIntegrateWithTasks() {
-        return state.isIntegrateWithTasks();
+    /**
+     * Returns the entry for the given repo path, or {@code null} if not configured.
+     */
+    @Nullable
+    public RepoCiEntry getRepoCiEntry(@NotNull String repoPath) {
+        return state.findEntry(repoPath);
     }
 
-    public void setIntegrateWithTasks(boolean integrateWithTasks) {
-        state.setIntegrateWithTasks(integrateWithTasks);
-        notifySettingsChanged();
-    }
-
+    /**
+     * Returns {@code true} if <em>any</em> repository in this project has
+     * an active CI/CD URL configured.
+     */
     public boolean isIntegrateWithCI() {
-        return state.isIntegrateWithCI();
+        return state.getRepoCiEntries().stream().anyMatch(e -> e.ciServer.isActive());
     }
 
-    public void setIntegrateWithCI(boolean integrateWithCI) {
-        state.setIntegrateWithCI(integrateWithCI);
-        notifySettingsChanged();
+    /**
+     * Returns {@code true} if the specific repository has an active CI/CD URL.
+     *
+     * @param repoPath absolute path of the repository root
+     */
+    public boolean isIntegrateWithCIForRepo(@NotNull String repoPath) {
+        RepoCiEntry entry = state.findEntry(repoPath);
+        return entry != null && entry.ciServer.isActive();
     }
 
-    public String getCiType() {
-        return state.getCiType();
-    }
-
-    public void setCiType(String ciType) {
-        state.setCiType(ciType);
-        notifySettingsChanged();
-    }
-
-    public String getCiUrl() {
-        return state.getCiUrl();
-    }
-
-    public void setCiUrl(String ciUrl) {
-        state.setCiUrl(ciUrl);
-        notifySettingsChanged();
-    }
-
-    public String getCiToken() {
-        return state.getCiToken();
-    }
-
-    public void setCiToken(String ciToken) {
-        state.setCiToken(ciToken);
-        notifySettingsChanged();
-    }
+    // ------------------------------------------------------------------
 
     public String getCiLogin() {
         return state.getCiLogin();
