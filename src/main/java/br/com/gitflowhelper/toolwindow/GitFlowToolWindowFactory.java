@@ -15,6 +15,10 @@ import com.intellij.ui.content.ContentFactory;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 
+import com.intellij.ui.content.ContentManagerEvent;
+import com.intellij.ui.content.ContentManagerListener;
+import org.jetbrains.annotations.NotNull;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
@@ -29,17 +33,20 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
         ToolWindowPanel logsPanel = new ToolWindowPanel(project);
         Content logsContent = contentFactory.createContent(logsPanel, "Logs", false);
         toolWindow.getContentManager().addContent(logsContent);
+        logsPanel.setOnNewContent(() -> notifyNewContent(toolWindow, logsContent, "Logs"));
 
         // Issues tab
         TasksToolWindowPanel tasksPanel = new TasksToolWindowPanel(project);
         Content tasksContent = contentFactory.createContent(tasksPanel, "Issues", false);
         tasksContent.setDisposer(tasksPanel);
         toolWindow.getContentManager().addContent(tasksContent);
+        tasksPanel.setOnNewContent(() -> notifyNewContent(toolWindow, tasksContent, "Issues"));
 
         // Flow tab
         GitFlowGraphPanel flowPanel = new GitFlowGraphPanel(project);
         Content flowContent = contentFactory.createContent(flowPanel, "Flow", false);
         toolWindow.getContentManager().addContent(flowContent);
+        flowPanel.setOnNewContent(() -> notifyNewContent(toolWindow, flowContent, "Flow"));
 
         // CI/CD tab
         CIDataToolWindowPanel ciDataPanel = new CIDataToolWindowPanel(project);
@@ -47,6 +54,35 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
                 createCIContent(project, ciDataPanel), "CI/CD", false);
         ciDataContent.setDisposer(ciDataPanel);
         toolWindow.getContentManager().addContent(ciDataContent);
+        ciDataPanel.setOnNewContent(() -> notifyNewContent(toolWindow, ciDataContent, "CI/CD"));
+
+        toolWindow.getContentManager().addContentManagerListener(new ContentManagerListener() {
+            @Override
+            public void selectionChanged(@NotNull ContentManagerEvent event) {
+                if (event.getOperation() == ContentManagerEvent.ContentOperation.add) {
+                    Content selected = event.getContent();
+                    if (selected != null) {
+                        String displayName = selected.getDisplayName();
+                        if (displayName != null && displayName.endsWith(" •")) {
+                            selected.setDisplayName(displayName.substring(0, displayName.length() - 2));
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private void notifyNewContent(ToolWindow toolWindow, Content content, String baseTitle) {
+        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater(() -> {
+            if (toolWindow.isDisposed()) return;
+            Content selected = toolWindow.getContentManager().getSelectedContent();
+            if (selected != content) {
+                String currentName = content.getDisplayName();
+                if (currentName != null && !currentName.endsWith(" •")) {
+                    content.setDisplayName(baseTitle + " •");
+                }
+            }
+        });
     }
 
     // -----------------------------------------------------------------------

@@ -87,6 +87,10 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                 int selectedIndex = tabbedPane.getSelectedIndex();
                 if (selectedIndex >= 0) {
                     Component selectedComp = tabbedPane.getComponentAt(selectedIndex);
+                    String title = tabbedPane.getTitleAt(selectedIndex);
+                    if (title != null && title.endsWith(" •")) {
+                        tabbedPane.setTitleAt(selectedIndex, title.substring(0, title.length() - 2));
+                    }
                     for (Map.Entry<String, Component> entry : repoTabComponents.entrySet()) {
                         if (entry.getValue() == selectedComp) {
                             selectedRepoPath = entry.getKey();
@@ -290,6 +294,18 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             }
             logPane.setText(body + timestamp + ": " + text + "<br>");
             logPane.setCaretPosition(logPane.getDocument().getLength());
+
+            Component comp = repoTabComponents.get(repoPath);
+            if (comp != null) {
+                int idx = tabbedPane.indexOfComponent(comp);
+                if (idx >= 0 && tabbedPane.getSelectedIndex() != idx) {
+                    String currentTitle = tabbedPane.getTitleAt(idx);
+                    if (currentTitle != null && !currentTitle.endsWith(" •")) {
+                        tabbedPane.setTitleAt(idx, currentTitle + " •");
+                    }
+                }
+            }
+
             if (onNewContent != null) {
                 onNewContent.run();
             }

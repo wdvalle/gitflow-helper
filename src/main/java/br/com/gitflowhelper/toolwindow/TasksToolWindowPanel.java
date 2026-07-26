@@ -158,6 +158,13 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
         add(toolbar.getComponent(), BorderLayout.NORTH);
     }
 
+    private Runnable onNewContent;
+
+    /** Registers a callback invoked whenever task content is loaded/updated. */
+    public void setOnNewContent(Runnable onNewContent) {
+        this.onNewContent = onNewContent;
+    }
+
     public void loadTasksAsync() {
         if (!GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
             allTasks.clear();
@@ -178,6 +185,9 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
                         allTasks.clear();
                         allTasks.addAll(tasks);
                         filterTasks();
+                        if (onNewContent != null) {
+                            onNewContent.run();
+                        }
                     }
                 } finally {
                     loading = false;

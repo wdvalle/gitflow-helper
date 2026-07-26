@@ -72,6 +72,13 @@ public class GitFlowGraphPanel extends JPanel {
         });
     }
 
+    private Runnable onNewContent;
+
+    /** Registers a callback invoked whenever graph content is refreshed/updated. */
+    public void setOnNewContent(Runnable onNewContent) {
+        this.onNewContent = onNewContent;
+    }
+
     public void refresh() {
         GitFlowSettingsService settings = GitFlowSettingsService.getInstance(project);
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
@@ -95,6 +102,9 @@ public class GitFlowGraphPanel extends JPanel {
             graphCanvas.updateData(null, null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         }
         graphCanvas.updateEmptyText();
+        if (onNewContent != null) {
+            onNewContent.run();
+        }
     }
 
     private class RefreshAction extends AnAction {
