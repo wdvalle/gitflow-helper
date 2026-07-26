@@ -30,7 +30,9 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     private final Project project;
     private final JBHtmlEditorPane logPane;
     private ScheduledExecutorService executor;
-    private final AtomicReference<String> lastStatus = new AtomicReference<>("");
+    private JenkinsConnector jenkinsConnector;
+    private Runnable onStopped;
+    private Runnable onNewContent;
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
     /**
@@ -46,7 +48,12 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
         logPane = new JBHtmlEditorPane();
         logPane.setEditable(false);
-        logPane.setFocusable(false);
+        logPane.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                logPane.getCaret().setVisible(false);
+            }
+        });
         updateEmptyText();
 
         add(new JBScrollPane(logPane), BorderLayout.CENTER);
@@ -77,6 +84,16 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         return selectedRepoPath;
     }
 
+    @Nullable
+    private String resolveRepoPath() {
+        GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
+        if (selectedRepoPath != null && svc.getRepoCiEntry(selectedRepoPath) != null) {
+            return selectedRepoPath;
+        }
+        java.util.List<RepoCiEntry> entries = svc.getRepoCiEntries();
+        return entries.isEmpty() ? null : entries.get(0).repoPath;
+    }
+
     /**
      * Resolves the {@link CiServerConfig} for the currently selected repository.
      * Falls back to the first configured entry if the path is not found.
@@ -84,13 +101,10 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     @Nullable
     private CiServerConfig resolveConfig() {
         GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
-        if (selectedRepoPath != null) {
-            RepoCiEntry entry = svc.getRepoCiEntry(selectedRepoPath);
-            if (entry != null) return entry.ciServer;
-        }
-        // Fall back to first available
-        java.util.List<RepoCiEntry> entries = svc.getRepoCiEntries();
-        return entries.isEmpty() ? null : entries.get(0).ciServer;
+        String path = resolveRepoPath();
+        if (path == null) return null;
+        RepoCiEntry entry = svc.getRepoCiEntry(path);
+        return entry != null ? entry.ciServer : null;
     }
 
     // -----------------------------------------------------------------------
@@ -99,7 +113,8 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
     public void startMonitoring() {
         CiServerConfig cfg = resolveConfig();
-        if (cfg == null || !cfg.isActive()) {
+        String path = resolveRepoPath();
+        if (cfg == null || !cfg.isActive() || path == null) {
             appendLog("CI/CD integration is disabled — configure a server URL first.");
             updateEmptyText();
             return;
@@ -110,9 +125,21 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         }
 
         clear();
-        appendLog("Starting CI/CD monitoring (" + cfg.getCiType() + ") ...");
+        appendLog("Starting CI/CD monitoring...");
+
+        if ("Jenkins".equals(cfg.getCiType())) {
+            String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(path);
+            jenkinsConnector = new JenkinsConnector(
+                    cfg.getCiUrl(),
+                    cfg.getCiLogin(),
+                    token != null ? token : ""
+            );
+        } else {
+            jenkinsConnector = null;
+        }
+
         executor = Executors.newSingleThreadScheduledExecutor();
-        executor.scheduleAtFixedRate(this::checkBuildStatus, 0, 5, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(this::checkBuildStatus, 0, 2, TimeUnit.SECONDS);
     }
 
     private void checkBuildStatus() {
@@ -123,19 +150,20 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             return;
         }
 
-        String jobName = project.getName();
-        String status;
-        if ("Jenkins".equals(cfg.getCiType())) {
-            JenkinsConnector connector = new JenkinsConnector(cfg.getCiUrl(), cfg.getCiToken());
-            status = connector.getBuildStatus(jobName);
-        } else {
-            status = cfg.getCiType() + " not yet supported.";
-        }
+        if (jenkinsConnector != null) {
+            String chunk = jenkinsConnector.fetchNextChunk();
 
-        String previous = lastStatus.get();
-        if (!status.equals(previous)) {
-            lastStatus.set(status);
-            appendLog(status);
+            if (!chunk.isEmpty()) {
+                appendLog(chunk);
+            }
+
+            // Stop when Jenkins signals no more data (build finished or error)
+            if (!jenkinsConnector.hasMoreData()) {
+                stopMonitoring();
+            }
+        } else {
+            appendLog(cfg.getCiType() + " not yet supported.");
+            stopMonitoring();
         }
     }
 
@@ -151,7 +179,20 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             }
             logPane.setText(body + timestamp + ": " + text + "<br>");
             logPane.setCaretPosition(logPane.getDocument().getLength());
+            if (onNewContent != null) {
+                onNewContent.run();
+            }
         });
+    }
+
+    /** Registers a callback invoked on the EDT whenever monitoring stops. */
+    public void setOnStopped(Runnable onStopped) {
+        this.onStopped = onStopped;
+    }
+
+    /** Registers a callback invoked on the EDT whenever new log content is appended. */
+    public void setOnNewContent(Runnable onNewContent) {
+        this.onNewContent = onNewContent;
     }
 
     public void stopMonitoring() {
@@ -160,12 +201,15 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             appendLog("CI/CD monitoring stopped.");
         }
         executor = null;
+        jenkinsConnector = null;
+        if (onStopped != null) {
+            ApplicationManager.getApplication().invokeLater(onStopped);
+        }
     }
 
     public void clear() {
         ApplicationManager.getApplication().invokeLater(() -> {
             logPane.setText("");
-            lastStatus.set("");
         });
     }
 

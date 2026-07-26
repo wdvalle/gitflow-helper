@@ -1,6 +1,8 @@
 package br.com.gitflowhelper.settings;
 
 import br.com.gitflowhelper.events.GitFlowSettingsListener;
+import com.intellij.credentialStore.CredentialAttributes;
+import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Service;
@@ -151,14 +153,23 @@ public final class GitFlowSettingsService
     }
 
     // ------------------------------------------------------------------
+    // PasswordSafe Credential Storage
+    // ------------------------------------------------------------------
 
-    public String getCiLogin() {
-        return state.getCiLogin();
+    @NotNull
+    private CredentialAttributes createCredentialAttributes(@NotNull String repoPath) {
+        return new CredentialAttributes("GitFlowHelper:" + repoPath, "ciToken");
     }
 
-    public void setCiLogin(String ciLogin) {
-        state.setCiLogin(ciLogin);
-        notifySettingsChanged();
+    @Nullable
+    public String getTokenForRepo(@NotNull String repoPath) {
+        CredentialAttributes attributes = createCredentialAttributes(repoPath);
+        return PasswordSafe.getInstance().getPassword(attributes);
+    }
+
+    public void saveTokenForRepo(@NotNull String repoPath, @Nullable String token) {
+        CredentialAttributes attributes = createCredentialAttributes(repoPath);
+        PasswordSafe.getInstance().setPassword(attributes, token);
     }
 
     public void resetAndDeleteStorage() {

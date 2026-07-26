@@ -37,8 +37,9 @@ public class ConfigDialog extends DialogWrapper {
     // -----------------------------------------------------------------------
     private final ComboBox<String> ciTypeComboBox =
             new ComboBox<>(new String[]{"Jenkins", "GitLab", "GitHub"});
-    private final JTextField ciUrlField   = new JTextField();
-    private final JTextField ciTokenField = new JTextField();
+    private final JTextField ciUrlField     = new JTextField();
+    private final JPasswordField ciTokenField = new JPasswordField();
+    private final JTextField ciLoginField   = new JTextField();
 
     // -----------------------------------------------------------------------
     // Internal state
@@ -46,6 +47,8 @@ public class ConfigDialog extends DialogWrapper {
     private List<GitRepository> repositories;
     /** Working copy per repository index; flushed to the service only on OK. */
     private CiServerConfig[]    workingConfigs;
+    /** Working tokens parallel to workingConfigs; flushed to PasswordSafe only on OK/Apply. */
+    private String[]            workingTokens;
     private int                 currentIndex  = -1;
     private boolean             updatingCombo = false;
 
@@ -78,6 +81,8 @@ public class ConfigDialog extends DialogWrapper {
                 }
             }
         });
+
+        ciTypeComboBox.addActionListener(e -> updateEnabledState());
     }
 
     // -----------------------------------------------------------------------
@@ -87,14 +92,15 @@ public class ConfigDialog extends DialogWrapper {
     private void loadRepositories() {
         repositories   = GitRepositoryManager.getInstance(project).getRepositories();
         workingConfigs = new CiServerConfig[repositories.size()];
+        workingTokens  = new String[repositories.size()];
 
         GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
         for (int i = 0; i < repositories.size(); i++) {
             GitRepository repo = repositories.get(i);
             String path = repo.getRoot().getPath();
             String name = repo.getRoot().getName();
-            // Deep-copy so edits don't mutate live state until OK is clicked
             workingConfigs[i] = svc.getCiServerForRepo(path, name).copy();
+            workingTokens[i]  = svc.getTokenForRepo(path);
         }
     }
 
@@ -132,7 +138,8 @@ public class ConfigDialog extends DialogWrapper {
             CiServerConfig cfg = workingConfigs[currentIndex];
             cfg.setCiType((String) ciTypeComboBox.getSelectedItem());
             cfg.setCiUrl(ciUrlField.getText().trim());
-            cfg.setCiToken(ciTokenField.getText().trim());
+            cfg.setCiLogin(ciLoginField.getText().trim());
+            workingTokens[currentIndex] = new String(ciTokenField.getPassword()).trim();
         }
     }
 
@@ -141,8 +148,15 @@ public class ConfigDialog extends DialogWrapper {
             CiServerConfig cfg = workingConfigs[currentIndex];
             ciTypeComboBox.setSelectedItem(cfg.getCiType());
             ciUrlField.setText(cfg.getCiUrl());
-            ciTokenField.setText(cfg.getCiToken());
+            ciLoginField.setText(cfg.getCiLogin());
+            ciTokenField.setText(workingTokens[currentIndex] != null ? workingTokens[currentIndex] : "");
+            updateEnabledState();
         }
+    }
+
+    private void updateEnabledState() {
+        boolean isJenkins = "Jenkins".equals(ciTypeComboBox.getSelectedItem());
+        ciLoginField.setEnabled(isJenkins);
     }
 
     // -----------------------------------------------------------------------
@@ -155,7 +169,7 @@ public class ConfigDialog extends DialogWrapper {
         gbc.fill    = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        panel.setPreferredSize(new Dimension(460, 200));
+        panel.setPreferredSize(new Dimension(460, 230));
 
         // ---- Repository selector ----
         addRow("Repository:", repoCombo);
@@ -171,6 +185,7 @@ public class ConfigDialog extends DialogWrapper {
         gbc.gridwidth = 1;
         addRow("CI/CD Platform:", ciTypeComboBox);
         addRow("URL:", ciUrlField);
+        addRow("Login:", ciLoginField);
         addRow("Token:", ciTokenField);
 
         // ---- Hint ----
@@ -205,10 +220,12 @@ public class ConfigDialog extends DialogWrapper {
             GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
             for (int i = 0; i < repositories.size(); i++) {
                 GitRepository repo = repositories.get(i);
+                String path = repo.getRoot().getPath();
                 svc.setCiServerForRepo(
-                        repo.getRoot().getPath(),
+                        path,
                         repo.getRoot().getName(),
                         workingConfigs[i]);
+                svc.saveTokenForRepo(path, workingTokens[i]);
             }
         }
     }

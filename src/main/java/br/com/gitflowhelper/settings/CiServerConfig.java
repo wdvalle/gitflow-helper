@@ -3,14 +3,15 @@ package br.com.gitflowhelper.settings;
 import java.util.Objects;
 
 /**
- * Holds the CI/CD server configuration for a single project.
+ * Holds the CI/CD server configuration for a single project/repository.
  * Integration with CI/CD is considered active when {@link #getCiUrl()} is non-empty.
+ * Sensitive tokens are stored securely in PasswordSafe and not held in this state.
  */
 public class CiServerConfig {
 
     private String ciType  = "Jenkins";
     private String ciUrl   = "";
-    private String ciToken = "";
+    private String ciLogin = "";
 
     public CiServerConfig() {
     }
@@ -35,12 +36,12 @@ public class CiServerConfig {
         this.ciUrl = ciUrl;
     }
 
-    public String getCiToken() {
-        return ciToken;
+    public String getCiLogin() {
+        return ciLogin;
     }
 
-    public void setCiToken(String ciToken) {
-        this.ciToken = ciToken;
+    public void setCiLogin(String ciLogin) {
+        this.ciLogin = ciLogin;
     }
 
     // -------------------------------------------------------------------------
@@ -58,7 +59,7 @@ public class CiServerConfig {
         CiServerConfig c = new CiServerConfig();
         c.ciType  = this.ciType;
         c.ciUrl   = this.ciUrl;
-        c.ciToken = this.ciToken;
+        c.ciLogin = this.ciLogin;
         return c;
     }
 
@@ -69,16 +70,16 @@ public class CiServerConfig {
         CiServerConfig that = (CiServerConfig) o;
         return Objects.equals(ciType, that.ciType) &&
                 Objects.equals(ciUrl, that.ciUrl) &&
-                Objects.equals(ciToken, that.ciToken);
+                Objects.equals(ciLogin, that.ciLogin);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ciType, ciUrl, ciToken);
+        return Objects.hash(ciType, ciUrl, ciLogin);
     }
 
     @Override
     public String toString() {
-        return "CiServerConfig{ciType='" + ciType + "', ciUrl='" + ciUrl + "'}";
+        return "CiServerConfig{ciType='" + ciType + "', ciUrl='" + ciUrl + "', ciLogin='" + ciLogin + "'}";
     }
 }
