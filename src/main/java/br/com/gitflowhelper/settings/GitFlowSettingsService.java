@@ -127,6 +127,15 @@ public final class GitFlowSettingsService
     }
 
     /**
+     * Removes the CI/CD server configuration for a given repository and deletes its token.
+     */
+    public void removeCiServerForRepo(@NotNull String repoPath) {
+        state.removeCiServerForRepo(repoPath);
+        saveTokenForRepo(repoPath, null);
+        notifySettingsChanged();
+    }
+
+    /**
      * Returns the entry for the given repo path, or {@code null} if not configured.
      */
     @Nullable

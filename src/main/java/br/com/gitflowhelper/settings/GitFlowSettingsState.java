@@ -123,6 +123,15 @@ public class GitFlowSettingsState {
         entries.add(newEntry);
     }
 
+    /**
+     * Removes the entry for the given repository root path if it exists.
+     */
+    public void removeCiServerForRepo(String repoPath) {
+        if (repoCiEntries != null) {
+            repoCiEntries.removeIf(e -> e.repoPath.equals(repoPath));
+        }
+    }
+
     // ------------------------------------------------------------------
 
     @Override

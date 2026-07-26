@@ -4,13 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="CI/CD per repository configuration">
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Secure token storage and update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/CiServerConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/CiServerConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/GitFlowSettingsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/GitFlowSettingsService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/GitFlowSettingsState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/settings/GitFlowSettingsState.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,23 +115,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000002663856755" />
-      <entry key="MS500" value="1.0544032314208014" />
-      <entry key="S2" value="1.906018602639217" />
-      <entry key="S5" value="2.8202832997699234" />
-      <entry key="S10" value="3.328675585490738" />
-      <entry key="S30" value="3.7549431050423463" />
-      <entry key="S60" value="3.874582509636589" />
-      <entry key="M2" value="3.9365505588168457" />
-      <entry key="M5" value="3.9744400398331092" />
-      <entry key="M10" value="3.9871897854909655" />
-      <entry key="M15" value="3.9914531230484216" />
-      <entry key="M30" value="3.9957231907469195" />
-      <entry key="H1" value="3.9978607519649985" />
-      <entry key="H2" value="3.998930165041047" />
-      <entry key="H4" value="3.9994650481291454" />
-      <entry key="D1" value="18.76902675068821" />
-      <entry key="W1" value="3986.490345265587" />
+      <entry key="MS100" value="1.010275655294555" />
+      <entry key="MS500" value="1.7404795375428908" />
+      <entry key="S2" value="3.233832551798218" />
+      <entry key="S5" value="4.075374204723742" />
+      <entry key="S10" value="4.486193112522647" />
+      <entry key="S30" value="4.815298876403459" />
+      <entry key="S60" value="4.905826589066951" />
+      <entry key="M2" value="4.952445965360665" />
+      <entry key="M5" value="4.980868272801519" />
+      <entry key="M10" value="4.994191988670908" />
+      <entry key="M15" value="5.032115385526214" />
+      <entry key="M30" value="5.389283359604655" />
+      <entry key="H1" value="6.251369039153457" />
+      <entry key="H2" value="7.237921995767531" />
+      <entry key="H4" value="7.992071912708741" />
+      <entry key="D1" value="22.88318357083697" />
+      <entry key="W1" value="3964.0536516701072" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -145,33 +143,33 @@
       <entry key="S60" value="0.0" />
       <entry key="M2" value="0.0" />
       <entry key="M5" value="0.0" />
-      <entry key="M10" value="5.9035983238487824E-301" />
-      <entry key="M15" value="1.1831666638261831E-200" />
-      <entry key="M30" value="2.648420402643304E-100" />
-      <entry key="H1" value="4.2229341595991713E-50" />
-      <entry key="H2" value="5.58142078848626E-25" />
-      <entry key="H4" value="2.1890110830069653E-12" />
-      <entry key="D1" value="0.23497678293935495" />
-      <entry key="W1" value="74.83075320997118" />
+      <entry key="M10" value="5.59491875977835E-304" />
+      <entry key="M15" value="1.1415560693970302E-202" />
+      <entry key="M30" value="2.601432647398971E-101" />
+      <entry key="H1" value="1.3235097378090348E-50" />
+      <entry key="H2" value="3.1246485824599943E-25" />
+      <entry key="H4" value="1.637857704900252E-12" />
+      <entry key="D1" value="0.22388740100797172" />
+      <entry key="W1" value="74.31573685312199" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9862329653969217" />
-      <entry key="MS500" value="1.0514124652912866" />
-      <entry key="S2" value="1.9043016867758147" />
-      <entry key="S5" value="2.8191269990983665" />
-      <entry key="S10" value="3.327960385947293" />
-      <entry key="S30" value="3.7546655489633927" />
-      <entry key="S60" value="3.874438176725455" />
-      <entry key="M2" value="3.936476949003664" />
-      <entry key="M5" value="3.974410242275976" />
-      <entry key="M10" value="3.9871748271616516" />
-      <entry key="M15" value="3.991443137549679" />
-      <entry key="M30" value="3.9957181913464885" />
-      <entry key="H1" value="3.9978582505998665" />
-      <entry key="H2" value="3.9989289139419824" />
-      <entry key="H4" value="3.999464422477601" />
-      <entry key="D1" value="19.003986393741588" />
-      <entry key="W1" value="4061.3203753223365" />
+      <entry key="MS100" value="0.9895394187689234" />
+      <entry key="MS500" value="1.7334355960669559" />
+      <entry key="S2" value="3.230186750409011" />
+      <entry key="S5" value="4.073335404220257" />
+      <entry key="S10" value="4.4850156252711315" />
+      <entry key="S30" value="4.814862212505399" />
+      <entry key="S60" value="4.90560205103034" />
+      <entry key="M2" value="4.952332088165951" />
+      <entry key="M5" value="4.980822328443367" />
+      <entry key="M10" value="4.994168936118912" />
+      <entry key="M15" value="5.032099915505093" />
+      <entry key="M30" value="5.389275174303252" />
+      <entry key="H1" value="6.251364406234756" />
+      <entry key="H2" value="7.2379193704185445" />
+      <entry key="H4" value="7.992070481996285" />
+      <entry key="D1" value="23.107054480403022" />
+      <entry key="W1" value="4038.3686703241265" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -563,14 +561,6 @@
       <workItem from="1784043843454" duration="167000" />
       <workItem from="1784044015603" duration="93000" />
     </task>
-    <task id="LOCAL-00059" summary="Damn it &quot;marked for removal&quot;! &#10;What am I supposed to use?">
-      <option name="closed" value="true" />
-      <created>1780794983871</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1780794983871</updated>
-    </task>
     <task id="LOCAL-00060" summary="New limit for &quot;Give a like&quot;">
       <option name="closed" value="true" />
       <created>1780796800753</created>
@@ -955,7 +945,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785019872225</updated>
     </task>
-    <option name="localTasksCounter" value="109" />
+    <task id="LOCAL-00109" summary="Secure token storage and update">
+      <option name="closed" value="true" />
+      <created>1785025876950</created>
+      <option name="number" value="00109" />
+      <option name="presentableId" value="LOCAL-00109" />
+      <option name="project" value="LOCAL" />
+      <updated>1785025876950</updated>
+    </task>
+    <option name="localTasksCounter" value="110" />
     <servers>
       <Gitlab url="https://gitlabdesenv.jfpr.jus.br">
         <option name="currentProject">
@@ -1009,7 +1007,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="RC1 with tasks" />
     <MESSAGE value="README.md update" />
     <MESSAGE value="Issues panel in progress" />
     <MESSAGE value="Search field added to tasks" />
@@ -1034,7 +1031,8 @@
     <MESSAGE value="NPE when current branch is null." />
     <MESSAGE value="Detect Task Management plugin installation" />
     <MESSAGE value="CI/CD per repository configuration" />
-    <option name="LAST_COMMIT_MESSAGE" value="CI/CD per repository configuration" />
+    <MESSAGE value="Secure token storage and update" />
+    <option name="LAST_COMMIT_MESSAGE" value="Secure token storage and update" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

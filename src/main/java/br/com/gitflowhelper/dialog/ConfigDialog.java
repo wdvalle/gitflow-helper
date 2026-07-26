@@ -10,47 +10,54 @@ import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.List;
 
 /**
  * Configuration dialog for GitFlow Helper CI/CD settings.
  *
- * <p>A combo at the top lists every Git repository found in the current project.
- * Selecting a repository loads its {@link CiServerConfig}; the user edits
- * the fields and clicks OK to persist all changes.
+ * <p>A combo at the top lists every Git repository found in the current project,
+ * plus a default empty selection. Repositories with active CI/CD URLs are displayed
+ * in green font.
  *
- * <p>CI/CD integration is considered active automatically whenever the URL
- * field is non-empty — no checkbox required.
+ * <p>Selecting a repository loads its {@link CiServerConfig}; clicking "Delete"
+ * clears its server settings. Clicking OK or Apply persists non-empty configs
+ * and removes any cleared/empty server configurations.
  */
 public class ConfigDialog extends DialogWrapper {
 
     private final Project project;
 
     // -----------------------------------------------------------------------
-    // Repository selector
+    // Repository selector & Delete button
     // -----------------------------------------------------------------------
-    private final ComboBox<String> repoCombo = new ComboBox<>();
+    private final ComboBox<String> repoCombo    = new ComboBox<>();
+    private final JButton          deleteButton = new JButton("Delete");
 
     // -----------------------------------------------------------------------
     // CI/CD server fields
     // -----------------------------------------------------------------------
     private final ComboBox<String> ciTypeComboBox =
             new ComboBox<>(new String[]{"Jenkins", "GitLab", "GitHub"});
-    private final JTextField ciUrlField     = new JTextField();
-    private final JPasswordField ciTokenField = new JPasswordField();
-    private final JTextField ciLoginField   = new JTextField();
+    private final JTextField     ciUrlField     = new JTextField();
+    private final JPasswordField ciTokenField   = new JPasswordField();
+    private final JTextField     ciLoginField   = new JTextField();
 
     // -----------------------------------------------------------------------
-    // Internal state
+    // Internal state & Actions
     // -----------------------------------------------------------------------
     private List<GitRepository> repositories;
-    /** Working copy per repository index; flushed to the service only on OK. */
+    /** Working copy per repository index; flushed to the service only on OK/Apply. */
     private CiServerConfig[]    workingConfigs;
     /** Working tokens parallel to workingConfigs; flushed to PasswordSafe only on OK/Apply. */
     private String[]            workingTokens;
-    private int                 currentIndex  = -1;
-    private boolean             updatingCombo = false;
+    private int                 currentIndex   = -1;
+    private boolean             updatingCombo  = false;
+    private boolean             updatingFields = false;
+
+    private Action applyAction;
 
     private final JPanel             panel = new JPanel(new GridBagLayout());
     private final GridBagConstraints gbc   = new GridBagConstraints();
@@ -73,20 +80,63 @@ public class ConfigDialog extends DialogWrapper {
 
         repoCombo.addActionListener(e -> {
             if (!updatingCombo) {
-                int newIdx = repoCombo.getSelectedIndex();
-                if (newIdx >= 0 && newIdx != currentIndex) {
+                int selectedIdx = repoCombo.getSelectedIndex();
+                // Item 0 is default empty option ("-- Select Repository --")
+                int newRepoIdx = selectedIdx - 1;
+                if (newRepoIdx != currentIndex) {
                     saveCurrentFields();
-                    currentIndex = newIdx;
+                    currentIndex = newRepoIdx;
                     loadCurrentFields();
                 }
             }
         });
 
-        ciTypeComboBox.addActionListener(e -> updateEnabledState());
+        deleteButton.addActionListener(e -> {
+            if (currentIndex >= 0 && workingConfigs != null && currentIndex < workingConfigs.length) {
+                workingConfigs[currentIndex] = new CiServerConfig();
+                workingTokens[currentIndex]  = "";
+                loadCurrentFields();
+                updateComboItem(currentIndex);
+                setModified(true);
+            }
+        });
+
+        ciTypeComboBox.addActionListener(e -> {
+            updateEnabledState();
+            if (!updatingFields) {
+                setModified(true);
+            }
+        });
+
+        DocumentListener changeListener = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { onFieldChanged(); }
+            @Override public void removeUpdate(DocumentEvent e) { onFieldChanged(); }
+            @Override public void changedUpdate(DocumentEvent e) { onFieldChanged(); }
+
+            private void onFieldChanged() {
+                if (!updatingFields && !updatingCombo) {
+                    setModified(true);
+                    if (currentIndex >= 0 && workingConfigs != null && currentIndex < workingConfigs.length) {
+                        workingConfigs[currentIndex].setCiUrl(ciUrlField.getText().trim());
+                        updateComboItem(currentIndex);
+                    }
+                }
+            }
+        };
+
+        ciUrlField.getDocument().addDocumentListener(changeListener);
+        ciLoginField.getDocument().addDocumentListener(changeListener);
+        ciTokenField.getDocument().addDocumentListener(changeListener);
+    }
+
+    private void setModified(boolean modified) {
+        if (applyAction != null) {
+            applyAction.setEnabled(modified);
+        }
     }
 
     // -----------------------------------------------------------------------
-    // Initialisation
+    // Initialisation & Combo management
     // -----------------------------------------------------------------------
 
     private void loadRepositories() {
@@ -104,28 +154,57 @@ public class ConfigDialog extends DialogWrapper {
         }
     }
 
+    private String getComboItemText(int repoIndex) {
+        GitRepository repo = repositories.get(repoIndex);
+        String repoName = repo.getRoot().getName();
+        String branchPart = repo.getCurrentBranch() != null
+                ? "\u2387 " + repo.getCurrentBranch().getName()
+                : "(No current branch)";
+
+        boolean isConfigured = workingConfigs != null
+                && repoIndex < workingConfigs.length
+                && workingConfigs[repoIndex] != null
+                && workingConfigs[repoIndex].isActive();
+
+        if (isConfigured) {
+            return "<html><font color='#388E3C'><b>" + repoName + "</b></font>&nbsp;&nbsp;&nbsp;<font color='#888888'>"
+                    + branchPart + "</font></html>";
+        } else {
+            return "<html>" + repoName + "&nbsp;&nbsp;&nbsp;<font color='#888888'>"
+                    + branchPart + "</font></html>";
+        }
+    }
+
     private void populateCombo() {
         updatingCombo = true;
         repoCombo.removeAllItems();
 
-        if (repositories == null || repositories.isEmpty()) {
-            repoCombo.addItem("(no Git repositories found)");
-        } else {
-            for (GitRepository repo : repositories) {
-                String branchPart = repo.getCurrentBranch() != null
-                        ? "\u2387 " + repo.getCurrentBranch().getName()
-                        : "(No current branch)";
-                repoCombo.addItem("<html>" + repo.getRoot().getName()
-                        + "&nbsp;&nbsp;&nbsp;<font color='#888888'>"
-                        + branchPart + "</font></html>");
+        // Default empty option
+        repoCombo.addItem("-- Select Repository --");
+
+        if (repositories != null) {
+            for (int i = 0; i < repositories.size(); i++) {
+                repoCombo.addItem(getComboItemText(i));
             }
         }
         updatingCombo = false;
 
-        if (repositories != null && !repositories.isEmpty()) {
-            repoCombo.setSelectedIndex(0);
-            currentIndex = 0;
-            loadCurrentFields();
+        // Default selection: empty option
+        repoCombo.setSelectedIndex(0);
+        currentIndex = -1;
+        loadCurrentFields();
+    }
+
+    private void updateComboItem(int repoIndex) {
+        if (repoIndex >= 0 && repositories != null && repoIndex < repositories.size()) {
+            updatingCombo = true;
+            int comboIndex = repoIndex + 1; // +1 for the default empty item
+            if (comboIndex < repoCombo.getItemCount()) {
+                repoCombo.removeItemAt(comboIndex);
+                repoCombo.insertItemAt(getComboItemText(repoIndex), comboIndex);
+                repoCombo.setSelectedIndex(comboIndex);
+            }
+            updatingCombo = false;
         }
     }
 
@@ -144,19 +223,36 @@ public class ConfigDialog extends DialogWrapper {
     }
 
     private void loadCurrentFields() {
-        if (currentIndex >= 0 && workingConfigs != null && currentIndex < workingConfigs.length) {
-            CiServerConfig cfg = workingConfigs[currentIndex];
-            ciTypeComboBox.setSelectedItem(cfg.getCiType());
-            ciUrlField.setText(cfg.getCiUrl());
-            ciLoginField.setText(cfg.getCiLogin());
-            ciTokenField.setText(workingTokens[currentIndex] != null ? workingTokens[currentIndex] : "");
+        updatingFields = true;
+        try {
+            if (currentIndex >= 0 && workingConfigs != null && currentIndex < workingConfigs.length) {
+                CiServerConfig cfg = workingConfigs[currentIndex];
+                ciTypeComboBox.setSelectedItem(cfg.getCiType());
+                ciUrlField.setText(cfg.getCiUrl());
+                ciLoginField.setText(cfg.getCiLogin());
+                ciTokenField.setText(workingTokens[currentIndex] != null ? workingTokens[currentIndex] : "");
+            } else {
+                // Default empty option selected → clear fields and disable controls
+                ciTypeComboBox.setSelectedItem("Jenkins");
+                ciUrlField.setText("");
+                ciLoginField.setText("");
+                ciTokenField.setText("");
+            }
             updateEnabledState();
+        } finally {
+            updatingFields = false;
         }
     }
 
     private void updateEnabledState() {
-        boolean isJenkins = "Jenkins".equals(ciTypeComboBox.getSelectedItem());
+        boolean hasSelectedRepo = currentIndex >= 0;
+        boolean isJenkins       = hasSelectedRepo && "Jenkins".equals(ciTypeComboBox.getSelectedItem());
+
+        ciTypeComboBox.setEnabled(hasSelectedRepo);
+        ciUrlField.setEnabled(hasSelectedRepo);
+        ciTokenField.setEnabled(hasSelectedRepo);
         ciLoginField.setEnabled(isJenkins);
+        deleteButton.setEnabled(hasSelectedRepo);
     }
 
     // -----------------------------------------------------------------------
@@ -169,16 +265,19 @@ public class ConfigDialog extends DialogWrapper {
         gbc.fill    = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        panel.setPreferredSize(new Dimension(460, 230));
+        panel.setPreferredSize(new Dimension(640, 230));
 
-        // ---- Repository selector ----
-        addRow("Repository:", repoCombo);
+        // ---- Repository selector & Delete button row ----
+        JPanel repoRowPanel = new JPanel(new BorderLayout(5, 0));
+        repoRowPanel.add(repoCombo, BorderLayout.CENTER);
+        repoRowPanel.add(deleteButton, BorderLayout.EAST);
+        addRow("Repository:", repoRowPanel);
 
         // ---- Separator ----
-        gbc.gridy    = row++;
-        gbc.gridx    = 0;
+        gbc.gridy     = row++;
+        gbc.gridx     = 0;
         gbc.gridwidth = 2;
-        gbc.weightx  = 1;
+        gbc.weightx   = 1;
         panel.add(new JSeparator(), gbc);
 
         // ---- CI/CD fields ----
@@ -189,11 +288,11 @@ public class ConfigDialog extends DialogWrapper {
         addRow("Token:", ciTokenField);
 
         // ---- Hint ----
-        gbc.gridy    = row++;
-        gbc.gridx    = 0;
+        gbc.gridy     = row++;
+        gbc.gridx     = 0;
         gbc.gridwidth = 2;
-        gbc.weightx  = 1;
-        JLabel hint = new JLabel("<html><i>Leave URL empty to disable CI/CD for this repository.</i></html>");
+        gbc.weightx   = 1;
+        JLabel hint = new JLabel("<html><i>Leave URL empty or click Delete to disable CI/CD for a repository.</i></html>");
         hint.setForeground(UIManager.getColor("Label.disabledForeground"));
         panel.add(hint, gbc);
 
@@ -201,15 +300,15 @@ public class ConfigDialog extends DialogWrapper {
     }
 
     private void addRow(String labelText, JComponent field) {
-        gbc.gridy    = row++;
-        gbc.gridx    = 0;
+        gbc.gridy     = row++;
+        gbc.gridx     = 0;
         gbc.gridwidth = 1;
-        gbc.weightx  = 0;
+        gbc.weightx   = 0;
         panel.add(new JLabel(labelText), gbc);
 
-        gbc.gridx    = 1;
+        gbc.gridx     = 1;
         gbc.gridwidth = 1;
-        gbc.weightx  = 1;
+        gbc.weightx   = 1;
         panel.add(field, gbc);
     }
 
@@ -221,13 +320,17 @@ public class ConfigDialog extends DialogWrapper {
             for (int i = 0; i < repositories.size(); i++) {
                 GitRepository repo = repositories.get(i);
                 String path = repo.getRoot().getPath();
-                svc.setCiServerForRepo(
-                        path,
-                        repo.getRoot().getName(),
-                        workingConfigs[i]);
-                svc.saveTokenForRepo(path, workingTokens[i]);
+                if (workingConfigs[i] != null && workingConfigs[i].isActive()) {
+                    svc.setCiServerForRepo(path, repo.getRoot().getName(), workingConfigs[i]);
+                    svc.saveTokenForRepo(path, workingTokens[i]);
+                } else {
+                    // URL is empty or cleared via Delete -> remove CI/CD server data completely
+                    svc.removeCiServerForRepo(path);
+                }
             }
         }
+
+        setModified(false);
     }
 
     @Override
@@ -239,12 +342,13 @@ public class ConfigDialog extends DialogWrapper {
     @Override
     protected Action[] createActions() {
         Action[] defaultActions = super.createActions();
-        Action applyAction = new AbstractAction("Apply") {
+        applyAction = new AbstractAction("Apply") {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 applyChanges();
             }
         };
+        applyAction.setEnabled(false);
 
         Action[] actions = new Action[defaultActions.length + 1];
         System.arraycopy(defaultActions, 0, actions, 0, defaultActions.length);
