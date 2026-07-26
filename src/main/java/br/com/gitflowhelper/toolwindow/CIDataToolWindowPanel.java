@@ -11,29 +11,50 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.util.ui.ComponentWithEmptyText;
 import com.intellij.util.ui.StatusText;
+import git4idea.repo.GitRepository;
+import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
     private final Project project;
-    private final JBHtmlEditorPane logPane;
-    private ScheduledExecutorService executor;
-    private JenkinsConnector jenkinsConnector;
+    private final CardLayout cardLayout = new CardLayout();
+    private final JPanel mainContainer;
+    private final JBTabbedPane tabbedPane = new JBTabbedPane();
+    private final JBHtmlEditorPane emptyLogPane;
+
+    private static final String CARD_EMPTY = "EMPTY";
+    private static final String CARD_TABS = "TABS";
+
+    private final Map<String, JBHtmlEditorPane> repoLogPanes = new ConcurrentHashMap<>();
+    private final Map<String, Component> repoTabComponents = new ConcurrentHashMap<>();
+    private final Map<String, ScheduledExecutorService> repoExecutors = new ConcurrentHashMap<>();
+    private final Map<String, JenkinsConnector> repoConnectors = new ConcurrentHashMap<>();
+
     private Runnable onStopped;
     private Runnable onNewContent;
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+
+    private boolean isProgrammaticTabChange = false;
 
     /**
      * Root path of the Git repository currently selected in the toolbar combo.
@@ -46,19 +67,49 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         super(new BorderLayout());
         this.project = project;
 
-        logPane = new JBHtmlEditorPane();
-        logPane.setEditable(false);
-        logPane.addFocusListener(new java.awt.event.FocusAdapter() {
+        mainContainer = new JPanel(cardLayout);
+
+        // Empty state pane
+        emptyLogPane = createHtmlEditorPane();
+        updateEmptyText();
+        mainContainer.add(new JBScrollPane(emptyLogPane), CARD_EMPTY);
+
+        // Tabs pane
+        mainContainer.add(tabbedPane, CARD_TABS);
+
+        add(mainContainer, BorderLayout.CENTER);
+        cardLayout.show(mainContainer, CARD_EMPTY);
+
+        tabbedPane.addChangeListener(new ChangeListener() {
             @Override
-            public void focusGained(java.awt.event.FocusEvent e) {
-                logPane.getCaret().setVisible(false);
+            public void stateChanged(ChangeEvent e) {
+                if (isProgrammaticTabChange) return;
+                int selectedIndex = tabbedPane.getSelectedIndex();
+                if (selectedIndex >= 0) {
+                    Component selectedComp = tabbedPane.getComponentAt(selectedIndex);
+                    for (Map.Entry<String, Component> entry : repoTabComponents.entrySet()) {
+                        if (entry.getValue() == selectedComp) {
+                            selectedRepoPath = entry.getKey();
+                            break;
+                        }
+                    }
+                }
             }
         });
-        updateEmptyText();
-
-        add(new JBScrollPane(logPane), BorderLayout.CENTER);
 
         project.getMessageBus().connect(this).subscribe(GitFlowSettingsListener.TOPIC, this::updateEmptyText);
+    }
+
+    private JBHtmlEditorPane createHtmlEditorPane() {
+        JBHtmlEditorPane pane = new JBHtmlEditorPane();
+        pane.setEditable(false);
+        pane.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                pane.getCaret().setVisible(false);
+            }
+        });
+        return pane;
     }
 
     // -----------------------------------------------------------------------
@@ -67,15 +118,23 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
     /**
      * Sets the repository whose CI/CD server will be monitored.
-     * Stops any running monitor when the selection changes.
+     * Selects the tab if it already exists for the repo.
      *
      * @param repoPath absolute root path of the repository, or {@code null} to use the first.
      */
     public void setSelectedRepoPath(@Nullable String repoPath) {
-        if (!java.util.Objects.equals(this.selectedRepoPath, repoPath)) {
-            stopMonitoring();
+        if (!Objects.equals(this.selectedRepoPath, repoPath)) {
             this.selectedRepoPath = repoPath;
             updateEmptyText();
+            if (repoPath != null && repoTabComponents.containsKey(repoPath)) {
+                Component comp = repoTabComponents.get(repoPath);
+                isProgrammaticTabChange = true;
+                try {
+                    tabbedPane.setSelectedComponent(comp);
+                } finally {
+                    isProgrammaticTabChange = false;
+                }
+            }
         }
     }
 
@@ -90,21 +149,63 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         if (selectedRepoPath != null && svc.getRepoCiEntry(selectedRepoPath) != null) {
             return selectedRepoPath;
         }
-        java.util.List<RepoCiEntry> entries = svc.getRepoCiEntries();
+        List<RepoCiEntry> entries = svc.getRepoCiEntries();
         return entries.isEmpty() ? null : entries.get(0).repoPath;
     }
 
-    /**
-     * Resolves the {@link CiServerConfig} for the currently selected repository.
-     * Falls back to the first configured entry if the path is not found.
-     */
     @Nullable
     private CiServerConfig resolveConfig() {
+        return resolveConfigForRepo(resolveRepoPath());
+    }
+
+    @Nullable
+    private CiServerConfig resolveConfigForRepo(@Nullable String repoPath) {
+        if (repoPath == null) return null;
         GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
-        String path = resolveRepoPath();
-        if (path == null) return null;
-        RepoCiEntry entry = svc.getRepoCiEntry(path);
+        RepoCiEntry entry = svc.getRepoCiEntry(repoPath);
         return entry != null ? entry.ciServer : null;
+    }
+
+    private String getRepoName(String repoPath) {
+        if (repoPath == null) return "CI/CD";
+        List<GitRepository> repos = GitRepositoryManager.getInstance(project).getRepositories();
+        for (GitRepository repo : repos) {
+            if (repo.getRoot().getPath().equals(repoPath)) {
+                return repo.getRoot().getName();
+            }
+        }
+        return new File(repoPath).getName();
+    }
+
+    private JBHtmlEditorPane getOrCreateTab(String repoPath) {
+        if (repoLogPanes.containsKey(repoPath)) {
+            Component comp = repoTabComponents.get(repoPath);
+            isProgrammaticTabChange = true;
+            try {
+                tabbedPane.setSelectedComponent(comp);
+            } finally {
+                isProgrammaticTabChange = false;
+            }
+            return repoLogPanes.get(repoPath);
+        }
+
+        JBHtmlEditorPane logPane = createHtmlEditorPane();
+        JBScrollPane scrollPane = new JBScrollPane(logPane);
+        String tabLabel = getRepoName(repoPath);
+
+        repoLogPanes.put(repoPath, logPane);
+        repoTabComponents.put(repoPath, scrollPane);
+
+        isProgrammaticTabChange = true;
+        try {
+            tabbedPane.addTab(tabLabel, scrollPane);
+            tabbedPane.setSelectedComponent(scrollPane);
+        } finally {
+            isProgrammaticTabChange = false;
+        }
+
+        cardLayout.show(mainContainer, CARD_TABS);
+        return logPane;
     }
 
     // -----------------------------------------------------------------------
@@ -112,21 +213,26 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     // -----------------------------------------------------------------------
 
     public void startMonitoring() {
-        CiServerConfig cfg = resolveConfig();
         String path = resolveRepoPath();
+        CiServerConfig cfg = resolveConfigForRepo(path);
         if (cfg == null || !cfg.isActive() || path == null) {
-            appendLog("CI/CD integration is disabled — configure a server URL first.");
+            if (path != null) {
+                JBHtmlEditorPane pane = getOrCreateTab(path);
+                appendLog(path, "CI/CD integration is disabled — configure a server URL first.");
+            } else {
+                emptyLogPane.setText("CI/CD integration is disabled — configure a server URL first.");
+            }
             updateEmptyText();
             return;
         }
 
-        if (executor != null && !executor.isShutdown()) {
-            executor.shutdownNow();
-        }
+        stopMonitoring(path);
 
-        clear();
-        appendLog("Starting CI/CD monitoring...");
+        JBHtmlEditorPane logPane = getOrCreateTab(path);
+        logPane.setText("");
+        appendLog(path, "Starting CI/CD monitoring...");
 
+        JenkinsConnector jenkinsConnector = null;
         if ("Jenkins".equals(cfg.getCiType())) {
             String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(path);
             jenkinsConnector = new JenkinsConnector(
@@ -134,41 +240,46 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                     cfg.getCiLogin(),
                     token != null ? token : ""
             );
+            repoConnectors.put(path, jenkinsConnector);
         } else {
-            jenkinsConnector = null;
+            repoConnectors.remove(path);
         }
 
-        executor = Executors.newSingleThreadScheduledExecutor();
-        executor.scheduleAtFixedRate(this::checkBuildStatus, 0, 2, TimeUnit.SECONDS);
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        repoExecutors.put(path, executor);
+        executor.scheduleAtFixedRate(() -> checkBuildStatus(path), 0, 2, TimeUnit.SECONDS);
     }
 
-    private void checkBuildStatus() {
-        CiServerConfig cfg = resolveConfig();
+    private void checkBuildStatus(String repoPath) {
+        CiServerConfig cfg = resolveConfigForRepo(repoPath);
         if (cfg == null || !cfg.isActive()) {
-            stopMonitoring();
-            appendLog("CI/CD integration disabled. Stopping monitor.");
+            stopMonitoring(repoPath);
+            appendLog(repoPath, "CI/CD integration disabled. Stopping monitor.");
             return;
         }
 
-        if (jenkinsConnector != null) {
-            String chunk = jenkinsConnector.fetchNextChunk();
+        JenkinsConnector connector = repoConnectors.get(repoPath);
+        if (connector != null) {
+            String chunk = connector.fetchNextChunk();
 
             if (!chunk.isEmpty()) {
-                appendLog(chunk);
+                appendLog(repoPath, chunk);
             }
 
             // Stop when Jenkins signals no more data (build finished or error)
-            if (!jenkinsConnector.hasMoreData()) {
-                stopMonitoring();
+            if (!connector.hasMoreData()) {
+                stopMonitoring(repoPath);
             }
         } else {
-            appendLog(cfg.getCiType() + " not yet supported.");
-            stopMonitoring();
+            appendLog(repoPath, cfg.getCiType() + " not yet supported.");
+            stopMonitoring(repoPath);
         }
     }
 
-    private void appendLog(String text) {
+    private void appendLog(String repoPath, String text) {
         ApplicationManager.getApplication().invokeLater(() -> {
+            JBHtmlEditorPane logPane = repoLogPanes.get(repoPath);
+            if (logPane == null) return;
             String timestamp = dtf.format(LocalDateTime.now());
             String currentText = logPane.getText();
             String body = "";
@@ -196,12 +307,35 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     }
 
     public void stopMonitoring() {
-        if (executor != null && !executor.isShutdown()) {
-            executor.shutdown();
-            appendLog("CI/CD monitoring stopped.");
+        String path = resolveRepoPath();
+        if (path != null) {
+            stopMonitoring(path);
+        } else {
+            stopAllMonitoring();
         }
-        executor = null;
-        jenkinsConnector = null;
+    }
+
+    public void stopMonitoring(String repoPath) {
+        ScheduledExecutorService exec = repoExecutors.remove(repoPath);
+        if (exec != null && !exec.isShutdown()) {
+            exec.shutdown();
+            appendLog(repoPath, "CI/CD monitoring stopped.");
+        }
+        repoConnectors.remove(repoPath);
+        if (onStopped != null) {
+            ApplicationManager.getApplication().invokeLater(onStopped);
+        }
+    }
+
+    public void stopAllMonitoring() {
+        for (String path : repoExecutors.keySet()) {
+            ScheduledExecutorService exec = repoExecutors.remove(path);
+            if (exec != null && !exec.isShutdown()) {
+                exec.shutdown();
+            }
+        }
+        repoExecutors.clear();
+        repoConnectors.clear();
         if (onStopped != null) {
             ApplicationManager.getApplication().invokeLater(onStopped);
         }
@@ -209,13 +343,22 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
     public void clear() {
         ApplicationManager.getApplication().invokeLater(() -> {
-            logPane.setText("");
+            stopAllMonitoring();
+            isProgrammaticTabChange = true;
+            try {
+                tabbedPane.removeAll();
+            } finally {
+                isProgrammaticTabChange = false;
+            }
+            repoLogPanes.clear();
+            repoTabComponents.clear();
+            cardLayout.show(mainContainer, CARD_EMPTY);
         });
     }
 
     private void updateEmptyText() {
         CiServerConfig cfg = resolveConfig();
-        StatusText emptyText = logPane.getEmptyText();
+        StatusText emptyText = emptyLogPane.getEmptyText();
         emptyText.clear();
         if (cfg == null || !cfg.isActive()) {
             emptyText.setText("CI/CD integration is disabled.");
@@ -230,7 +373,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
     @Override
     public void dispose() {
-        stopMonitoring();
+        stopAllMonitoring();
     }
 
     // -----------------------------------------------------------------------
