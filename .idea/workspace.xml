@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Tabbed interface for CI/CD monitoring">
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Bullets in tab panel to update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowGraphPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowGraphPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowToolWindowFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowToolWindowFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/TasksToolWindowPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/TasksToolWindowPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflow/cicd/JenkinsConnector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflow/cicd/JenkinsConnector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,7 +21,7 @@
     </option>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="136" />
+    <option name="cachedIndexableFilesCount" value="133" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="ExternalProjectsData">
@@ -116,23 +114,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.002820174210005" />
-      <entry key="MS500" value="1.3090688152302379" />
-      <entry key="S2" value="1.7456135585935608" />
-      <entry key="S5" value="1.8892124173247606" />
-      <entry key="S10" value="1.9429806028359018" />
-      <entry key="S30" value="1.9806204212200393" />
-      <entry key="S60" value="1.9906503518177967" />
-      <entry key="M2" value="2.0391381653813383" />
-      <entry key="M5" value="2.7512109336038195" />
-      <entry key="M10" value="3.9619958450396924" />
-      <entry key="M15" value="4.797004567791083" />
-      <entry key="M30" value="6.537298895246274" />
-      <entry key="H1" value="8.811312552579672" />
-      <entry key="H2" value="11.235389175630587" />
-      <entry key="H4" value="13.188127054812298" />
-      <entry key="D1" value="29.008031067408037" />
-      <entry key="W1" value="3949.8656695874524" />
+      <entry key="MS100" value="1.0000011741184975" />
+      <entry key="MS500" value="1.071686611781013" />
+      <entry key="S2" value="2.0166632413451024" />
+      <entry key="S5" value="3.199037105000883" />
+      <entry key="S10" value="3.9395318042800813" />
+      <entry key="S30" value="4.602449150521586" />
+      <entry key="S60" value="4.795073583233881" />
+      <entry key="M2" value="4.8959458581286786" />
+      <entry key="M5" value="4.957989486175068" />
+      <entry key="M10" value="4.97892933782915" />
+      <entry key="M15" value="4.985938312905562" />
+      <entry key="M30" value="4.992962039781164" />
+      <entry key="H1" value="4.997957247169033" />
+      <entry key="H2" value="5.143760391152269" />
+      <entry key="H4" value="6.500021452430829" />
+      <entry key="D1" value="25.19342404220161" />
+      <entry key="W1" value="3755.6812911165966" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -144,33 +142,33 @@
       <entry key="S60" value="0.0" />
       <entry key="M2" value="0.0" />
       <entry key="M5" value="0.0" />
-      <entry key="M10" value="2.5243641487233467E-306" />
-      <entry key="M15" value="3.1169946725957308E-204" />
-      <entry key="M30" value="4.2986490757418414E-102" />
-      <entry key="H1" value="5.380056594142795E-51" />
-      <entry key="H2" value="1.9921912694527032E-25" />
-      <entry key="H4" value="1.3077992798185184E-12" />
-      <entry key="D1" value="0.2156455377046305" />
-      <entry key="W1" value="73.91860507493786" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="2.4685593558608938E-219" />
+      <entry key="M30" value="1.2097224758027132E-109" />
+      <entry key="H1" value="9.025343141818564E-55" />
+      <entry key="H2" value="2.5802956592896192E-27" />
+      <entry key="H4" value="1.488367963712882E-13" />
+      <entry key="D1" value="0.15011889043410195" />
+      <entry key="W1" value="70.19102771131182" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9821824334509368" />
-      <entry key="MS500" value="1.3036358564306871" />
-      <entry key="S2" value="1.743799551112874" />
-      <entry key="S5" value="1.888426879327789" />
-      <entry key="S10" value="1.9425766133829585" />
-      <entry key="S30" value="1.9804831398318359" />
-      <entry key="S60" value="1.9905813623422426" />
-      <entry key="M2" value="2.0391028304850396" />
-      <entry key="M5" value="2.751191864512949" />
-      <entry key="M10" value="3.9619820885718657" />
-      <entry key="M15" value="4.796993379827246" />
-      <entry key="M30" value="6.537291019436071" />
-      <entry key="H1" value="8.811307047570532" />
-      <entry key="H2" value="11.235385589661188" />
-      <entry key="H4" value="13.188124929505356" />
-      <entry key="D1" value="29.223660553077934" />
-      <entry key="W1" value="4023.7835602771806" />
+      <entry key="MS100" value="0.9862338544488476" />
+      <entry key="MS500" value="1.0686174090021154" />
+      <entry key="S2" value="2.014381466225041" />
+      <entry key="S5" value="3.196982898588708" />
+      <entry key="S10" value="3.938091117214342" />
+      <entry key="S30" value="4.601837596274064" />
+      <entry key="S60" value="4.794748159241758" />
+      <entry key="M2" value="4.89577795630388" />
+      <entry key="M5" value="4.957921042612651" />
+      <entry key="M10" value="4.97889489906394" />
+      <entry key="M15" value="4.985915305272006" />
+      <entry key="M30" value="4.992950511676013" />
+      <entry key="H1" value="4.997951476109804" />
+      <entry key="H2" value="5.143757458116532" />
+      <entry key="H4" value="6.50001976688011" />
+      <entry key="D1" value="25.34353151755096" />
+      <entry key="W1" value="3825.8716404334305" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -244,7 +242,7 @@
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.41884816",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -561,14 +559,6 @@
       <workItem from="1784043394218" duration="435000" />
       <workItem from="1784043843454" duration="167000" />
       <workItem from="1784044015603" duration="93000" />
-    </task>
-    <task id="LOCAL-00063" summary="Begin using tasks integration">
-      <option name="closed" value="true" />
-      <created>1780955853876</created>
-      <option name="number" value="00063" />
-      <option name="presentableId" value="LOCAL-00063" />
-      <option name="project" value="LOCAL" />
-      <updated>1780955853876</updated>
     </task>
     <task id="LOCAL-00064" summary="Simultaneous projects work fine.&#10;Better progress bar in IDE status bar.">
       <option name="closed" value="true" />
@@ -954,7 +944,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785030549897</updated>
     </task>
-    <option name="localTasksCounter" value="112" />
+    <task id="LOCAL-00112" summary="Bullets in tab panel to update">
+      <option name="closed" value="true" />
+      <created>1785075700323</created>
+      <option name="number" value="00112" />
+      <option name="presentableId" value="LOCAL-00112" />
+      <option name="project" value="LOCAL" />
+      <updated>1785075700323</updated>
+    </task>
+    <option name="localTasksCounter" value="113" />
     <servers>
       <Gitlab url="https://gitlabdesenv.jfpr.jus.br">
         <option name="currentProject">
@@ -1008,7 +1006,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Search field added to tasks" />
     <MESSAGE value="Github RC1" />
     <MESSAGE value="Update tasks list on finish" />
     <MESSAGE value="Probably final with Gitalb and Github" />
@@ -1033,7 +1030,8 @@
     <MESSAGE value="Secure token storage and update" />
     <MESSAGE value="Screen validations" />
     <MESSAGE value="Tabbed interface for CI/CD monitoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="Tabbed interface for CI/CD monitoring" />
+    <MESSAGE value="Bullets in tab panel to update" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bullets in tab panel to update" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

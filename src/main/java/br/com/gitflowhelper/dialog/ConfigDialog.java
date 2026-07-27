@@ -2,9 +2,12 @@ package br.com.gitflowhelper.dialog;
 
 import br.com.gitflowhelper.settings.CiServerConfig;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.ui.components.JBPasswordField;
+import com.intellij.ui.components.JBTextField;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.Nullable;
@@ -34,16 +37,16 @@ public class ConfigDialog extends DialogWrapper {
     // Repository selector & Delete button
     // -----------------------------------------------------------------------
     private final ComboBox<String> repoCombo    = new ComboBox<>();
-    private final JButton          deleteButton = new JButton("Delete");
+    private final JButton          deleteButton = new JButton(AllIcons.Actions.GC);
 
     // -----------------------------------------------------------------------
     // CI/CD server fields
     // -----------------------------------------------------------------------
     private final ComboBox<String> ciTypeComboBox =
             new ComboBox<>(new String[]{"Jenkins", "GitLab", "GitHub"});
-    private final JTextField     ciUrlField     = new JTextField();
-    private final JPasswordField ciTokenField   = new JPasswordField();
-    private final JTextField     ciLoginField   = new JTextField();
+    private final JBTextField     ciUrlField     = new JBTextField();
+    private final JBPasswordField ciTokenField   = new JBPasswordField();
+    private final JBTextField     ciLoginField   = new JBTextField();
 
     // -----------------------------------------------------------------------
     // Internal state & Actions
@@ -72,6 +75,12 @@ public class ConfigDialog extends DialogWrapper {
         this.project = project;
         setTitle("Git Flow Helper – CI/CD Configuration");
         init();
+
+        deleteButton.setToolTipText("Delete configuration");
+
+        ciUrlField.getEmptyText().setText("e.g. https://jenkins.example.com/job/myproject");
+        ciLoginField.getEmptyText().setText("e.g. username");
+        ciTokenField.getEmptyText().setText("API token or password");
 
         if (project != null) {
             loadRepositories();
