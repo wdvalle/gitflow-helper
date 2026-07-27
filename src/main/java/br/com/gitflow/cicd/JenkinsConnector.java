@@ -86,7 +86,7 @@ public class JenkinsConnector {
         if (baselineBuildNumber == null) {
             // First execution: record baseline build number
             baselineBuildNumber = currentBuildNumber;
-            return "Initial build number recorded: #" + baselineBuildNumber + ". Waiting for new build to start...";
+            return "<font color='#FFFFFF'>Initial build number recorded: #" + baselineBuildNumber + ". Waiting for new build to start...</font><br>";
         }
 
         if (!currentBuildNumber.equals(baselineBuildNumber)) {
@@ -94,7 +94,7 @@ public class JenkinsConnector {
             baselineBuildNumber = currentBuildNumber;
             waitingForNewBuild = false;
             start = 0;
-            String headerLog = "New build detected: #" + currentBuildNumber + ". Fetching logs...<br>";
+            String headerLog = "<font color='#FFFFFF'>New build detected: #" + currentBuildNumber + ". Fetching logs...</font><br>";
             String firstChunk = fetchProgressiveConsoleText();
             return headerLog + firstChunk;
         }
@@ -127,7 +127,7 @@ public class JenkinsConnector {
         if (!hasMoreData) {
             // Append final build status message if build finished
             String status = fetchBuildResultStatus();
-            formattedChunk = formattedChunk + "<br>Build finished: " + status;
+            formattedChunk = formattedChunk + "<br><font color='#FFFFFF'>Build finished: " + status + "</font><br>";
         }
 
         return formattedChunk;
@@ -178,11 +178,45 @@ public class JenkinsConnector {
     }
 
     private String formatHtml(String rawText) {
-        return rawText
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\r\n", "<br>")
-                .replace("\n", "<br>");
+        if (rawText == null || rawText.isEmpty()) {
+            return "";
+        }
+        String[] lines = rawText.split("\r?\n", -1);
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            if (i == lines.length - 1 && line.isEmpty()) {
+                break;
+            }
+
+            String escapedLine = line
+                    .replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;");
+
+            String trimmed = line.trim();
+            String color = null;
+
+            if (trimmed.startsWith(">")) {
+                color = "#4FC3F7"; // Blue
+            } else if (trimmed.startsWith("[Pipeline]")) {
+                color = "#81C784"; // Green
+            } else if (trimmed.startsWith("[")) {
+                color = "#FFB74D"; // Orange
+            }
+
+            if (color != null) {
+                sb.append("<font color='").append(color).append("'>")
+                  .append(escapedLine)
+                  .append("</font>");
+            } else {
+                sb.append(escapedLine);
+            }
+
+            sb.append("<br>");
+        }
+
+        return sb.toString();
     }
 }

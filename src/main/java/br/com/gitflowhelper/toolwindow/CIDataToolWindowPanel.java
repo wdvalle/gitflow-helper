@@ -222,7 +222,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         if (cfg == null || !cfg.isActive() || path == null) {
             if (path != null) {
                 JBHtmlEditorPane pane = getOrCreateTab(path);
-                appendLog(path, "CI/CD integration is disabled — configure a server URL first.");
+                appendPluginLog(path, "CI/CD integration is disabled — configure a server URL first.");
             } else {
                 emptyLogPane.setText("CI/CD integration is disabled — configure a server URL first.");
             }
@@ -234,7 +234,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
         JBHtmlEditorPane logPane = getOrCreateTab(path);
         logPane.setText("");
-        appendLog(path, "Starting CI/CD monitoring...");
+        appendPluginLog(path, "Starting CI/CD monitoring...");
 
         JenkinsConnector jenkinsConnector = null;
         if ("Jenkins".equals(cfg.getCiType())) {
@@ -258,7 +258,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         CiServerConfig cfg = resolveConfigForRepo(repoPath);
         if (cfg == null || !cfg.isActive()) {
             stopMonitoring(repoPath);
-            appendLog(repoPath, "CI/CD integration disabled. Stopping monitor.");
+            appendPluginLog(repoPath, "CI/CD integration disabled. Stopping monitor.");
             return;
         }
 
@@ -275,16 +275,23 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                 stopMonitoring(repoPath);
             }
         } else {
-            appendLog(repoPath, cfg.getCiType() + " not yet supported.");
+            appendPluginLog(repoPath, cfg.getCiType() + " not yet supported.");
             stopMonitoring(repoPath);
         }
     }
 
+    private void appendPluginLog(String repoPath, String text) {
+        appendLog(repoPath, text, true);
+    }
+
     private void appendLog(String repoPath, String text) {
+        appendLog(repoPath, text, false);
+    }
+
+    private void appendLog(String repoPath, String content, boolean isPluginLog) {
         ApplicationManager.getApplication().invokeLater(() -> {
             JBHtmlEditorPane logPane = repoLogPanes.get(repoPath);
             if (logPane == null) return;
-            String timestamp = dtf.format(LocalDateTime.now());
             String currentText = logPane.getText();
             String body = "";
             if (currentText != null && currentText.contains("<body>")) {
@@ -292,7 +299,14 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                 int bodyEnd   = currentText.lastIndexOf("</body>");
                 if (bodyEnd > bodyStart) body = currentText.substring(bodyStart, bodyEnd);
             }
-            logPane.setText(body + timestamp + ": " + text + "<br>");
+            String timestamp = dtf.format(LocalDateTime.now());
+            String toAppend;
+            if (isPluginLog) {
+                toAppend = "<font color='#FFFFFF'>" + timestamp + ": " + content + "</font><br>";
+            } else {
+                toAppend = content;
+            }
+            logPane.setText(body + toAppend);
             logPane.setCaretPosition(logPane.getDocument().getLength());
 
             Component comp = repoTabComponents.get(repoPath);
@@ -335,7 +349,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         ScheduledExecutorService exec = repoExecutors.remove(repoPath);
         if (exec != null && !exec.isShutdown()) {
             exec.shutdown();
-            appendLog(repoPath, "CI/CD monitoring stopped.");
+            appendPluginLog(repoPath, "CI/CD monitoring stopped.");
         }
         repoConnectors.remove(repoPath);
         if (onStopped != null) {
