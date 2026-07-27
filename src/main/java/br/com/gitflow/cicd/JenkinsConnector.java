@@ -1,5 +1,8 @@
 package br.com.gitflow.cicd;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -11,6 +14,7 @@ public class JenkinsConnector {
     private final String token;
     private final String buildNumberUrl;
     private final String consoleTextUrl;
+    private final String apiUrl;
     private final HttpClient httpClient;
 
     private String baselineBuildNumber = null;
@@ -24,8 +28,9 @@ public class JenkinsConnector {
 
     public JenkinsConnector(String baseUrl, String login, String token) {
         String normalizedBase = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
-        this.buildNumberUrl = normalizedBase + "/buildNumber";
-        this.consoleTextUrl = normalizedBase + "/consoleText";
+        this.buildNumberUrl = normalizedBase + "/lastBuild/buildNumber";
+        this.consoleTextUrl = normalizedBase + "/lastBuild/consoleText";
+        this.apiUrl = normalizedBase + "/lastBuild/api/json?tree=building,result";
         this.login = login;
         this.token = token;
         this.httpClient = HttpClient.newBuilder().build();
@@ -33,7 +38,7 @@ public class JenkinsConnector {
 
     /**
      * Returns true while Jenkins signals monitoring should continue.
-     * Becomes false after a build completes or on error.
+     * Becomes false after the build status API reports building = false, or on error.
      */
     public boolean hasMoreData() {
         return hasMoreData;
@@ -45,7 +50,8 @@ public class JenkinsConnector {
      * <p>Initial phase: Queries /buildNumber to record the initial build number,
      * and continues checking /buildNumber until the build number changes.
      *
-     * <p>Log phase: Once the build number changes, performs progressive requests to /consoleText.
+     * <p>Log phase: Once the build number changes, performs progressive requests to /consoleText
+     * and checks build completion via /api/json?tree=building,result.
      *
      * @return log output chunk (or empty string while waiting / no new data), or error string.
      */
@@ -112,18 +118,54 @@ public class JenkinsConnector {
                 .map(Integer::parseInt)
                 .orElseGet(() -> start + (response.body() != null ? response.body().length() : 0));
 
-        // Update the more-data flag from the response header
-        hasMoreData = response.headers()
-                .firstValue("X-More-Data")
-                .map("true"::equalsIgnoreCase)
-                .orElse(false);
-
         String chunk = response.body();
-        if (chunk == null || chunk.isEmpty()) {
-            return "";
+        String formattedChunk = (chunk != null && !chunk.isEmpty()) ? formatHtml(chunk) : "";
+
+        // Check build status via Jenkins API
+        checkBuildFinishedViaApi();
+
+        if (!hasMoreData) {
+            // Append final build status message if build finished
+            String status = fetchBuildResultStatus();
+            formattedChunk = formattedChunk + "<br>Build finished: " + status;
         }
 
-        return formatHtml(chunk);
+        return formattedChunk;
+    }
+
+    private void checkBuildFinishedViaApi() {
+        try {
+            HttpRequest request = createRequestBuilder(apiUrl).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 && response.body() != null) {
+                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                if (json.has("building")) {
+                    boolean isBuilding = json.get("building").getAsBoolean();
+                    if (!isBuilding) {
+                        hasMoreData = false;
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // Fallback: keep hasMoreData unchanged if API check fails transiently
+        }
+    }
+
+    private String fetchBuildResultStatus() {
+        try {
+            HttpRequest request = createRequestBuilder(apiUrl).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 && response.body() != null) {
+                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                if (json.has("result") && !json.get("result").isJsonNull()) {
+                    return json.get("result").getAsString();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return "COMPLETED";
     }
 
     private HttpRequest.Builder createRequestBuilder(String url) {

@@ -78,7 +78,7 @@ public class ConfigDialog extends DialogWrapper {
 
         deleteButton.setToolTipText("Delete configuration");
 
-        ciUrlField.getEmptyText().setText("e.g. https://jenkins.example.com/job/myproject");
+        ciUrlField.getEmptyText().setText("e.g. https://jenkins.example.com/job/mypipeline");
         ciLoginField.getEmptyText().setText("e.g. username");
         ciTokenField.getEmptyText().setText("API token or password");
 

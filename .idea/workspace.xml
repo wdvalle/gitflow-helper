@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Bullets in tab panel to update">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflow/cicd/JenkinsConnector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflow/cicd/JenkinsConnector.java" afterDir="false" />
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Waits for new build process">
       <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -114,23 +112,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000011741184975" />
-      <entry key="MS500" value="1.071686611781013" />
-      <entry key="S2" value="2.0166632413451024" />
-      <entry key="S5" value="3.199037105000883" />
-      <entry key="S10" value="3.9395318042800813" />
-      <entry key="S30" value="4.602449150521586" />
-      <entry key="S60" value="4.795073583233881" />
-      <entry key="M2" value="4.8959458581286786" />
-      <entry key="M5" value="4.957989486175068" />
-      <entry key="M10" value="4.97892933782915" />
-      <entry key="M15" value="4.985938312905562" />
-      <entry key="M30" value="4.992962039781164" />
-      <entry key="H1" value="4.997957247169033" />
-      <entry key="H2" value="5.143760391152269" />
-      <entry key="H4" value="6.500021452430829" />
-      <entry key="D1" value="25.19342404220161" />
-      <entry key="W1" value="3755.6812911165966" />
+      <entry key="MS100" value="1.1321272550701726" />
+      <entry key="MS500" value="1.6677423140308778" />
+      <entry key="S2" value="2.2890150666704954" />
+      <entry key="S5" value="3.503812396745186" />
+      <entry key="S10" value="4.4576811064614645" />
+      <entry key="S30" value="5.400858171672839" />
+      <entry key="S60" value="5.68826270597867" />
+      <entry key="M2" value="5.840960456116213" />
+      <entry key="M5" value="5.935605967356068" />
+      <entry key="M10" value="5.967671819879616" />
+      <entry key="M15" value="5.9784186231519865" />
+      <entry key="M30" value="5.989194655779584" />
+      <entry key="H1" value="5.994593766356458" />
+      <entry key="H2" value="5.99805051647336" />
+      <entry key="H4" value="6.077376640637862" />
+      <entry key="D1" value="18.073012963126267" />
+      <entry key="W1" value="3387.0461207105145" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -143,32 +141,32 @@
       <entry key="M2" value="0.0" />
       <entry key="M5" value="0.0" />
       <entry key="M10" value="0.0" />
-      <entry key="M15" value="2.4685593558608938E-219" />
-      <entry key="M30" value="1.2097224758027132E-109" />
-      <entry key="H1" value="9.025343141818564E-55" />
-      <entry key="H2" value="2.5802956592896192E-27" />
-      <entry key="H4" value="1.488367963712882E-13" />
-      <entry key="D1" value="0.15011889043410195" />
-      <entry key="W1" value="70.19102771131182" />
+      <entry key="M15" value="5.296087444486976E-250" />
+      <entry key="M30" value="5.60326982155775E-125" />
+      <entry key="H1" value="1.9424131785796907E-62" />
+      <entry key="H2" value="3.785370719156079E-31" />
+      <entry key="H4" value="1.802726267250443E-15" />
+      <entry key="D1" value="0.07194024701101874" />
+      <entry key="W1" value="63.189361880537234" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9862338544488476" />
-      <entry key="MS500" value="1.0686174090021154" />
-      <entry key="S2" value="2.014381466225041" />
-      <entry key="S5" value="3.196982898588708" />
-      <entry key="S10" value="3.938091117214342" />
-      <entry key="S30" value="4.601837596274064" />
-      <entry key="S60" value="4.794748159241758" />
-      <entry key="M2" value="4.89577795630388" />
-      <entry key="M5" value="4.957921042612651" />
-      <entry key="M10" value="4.97889489906394" />
-      <entry key="M15" value="4.985915305272006" />
-      <entry key="M30" value="4.992950511676013" />
-      <entry key="H1" value="4.997951476109804" />
-      <entry key="H2" value="5.143757458116532" />
-      <entry key="H4" value="6.50001976688011" />
-      <entry key="D1" value="25.34353151755096" />
-      <entry key="W1" value="3825.8716404334305" />
+      <entry key="MS100" value="1.1079345259189353" />
+      <entry key="MS500" value="1.659901139910448" />
+      <entry key="S2" value="2.286369641549984" />
+      <entry key="S5" value="3.5022550544097912" />
+      <entry key="S10" value="4.4566998234983375" />
+      <entry key="S30" value="5.4004629759267315" />
+      <entry key="S60" value="5.688054626881562" />
+      <entry key="M2" value="5.840853623332251" />
+      <entry key="M5" value="5.935562540527319" />
+      <entry key="M10" value="5.967649988848813" />
+      <entry key="M15" value="5.978404042844616" />
+      <entry key="M30" value="5.989187352444835" />
+      <entry key="H1" value="5.994590111386616" />
+      <entry key="H2" value="5.998048687731744" />
+      <entry key="H4" value="6.077375705859909" />
+      <entry key="D1" value="18.144947587357205" />
+      <entry key="W1" value="3450.2348718457188" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -560,14 +558,6 @@
       <workItem from="1784043843454" duration="167000" />
       <workItem from="1784044015603" duration="93000" />
     </task>
-    <task id="LOCAL-00064" summary="Simultaneous projects work fine.&#10;Better progress bar in IDE status bar.">
-      <option name="closed" value="true" />
-      <created>1781056017875</created>
-      <option name="number" value="00064" />
-      <option name="presentableId" value="LOCAL-00064" />
-      <option name="project" value="LOCAL" />
-      <updated>1781056017875</updated>
-    </task>
     <task id="LOCAL-00065" summary="Damn it! Are you crazy JetBrains!&#10;What can I read the plugin version without violating your crazy rules?">
       <option name="closed" value="true" />
       <created>1781057203881</created>
@@ -952,7 +942,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785075700323</updated>
     </task>
-    <option name="localTasksCounter" value="113" />
+    <task id="LOCAL-00113" summary="Waits for new build process">
+      <option name="closed" value="true" />
+      <created>1785167394114</created>
+      <option name="number" value="00113" />
+      <option name="presentableId" value="LOCAL-00113" />
+      <option name="project" value="LOCAL" />
+      <updated>1785167394115</updated>
+    </task>
+    <option name="localTasksCounter" value="114" />
     <servers>
       <Gitlab url="https://gitlabdesenv.jfpr.jus.br">
         <option name="currentProject">
@@ -1006,7 +1004,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Github RC1" />
     <MESSAGE value="Update tasks list on finish" />
     <MESSAGE value="Probably final with Gitalb and Github" />
     <MESSAGE value="Minor improvements in interface" />
@@ -1031,7 +1028,8 @@
     <MESSAGE value="Screen validations" />
     <MESSAGE value="Tabbed interface for CI/CD monitoring" />
     <MESSAGE value="Bullets in tab panel to update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bullets in tab panel to update" />
+    <MESSAGE value="Waits for new build process" />
+    <option name="LAST_COMMIT_MESSAGE" value="Waits for new build process" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
