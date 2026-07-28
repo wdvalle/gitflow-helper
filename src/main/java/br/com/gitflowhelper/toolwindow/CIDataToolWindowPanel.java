@@ -22,6 +22,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Element;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
 import java.io.File;
 import java.time.LocalDateTime;
@@ -288,7 +293,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                 repoExecutors.put(path, executor);
-                executor.scheduleAtFixedRate(() -> checkBuildStatus(path), 0, 2, TimeUnit.SECONDS);
+                executor.scheduleWithFixedDelay(() -> checkBuildStatus(path), 0, 2, TimeUnit.SECONDS);
             });
         } else {
             repoConnectors.remove(path);
@@ -335,13 +340,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         ApplicationManager.getApplication().invokeLater(() -> {
             JBHtmlEditorPane logPane = repoLogPanes.get(repoPath);
             if (logPane == null) return;
-            String currentText = logPane.getText();
-            String body = "";
-            if (currentText != null && currentText.contains("<body>")) {
-                int bodyStart = currentText.indexOf("<body>") + 6;
-                int bodyEnd   = currentText.lastIndexOf("</body>");
-                if (bodyEnd > bodyStart) body = currentText.substring(bodyStart, bodyEnd);
-            }
+
             String timestamp = dtf.format(LocalDateTime.now());
             String toAppend;
             if (isPluginLog) {
@@ -349,7 +348,28 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             } else {
                 toAppend = content;
             }
-            logPane.setText(body + toAppend);
+
+            try {
+                HTMLDocument doc = (HTMLDocument) logPane.getDocument();
+                HTMLEditorKit kit = (HTMLEditorKit) logPane.getEditorKit();
+                Element body = doc.getElement(doc.getDefaultRootElement(), StyleConstants.NameAttribute, HTML.Tag.BODY);
+                if (body != null) {
+                    kit.insertHTML(doc, body.getEndOffset() - 1, toAppend, 0, 0, null);
+                } else {
+                    kit.insertHTML(doc, doc.getLength(), toAppend, 0, 0, null);
+                }
+            } catch (Exception e) {
+                // Fallback in case of unexpected HTML document structure issue
+                String currentText = logPane.getText();
+                String body = "";
+                if (currentText != null && currentText.contains("<body>")) {
+                    int bodyStart = currentText.indexOf("<body>") + 6;
+                    int bodyEnd   = currentText.lastIndexOf("</body>");
+                    if (bodyEnd > bodyStart) body = currentText.substring(bodyStart, bodyEnd);
+                }
+                logPane.setText(body + toAppend);
+            }
+
             logPane.setCaretPosition(logPane.getDocument().getLength());
 
             Component comp = repoTabComponents.get(repoPath);

@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="ConfigDialog finished">
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/FeatureFinishAction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/actions/FeatureFinishAction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" afterDir="false" />
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Jenkins integration finished">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/AboutDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/AboutDialog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,61 +109,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000998415598843" />
-      <entry key="MS500" value="1.1596881258156815" />
-      <entry key="S2" value="1.9216424832897898" />
-      <entry key="S5" value="2.749007898242013" />
-      <entry key="S10" value="3.264593796706208" />
-      <entry key="S30" value="3.7247594275625104" />
-      <entry key="S60" value="3.858191480020312" />
-      <entry key="M2" value="3.92801373634085" />
-      <entry key="M5" value="3.9709412017722703" />
-      <entry key="M10" value="3.9854261618270757" />
-      <entry key="M15" value="3.9902742046870654" />
-      <entry key="M30" value="3.9952880723953106" />
-      <entry key="H1" value="4.054088978168874" />
-      <entry key="H2" value="5.084946470891838" />
-      <entry key="H4" value="8.788557833316474" />
-      <entry key="D1" value="29.75573185399289" />
-      <entry key="W1" value="3284.2250487367396" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.000000000023419" />
+      <entry key="S10" value="1.0000142630298505" />
+      <entry key="S30" value="1.1227340212750623" />
+      <entry key="S60" value="2.2397828003330638" />
+      <entry key="M2" value="4.992373799021692" />
+      <entry key="M5" value="9.225063831013895" />
+      <entry key="M10" value="12.473997575786711" />
+      <entry key="M15" value="14.693249019519156" />
+      <entry key="M30" value="18.572403405902357" />
+      <entry key="H1" value="21.693714164421213" />
+      <entry key="H2" value="24.5086129066996" />
+      <entry key="H4" value="29.051438576057684" />
+      <entry key="D1" value="51.068344236829084" />
+      <entry key="W1" value="3297.493061068721" />
     </decayedCancelled>
     <decayedSelected>
-      <entry key="MS100" value="8.040876958552191E-9" />
-      <entry key="MS500" value="0.02404698781501347" />
-      <entry key="S2" value="0.39379044200491153" />
-      <entry key="S5" value="0.688820507371476" />
-      <entry key="S10" value="0.8299521114928716" />
-      <entry key="S30" value="0.9397615629935138" />
-      <entry key="S60" value="0.9694129991874019" />
-      <entry key="M2" value="0.9845877305691971" />
-      <entry key="M5" value="0.9938063509841609" />
-      <entry key="M10" value="0.9968983654235576" />
-      <entry key="M15" value="0.9979311732354286" />
-      <entry key="M30" value="0.9989650510580581" />
-      <entry key="H1" value="0.9994823915697856" />
-      <entry key="H2" value="0.9997411622864117" />
-      <entry key="H4" value="0.999870572767502" />
-      <entry key="D1" value="1.0557090573753236" />
-      <entry key="W1" value="61.92622038444686" />
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="2.003792728173147E-140" />
+      <entry key="S10" value="1.4155538591566005E-70" />
+      <entry key="S30" value="5.211652688425771E-24" />
+      <entry key="S60" value="2.2829044413697606E-12" />
+      <entry key="M2" value="1.5109283376023363E-6" />
+      <entry key="M5" value="0.004695669766744977" />
+      <entry key="M10" value="0.06852495725460152" />
+      <entry key="M15" value="0.16745540973005796" />
+      <entry key="M30" value="0.4092131592826141" />
+      <entry key="H1" value="0.6396977092991771" />
+      <entry key="H2" value="0.7998110459972256" />
+      <entry key="H4" value="0.8943215562633081" />
+      <entry key="D1" value="1.036261189106421" />
+      <entry key="W1" value="61.761950147755506" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9795187645985727" />
-      <entry key="MS500" value="1.1569184985746763" />
-      <entry key="S2" value="2.1264733862490424" />
-      <entry key="S5" value="3.280125181397356" />
-      <entry key="S10" value="3.993450138976978" />
-      <entry key="S30" value="4.6247145219791665" />
-      <entry key="S60" value="4.806852569912209" />
-      <entry key="M2" value="4.902006427180273" />
-      <entry key="M5" value="4.960456047612893" />
-      <entry key="M10" value="4.98016978306564" />
-      <entry key="M15" value="4.986766877942487" />
-      <entry key="M30" value="4.993532869939752" />
-      <entry key="H1" value="5.0532109620084595" />
-      <entry key="H2" value="6.084507090697094" />
-      <entry key="H4" value="9.788337618033239" />
-      <entry key="D1" value="30.81142127841818" />
-      <entry key="W1" value="3346.1506780589466" />
+      <entry key="MS100" value="0.9592641193252643" />
+      <entry key="MS500" value="0.9917167307382933" />
+      <entry key="S2" value="0.9979227189990506" />
+      <entry key="S5" value="0.999168569237003" />
+      <entry key="S10" value="0.9995984537980678" />
+      <entry key="S30" value="1.122572082004375" />
+      <entry key="S60" value="2.2395902260784664" />
+      <entry key="M2" value="4.992136419984435" />
+      <entry key="M5" value="9.229555793417136" />
+      <entry key="M10" value="12.542256790234617" />
+      <entry key="M15" value="14.860376467705501" />
+      <entry key="M30" value="18.981272815634245" />
+      <entry key="H1" value="22.33315508236147" />
+      <entry key="H2" value="25.30826594009408" />
+      <entry key="H4" value="29.945672000463297" />
+      <entry key="D1" value="52.104584979561814" />
+      <entry key="W1" value="3359.254421553746" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -266,7 +268,7 @@
       <recent name="br.com.gitflowhelper.util" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.gitflow-helper [runIde]">
+  <component name="RunManager" selected="Gradle.gitflow-helper [buildPlugin]">
     <configuration name="BatchBookPageCropper" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="br.com.gitflowhelper.util.BatchBookPageCropper" />
       <module name="gitflow-helper.main" />
@@ -408,9 +410,9 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.gitflow-helper [runIde]" />
         <item itemvalue="Gradle.gitflow-helper [buildPlugin]" />
         <item itemvalue="Gradle.gitflow-helper [clean]" />
+        <item itemvalue="Gradle.gitflow-helper [runIde]" />
         <item itemvalue="Application.ImageCropper" />
         <item itemvalue="Application.BatchBookPageCropper" />
       </list>
@@ -552,14 +554,6 @@
       <workItem from="1784043394218" duration="435000" />
       <workItem from="1784043843454" duration="167000" />
       <workItem from="1784044015603" duration="93000" />
-    </task>
-    <task id="LOCAL-00068" summary="Old connector removed">
-      <option name="closed" value="true" />
-      <created>1782688726489</created>
-      <option name="number" value="00068" />
-      <option name="presentableId" value="LOCAL-00068" />
-      <option name="project" value="LOCAL" />
-      <updated>1782688726489</updated>
     </task>
     <task id="LOCAL-00069" summary="Finish closes issue">
       <option name="closed" value="true" />
@@ -945,7 +939,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785199217046</updated>
     </task>
-    <option name="localTasksCounter" value="117" />
+    <task id="LOCAL-00117" summary="Jenkins integration finished">
+      <option name="closed" value="true" />
+      <created>1785199684971</created>
+      <option name="number" value="00117" />
+      <option name="presentableId" value="LOCAL-00117" />
+      <option name="project" value="LOCAL" />
+      <updated>1785199684972</updated>
+    </task>
+    <option name="localTasksCounter" value="118" />
     <servers>
       <Gitlab url="https://gitlabdesenv.jfpr.jus.br">
         <option name="currentProject">
@@ -999,7 +1001,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Descriptions" />
     <MESSAGE value="Better descriptions" />
     <MESSAGE value="Images" />
     <MESSAGE value="Checks on commit" />
@@ -1024,7 +1025,8 @@
     <MESSAGE value="Check build status via API" />
     <MESSAGE value="Colors in console" />
     <MESSAGE value="ConfigDialog finished" />
-    <option name="LAST_COMMIT_MESSAGE" value="ConfigDialog finished" />
+    <MESSAGE value="Jenkins integration finished" />
+    <option name="LAST_COMMIT_MESSAGE" value="Jenkins integration finished" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
