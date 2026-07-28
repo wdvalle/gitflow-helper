@@ -26,6 +26,9 @@ public class JenkinsConnector {
     // True while monitoring is active and Jenkins reports data being produced
     private boolean hasMoreData = true;
 
+    private long lastDataReceivedTime = System.currentTimeMillis();
+    private static final long INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
     public JenkinsConnector(String baseUrl, String login, String token) {
         String normalizedBase = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.buildNumberUrl = normalizedBase + "/lastBuild/buildNumber";
@@ -38,7 +41,7 @@ public class JenkinsConnector {
 
     /**
      * Returns true while Jenkins signals monitoring should continue.
-     * Becomes false after the build status API reports building = false, or on error.
+     * Becomes false after the build status API reports building = false, or on error/timeout.
      */
     public boolean hasMoreData() {
         return hasMoreData;
@@ -58,6 +61,11 @@ public class JenkinsConnector {
     public String fetchNextChunk() {
         if (!hasMoreData) {
             return "";
+        }
+
+        if (System.currentTimeMillis() - lastDataReceivedTime > INACTIVITY_TIMEOUT_MS) {
+            hasMoreData = false;
+            return "<font color='#FFFFFF'>CI/CD monitoring stopped automatically: No data received for 5 minutes.</font><br>";
         }
 
         try {
@@ -86,6 +94,7 @@ public class JenkinsConnector {
         if (baselineBuildNumber == null) {
             // First execution: record baseline build number
             baselineBuildNumber = currentBuildNumber;
+            lastDataReceivedTime = System.currentTimeMillis();
             return "<font color='#FFFFFF'>Initial build number recorded: #" + baselineBuildNumber + ". Waiting for new build to start...</font><br>";
         }
 
@@ -94,6 +103,7 @@ public class JenkinsConnector {
             baselineBuildNumber = currentBuildNumber;
             waitingForNewBuild = false;
             start = 0;
+            lastDataReceivedTime = System.currentTimeMillis();
             String headerLog = "<font color='#FFFFFF'>New build detected: #" + currentBuildNumber + ". Fetching logs...</font><br>";
             String firstChunk = fetchProgressiveConsoleText();
             return headerLog + firstChunk;
@@ -119,6 +129,9 @@ public class JenkinsConnector {
                 .orElseGet(() -> start + (response.body() != null ? response.body().length() : 0));
 
         String chunk = response.body();
+        if (chunk != null && !chunk.isEmpty()) {
+            lastDataReceivedTime = System.currentTimeMillis();
+        }
         String formattedChunk = (chunk != null && !chunk.isEmpty()) ? formatHtml(chunk) : "";
 
         // Check build status via Jenkins API

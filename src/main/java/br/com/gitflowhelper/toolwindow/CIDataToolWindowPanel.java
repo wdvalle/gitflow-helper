@@ -150,11 +150,19 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     @Nullable
     private String resolveRepoPath() {
         GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
-        if (selectedRepoPath != null && svc.getRepoCiEntry(selectedRepoPath) != null) {
-            return selectedRepoPath;
+        if (selectedRepoPath != null) {
+            RepoCiEntry entry = svc.getRepoCiEntry(selectedRepoPath);
+            if (entry != null && entry.ciServer != null && entry.ciServer.isActive()) {
+                return selectedRepoPath;
+            }
+        }
+        for (RepoCiEntry entry : svc.getRepoCiEntries()) {
+            if (entry.ciServer != null && entry.ciServer.isActive()) {
+                return entry.repoPath;
+            }
         }
         List<RepoCiEntry> entries = svc.getRepoCiEntries();
-        return entries.isEmpty() ? null : entries.get(0).repoPath;
+        return entries.isEmpty() ? selectedRepoPath : entries.get(0).repoPath;
     }
 
     @Nullable
@@ -236,22 +244,25 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         logPane.setText("");
         appendPluginLog(path, "Starting CI/CD monitoring...");
 
-        JenkinsConnector jenkinsConnector = null;
         if ("Jenkins".equals(cfg.getCiType())) {
-            String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(path);
-            jenkinsConnector = new JenkinsConnector(
-                    cfg.getCiUrl(),
-                    cfg.getCiLogin(),
-                    token != null ? token : ""
-            );
-            repoConnectors.put(path, jenkinsConnector);
+            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(path);
+                JenkinsConnector jenkinsConnector = new JenkinsConnector(
+                        cfg.getCiUrl(),
+                        cfg.getCiLogin(),
+                        token != null ? token : ""
+                );
+                repoConnectors.put(path, jenkinsConnector);
+
+                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                repoExecutors.put(path, executor);
+                executor.scheduleAtFixedRate(() -> checkBuildStatus(path), 0, 2, TimeUnit.SECONDS);
+            });
         } else {
             repoConnectors.remove(path);
+            appendPluginLog(path, cfg.getCiType() + " not yet supported.");
+            stopMonitoring(path);
         }
-
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        repoExecutors.put(path, executor);
-        executor.scheduleAtFixedRate(() -> checkBuildStatus(path), 0, 2, TimeUnit.SECONDS);
     }
 
     private void checkBuildStatus(String repoPath) {
@@ -326,6 +337,16 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         });
     }
 
+    /** Returns true if monitoring is currently active for any repository. */
+    public boolean isMonitoringActive() {
+        for (ScheduledExecutorService exec : repoExecutors.values()) {
+            if (exec != null && !exec.isShutdown()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Registers a callback invoked on the EDT whenever monitoring stops. */
     public void setOnStopped(Runnable onStopped) {
         this.onStopped = onStopped;
@@ -387,17 +408,22 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     }
 
     private void updateEmptyText() {
-        CiServerConfig cfg = resolveConfig();
+        GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
+        boolean hasActiveConfig = svc.isIntegrateWithCI();
+
         StatusText emptyText = emptyLogPane.getEmptyText();
         emptyText.clear();
-        if (cfg == null || !cfg.isActive()) {
+        if (!hasActiveConfig) {
             emptyText.setText("CI/CD integration is disabled.");
             emptyText.appendLine("Configure a server URL in Git Flow Helper settings",
                     SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES,
                     e -> new ConfigDialog(project).show());
         } else {
             emptyText.setText("No CI/CD data to display.");
-            emptyText.appendLine("Click the 'play' button to start monitoring.");
+            emptyText.appendLine("Monitoring will display log output when a build starts.");
+            emptyText.appendLine("Configure CI/CD settings",
+                    SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES,
+                    e -> new ConfigDialog(project).show());
         }
     }
 

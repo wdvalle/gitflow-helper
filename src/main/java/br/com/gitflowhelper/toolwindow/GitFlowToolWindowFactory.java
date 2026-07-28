@@ -92,9 +92,10 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
     private JComponent createCIContent(Project project, CIDataToolWindowPanel ciDataPanel) {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // ---- Action toolbar (play / clear) ----
+        // ---- Action toolbar (stop / clear) ----
         DefaultActionGroup actionGroup = new DefaultActionGroup();
-        actionGroup.add(new ToggleCIAction(ciDataPanel));
+        // actionGroup.add(new ToggleCIAction(ciDataPanel));
+        actionGroup.add(new StopCIAction(ciDataPanel));
         actionGroup.add(new ClearCIAction(ciDataPanel));
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar(
@@ -122,15 +123,15 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
             }
         });
 
-        // ---- North panel: toolbar + repo combo ----
+        // ---- North panel: toolbar (repo combo commented out) ----
         JPanel northPanel = new JPanel(new BorderLayout(4, 0));
         northPanel.add(toolbar.getComponent(), BorderLayout.WEST);
 
-        JPanel comboWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
-        comboWrapper.add(new JLabel("Repo:"));
-        repoCombo.setPreferredSize(new Dimension(180, repoCombo.getPreferredSize().height));
-        comboWrapper.add(repoCombo);
-        northPanel.add(comboWrapper, BorderLayout.CENTER);
+        // JPanel comboWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        // comboWrapper.add(new JLabel("Repo:"));
+        // repoCombo.setPreferredSize(new Dimension(180, repoCombo.getPreferredSize().height));
+        // comboWrapper.add(repoCombo);
+        // northPanel.add(comboWrapper, BorderLayout.CENTER);
 
         panel.add(northPanel, BorderLayout.NORTH);
         panel.add(ciDataPanel, BorderLayout.CENTER);

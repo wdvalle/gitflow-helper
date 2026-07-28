@@ -4,21 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Check build status via API">
+    <list default="true" id="b2b7ef29-3af8-4c2b-a528-726aab45d05c" name="Changes" comment="Colors in console">
+      <change afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/StopCIAction.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflow/cicd/JenkinsConnector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflow/cicd/JenkinsConnector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/CIDataToolWindowPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowToolWindowFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/toolwindow/GitFlowToolWindowFactory.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="ChangesViewManager">
-    <option name="groupingKeys">
-      <option value="module" />
-      <option value="repository" />
-    </option>
   </component>
   <component name="EmbeddingIndexingInfo">
     <option name="cachedIndexableFilesCount" value="133" />
@@ -114,23 +111,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000000033576737" />
-      <entry key="MS500" value="1.0232258506570844" />
-      <entry key="S2" value="1.7038700512797567" />
-      <entry key="S5" value="3.1215316203759444" />
-      <entry key="S10" value="4.618376986557792" />
-      <entry key="S30" value="6.5348948413178265" />
-      <entry key="S60" value="7.213000420917721" />
-      <entry key="M2" value="7.623646390922859" />
-      <entry key="M5" value="8.572903472556584" />
-      <entry key="M10" value="10.022919487002342" />
-      <entry key="M15" value="10.930309137291985" />
-      <entry key="M30" value="12.204927943217234" />
-      <entry key="H1" value="13.025600244857669" />
-      <entry key="H2" value="13.492565221988858" />
-      <entry key="H4" value="13.815861352196023" />
-      <entry key="D1" value="25.94223643689199" />
-      <entry key="W1" value="3391.5497528718984" />
+      <entry key="MS100" value="1.7692843512198504" />
+      <entry key="MS500" value="2.371153965377446" />
+      <entry key="S2" value="4.242302684975764" />
+      <entry key="S5" value="5.557397087054902" />
+      <entry key="S10" value="6.202971613060542" />
+      <entry key="S30" value="6.7151504719343835" />
+      <entry key="S60" value="6.855024956573885" />
+      <entry key="M2" value="6.936221602145105" />
+      <entry key="M5" value="7.557964786872574" />
+      <entry key="M10" value="9.608822080126643" />
+      <entry key="M15" value="11.462804122537566" />
+      <entry key="M30" value="14.80237847190126" />
+      <entry key="H1" value="17.415447080386716" />
+      <entry key="H2" value="19.065396915698575" />
+      <entry key="H4" value="20.06481309555404" />
+      <entry key="D1" value="32.701785462241574" />
+      <entry key="W1" value="3394.0429722618946" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -143,32 +140,32 @@
       <entry key="M2" value="0.0" />
       <entry key="M5" value="0.0" />
       <entry key="M10" value="0.0" />
-      <entry key="M15" value="2.6457034950847628E-250" />
-      <entry key="M30" value="3.96035892940676E-125" />
-      <entry key="H1" value="1.6330072839904579E-62" />
-      <entry key="H2" value="3.47081664396191E-31" />
-      <entry key="H4" value="1.7262011965298274E-15" />
-      <entry key="D1" value="0.07142203097528341" />
-      <entry key="W1" value="63.12413456214021" />
+      <entry key="M15" value="1.0826099926844599E-250" />
+      <entry key="M30" value="2.533377903327182E-125" />
+      <entry key="H1" value="1.3060831812866364E-62" />
+      <entry key="H2" value="3.1040094083235126E-31" />
+      <entry key="H4" value="1.6324394897202715E-15" />
+      <entry key="D1" value="0.07076032335883864" />
+      <entry key="W1" value="63.04025382266321" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9862327077819312" />
-      <entry key="MS500" value="1.02035653450846" />
-      <entry key="S2" value="1.7023744540268888" />
-      <entry key="S5" value="3.1203177840127783" />
-      <entry key="S10" value="4.61744892445852" />
-      <entry key="S30" value="6.534447128590597" />
-      <entry key="S60" value="7.212751899493389" />
-      <entry key="M2" value="7.623514638970388" />
-      <entry key="M5" value="8.572843828930608" />
-      <entry key="M10" value="10.02288436082149" />
-      <entry key="M15" value="10.930283506861363" />
-      <entry key="M30" value="12.204913573690277" />
-      <entry key="H1" value="13.025592559713507" />
-      <entry key="H2" value="13.49256123687373" />
-      <entry key="H4" value="13.815859302392326" />
-      <entry key="D1" value="26.013652693064536" />
-      <entry key="W1" value="3454.6732772916434" />
+      <entry key="MS100" value="1.73969154791308" />
+      <entry key="MS500" value="2.3634166760004325" />
+      <entry key="S2" value="4.238987147256255" />
+      <entry key="S5" value="5.555650146401161" />
+      <entry key="S10" value="6.201993133590889" />
+      <entry key="S30" value="6.714796377819323" />
+      <entry key="S60" value="6.854844085052526" />
+      <entry key="M2" value="6.936130021834111" />
+      <entry key="M5" value="7.557923893559693" />
+      <entry key="M10" value="9.608794442066648" />
+      <entry key="M15" value="11.462781330006472" />
+      <entry key="M30" value="14.802363123126156" />
+      <entry key="H1" value="17.41543785425812" />
+      <entry key="H2" value="19.065391811697015" />
+      <entry key="H4" value="20.06481038699573" />
+      <entry key="D1" value="32.77253993594117" />
+      <entry key="W1" value="3457.0826167345963" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -560,14 +557,6 @@
       <workItem from="1784043843454" duration="167000" />
       <workItem from="1784044015603" duration="93000" />
     </task>
-    <task id="LOCAL-00066" summary="Tracker connectors">
-      <option name="closed" value="true" />
-      <created>1782682091253</created>
-      <option name="number" value="00066" />
-      <option name="presentableId" value="LOCAL-00066" />
-      <option name="project" value="LOCAL" />
-      <updated>1782682091254</updated>
-    </task>
     <task id="LOCAL-00067" summary="Doing and Assignee">
       <option name="closed" value="true" />
       <created>1782688531017</created>
@@ -952,7 +941,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785168288061</updated>
     </task>
-    <option name="localTasksCounter" value="115" />
+    <task id="LOCAL-00115" summary="Colors in console">
+      <option name="closed" value="true" />
+      <created>1785169447807</created>
+      <option name="number" value="00115" />
+      <option name="presentableId" value="LOCAL-00115" />
+      <option name="project" value="LOCAL" />
+      <updated>1785169447807</updated>
+    </task>
+    <option name="localTasksCounter" value="116" />
     <servers>
       <Gitlab url="https://gitlabdesenv.jfpr.jus.br">
         <option name="currentProject">
@@ -1006,7 +1003,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Probably final with Gitalb and Github" />
     <MESSAGE value="Minor improvements in interface" />
     <MESSAGE value="Descriptions" />
     <MESSAGE value="Better descriptions" />
@@ -1031,7 +1027,8 @@
     <MESSAGE value="Bullets in tab panel to update" />
     <MESSAGE value="Waits for new build process" />
     <MESSAGE value="Check build status via API" />
-    <option name="LAST_COMMIT_MESSAGE" value="Check build status via API" />
+    <MESSAGE value="Colors in console" />
+    <option name="LAST_COMMIT_MESSAGE" value="Colors in console" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1115,6 +1112,36 @@
           <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/gittree/GitBranchPopupBuilder.java</url>
           <line>48</line>
           <option name="timeStamp" value="220" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java</url>
+          <line>93</line>
+          <option name="timeStamp" value="224" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java</url>
+          <line>255</line>
+          <option name="timeStamp" value="225" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java</url>
+          <line>221</line>
+          <option name="timeStamp" value="229" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java</url>
+          <line>81</line>
+          <option name="timeStamp" value="230" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java</url>
+          <line>162</line>
+          <option name="timeStamp" value="231" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ConfigDialog.java</url>
+          <line>168</line>
+          <option name="timeStamp" value="232" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/src/main/java/br/com/gitflowhelper/dialog/ActionChoiceDialog.java</url>

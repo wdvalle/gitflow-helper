@@ -43,7 +43,7 @@ public class ConfigDialog extends DialogWrapper {
     // CI/CD server fields
     // -----------------------------------------------------------------------
     private final ComboBox<String> ciTypeComboBox =
-            new ComboBox<>(new String[]{"Jenkins", "GitLab", "GitHub"});
+            new ComboBox<>(new String[]{"Jenkins", "GitLab (soon)", "GitHub (soon)"});
     private final JBTextField     ciUrlField     = new JBTextField();
     private final JBPasswordField ciTokenField   = new JBPasswordField();
     private final JBTextField     ciLoginField   = new JBTextField();
@@ -65,10 +65,6 @@ public class ConfigDialog extends DialogWrapper {
     private final JPanel             panel = new JPanel(new GridBagLayout());
     private final GridBagConstraints gbc   = new GridBagConstraints();
     private int row = 0;
-
-    // -----------------------------------------------------------------------
-    // Constructor
-    // -----------------------------------------------------------------------
 
     public ConfigDialog(@Nullable Project project) {
         super(project);
@@ -110,7 +106,29 @@ public class ConfigDialog extends DialogWrapper {
             }
         });
 
+        ciTypeComboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value != null && value.toString().contains("(soon)")) {
+                    c.setEnabled(false);
+                    if (isSelected && index >= 0) {
+                        c.setBackground(list.getBackground());
+                        c.setForeground(UIManager.getColor("Label.disabledForeground"));
+                    }
+                } else {
+                    c.setEnabled(true);
+                }
+                return c;
+            }
+        });
+
         ciTypeComboBox.addActionListener(e -> {
+            String selected = (String) ciTypeComboBox.getSelectedItem();
+            if (selected != null && selected.contains("(soon)")) {
+                ciTypeComboBox.setSelectedItem("Jenkins");
+                return;
+            }
             updateEnabledState();
             if (!updatingFields) {
                 setModified(true);
@@ -159,8 +177,31 @@ public class ConfigDialog extends DialogWrapper {
             String path = repo.getRoot().getPath();
             String name = repo.getRoot().getName();
             workingConfigs[i] = svc.getCiServerForRepo(path, name).copy();
-            workingTokens[i]  = svc.getTokenForRepo(path);
+            workingTokens[i]  = null; // null indicates token is currently loading
         }
+
+        // Fetch tokens asynchronously off the EDT to avoid SlowOperations exception
+        com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            for (int i = 0; i < repositories.size(); i++) {
+                String path = repositories.get(i).getRoot().getPath();
+                String token = svc.getTokenForRepo(path);
+                final int index = i;
+                final String loadedToken = token != null ? token : "";
+                //com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater(() -> {
+                    if (workingTokens != null && index < workingTokens.length) {
+                        workingTokens[index] = loadedToken;
+                        if (index == currentIndex) {
+                            updatingFields = true;
+                            try {
+                                ciTokenField.setText(loadedToken);
+                            } finally {
+                                updatingFields = false;
+                            }
+                        }
+                    }
+                //});
+            }
+        });
     }
 
     private String getComboItemText(int repoIndex) {
@@ -227,7 +268,9 @@ public class ConfigDialog extends DialogWrapper {
             cfg.setCiType((String) ciTypeComboBox.getSelectedItem());
             cfg.setCiUrl(ciUrlField.getText().trim());
             cfg.setCiLogin(ciLoginField.getText().trim());
-            workingTokens[currentIndex] = new String(ciTokenField.getPassword()).trim();
+            if (workingTokens[currentIndex] != null) {
+                workingTokens[currentIndex] = new String(ciTokenField.getPassword()).trim();
+            }
         }
     }
 
@@ -326,17 +369,32 @@ public class ConfigDialog extends DialogWrapper {
 
         if (project != null && repositories != null) {
             GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
-            for (int i = 0; i < repositories.size(); i++) {
-                GitRepository repo = repositories.get(i);
+            final CiServerConfig[] configsToSave = workingConfigs.clone();
+            final String[] tokensToSave = workingTokens.clone();
+            final java.util.List<GitRepository> reposToSave = new java.util.ArrayList<>(repositories);
+
+            for (int i = 0; i < reposToSave.size(); i++) {
+                GitRepository repo = reposToSave.get(i);
                 String path = repo.getRoot().getPath();
-                if (workingConfigs[i] != null && workingConfigs[i].isActive()) {
-                    svc.setCiServerForRepo(path, repo.getRoot().getName(), workingConfigs[i]);
-                    svc.saveTokenForRepo(path, workingTokens[i]);
+                if (configsToSave[i] != null && configsToSave[i].isActive()) {
+                    svc.setCiServerForRepo(path, repo.getRoot().getName(), configsToSave[i]);
                 } else {
                     // URL is empty or cleared via Delete -> remove CI/CD server data completely
                     svc.removeCiServerForRepo(path);
                 }
             }
+
+            // Save tokens to PasswordSafe asynchronously off the EDT
+            com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                for (int i = 0; i < reposToSave.size(); i++) {
+                    GitRepository repo = reposToSave.get(i);
+                    String path = repo.getRoot().getPath();
+                    if (configsToSave[i] != null && configsToSave[i].isActive()) {
+                        String t = tokensToSave[i];
+                        svc.saveTokenForRepo(path, t != null ? t : "");
+                    }
+                }
+            });
         }
 
         setModified(false);
