@@ -3,6 +3,7 @@ package br.com.gitflowhelper.actions;
 import br.com.gitflow.tracker.IssueTrackerConnector;
 import br.com.gitflow.tracker.TrackerFactory;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import br.com.gitflowhelper.toolwindow.CIDataToolWindowPanel;
 import br.com.gitflowhelper.dialog.ActionChoiceDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
@@ -233,6 +234,8 @@ public class FeatureFinishAction extends BaseAction {
                                     baseBranch
                             )
                     );
+
+                    CIDataToolWindowPanel.startMonitoringForRepo(project, root.getPath());
 
                     setProgress(7, project);
 

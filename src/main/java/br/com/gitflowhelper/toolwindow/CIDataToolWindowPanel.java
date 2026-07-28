@@ -224,16 +224,48 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     // Monitoring
     // -----------------------------------------------------------------------
 
-    public void startMonitoring() {
-        String path = resolveRepoPath();
-        CiServerConfig cfg = resolveConfigForRepo(path);
-        if (cfg == null || !cfg.isActive() || path == null) {
-            if (path != null) {
-                JBHtmlEditorPane pane = getOrCreateTab(path);
-                appendPluginLog(path, "CI/CD integration is disabled — configure a server URL first.");
-            } else {
-                emptyLogPane.setText("CI/CD integration is disabled — configure a server URL first.");
+    public static void startMonitoringForRepo(@NotNull Project project, @NotNull String repoPath) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            com.intellij.openapi.wm.ToolWindow toolWindow =
+                    com.intellij.openapi.wm.ToolWindowManager.getInstance(project).getToolWindow("GitFlow");
+            if (toolWindow != null) {
+                com.intellij.ui.content.Content content = toolWindow.getContentManager().findContent("CI/CD");
+                if (content != null) {
+                    CIDataToolWindowPanel panel = findCIDataPanel(content.getComponent());
+                    if (panel != null) {
+                        panel.startMonitoring(repoPath);
+                    }
+                }
             }
+        });
+    }
+
+    private static CIDataToolWindowPanel findCIDataPanel(Component comp) {
+        if (comp instanceof CIDataToolWindowPanel) {
+            return (CIDataToolWindowPanel) comp;
+        }
+        if (comp instanceof Container) {
+            for (Component child : ((Container) comp).getComponents()) {
+                CIDataToolWindowPanel found = findCIDataPanel(child);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
+    public void startMonitoring() {
+        startMonitoring(resolveRepoPath());
+    }
+
+    public void startMonitoring(String path) {
+        if (path == null) {
+            updateEmptyText();
+            return;
+        }
+        CiServerConfig cfg = resolveConfigForRepo(path);
+        if (cfg == null || !cfg.isActive()) {
+            JBHtmlEditorPane pane = getOrCreateTab(path);
+            appendPluginLog(path, "CI/CD integration is disabled — configure a server URL first.");
             updateEmptyText();
             return;
         }
