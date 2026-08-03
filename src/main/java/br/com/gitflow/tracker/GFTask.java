@@ -12,9 +12,13 @@ public class GFTask {
 
     private Task task;
     private String assignees;
+    private Icon vendorIcon;
 
     public GFTask(Task task) {
         this.task = task;
+        if (task != null) {
+            this.vendorIcon = task.getIcon();
+        }
     }
 
     public Task getTask() {
@@ -23,6 +27,9 @@ public class GFTask {
 
     public void setTask(Task task) {
         this.task = task;
+        if (task != null && this.vendorIcon == null) {
+            this.vendorIcon = task.getIcon();
+        }
     }
 
     public String getState() {
@@ -53,7 +60,19 @@ public class GFTask {
     }
 
     public Icon getIcon() {
-        return task.getIcon();
+        if (task != null) {
+            Icon current = task.getIcon();
+            if (current != null) {
+                return current;
+            }
+            if (task.getRepository() != null) {
+                Icon repoIcon = task.getRepository().getIcon();
+                if (repoIcon != null) {
+                    return repoIcon;
+                }
+            }
+        }
+        return vendorIcon;
     }
 
     public String getIssueUrl() {
