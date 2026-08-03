@@ -33,7 +33,7 @@ public class ToggleCIAction extends AnAction {
             ciDataToolWindowPanel.startMonitoring();
             isRunning = true;
         }
-        update(e);
+        ActivityTracker.getInstance().inc();
     }
 
     @Override

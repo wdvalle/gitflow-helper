@@ -1,10 +1,10 @@
 package br.com.gitflowhelper.toolwindow;
 
 import br.com.gitflowhelper.actions.InitAction;
+import br.com.gitflowhelper.dialog.InitDialog;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
@@ -259,12 +259,7 @@ public class GitFlowGraphPanel extends JPanel {
             emptyText.clear();
             emptyText.setText("Git Flow not initialized or configured.");
             emptyText.appendLine("Configure it in Git Flow Helper settings", SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES, e -> {
-                AnActionEvent event = AnActionEvent.createFromDataContext(
-                        "GitFlowGraphPanel",
-                        null,
-                        SimpleDataContext.getProjectContext(project)
-                );
-                new InitAction("").actionPerformed(event);
+                new InitDialog(new InitAction(""), project).show();
             });
         }
     }
