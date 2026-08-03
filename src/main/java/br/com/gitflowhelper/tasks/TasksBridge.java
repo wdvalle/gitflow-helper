@@ -20,15 +20,6 @@ import java.util.List;
 public interface TasksBridge {
 
     /**
-     * Returns {@code true} if the {@code com.intellij.tasks} plugin is installed and enabled.
-     */
-    static boolean isAvailable() {
-        PluginId id = PluginId.getId("com.intellij.tasks");
-        var plugin = PluginManagerCore.getPlugin(id);
-        return plugin != null && plugin.isEnabled();
-    }
-
-    /**
      * Convenient accessor — returns {@code null} when Tasks plugin is not installed.
      */
     static TasksBridge getInstance() {

@@ -2,11 +2,9 @@ package br.com.gitflowhelper.util;
 
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.statusbar.GitFlowStatusBarWidget;
+import br.com.gitflowhelper.tasks.TasksBridge;
 import br.com.gitflowhelper.toolwindow.ToolWindowPanel;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.ToolWindow;
@@ -61,24 +59,27 @@ public class PluginUtils {
     // Task Management plugin detection
     // -------------------------------------------------------------------------
 
-    private static final String TASKS_PLUGIN_ID = "com.intellij.tasks";
-
     /**
-     * Returns {@code true} if the "Task Management" plugin ({@code com.intellij.tasks})
-     * is installed <em>and</em> enabled in the current IDE instance.
+     * Returns {@code true} if the Task Management plugin is installed, enabled,
+     * and fully loaded — detected by checking whether the {@link TasksBridge}
+     * application service is registered.
      * <p>
-     * This check is safe to call even when the plugin is absent — it uses
-     * {@link PluginManagerCore}, which is always part of the IntelliJ Platform.
+     * {@code TasksBridgeImpl} is registered as an {@code applicationService} only
+     * inside {@code plugin-tasks.xml}, which the IntelliJ Platform loads
+     * <em>conditionally</em> when {@code com.intellij.tasks} is present. If the
+     * service is {@code null}, it means {@code plugin-tasks.xml} was never loaded.
+     * </p>
+     * <p>
+     * This approach uses no deprecated or internal API.
      * </p>
      */
     public static boolean isTasksPluginInstalled() {
-        IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId(TASKS_PLUGIN_ID));
-        return plugin != null && plugin.isEnabled();
+        return ApplicationManager.getApplication().getService(TasksBridge.class) != null;
     }
 
     /**
      * Convenience inverse of {@link #isTasksPluginInstalled()}.
-     * Returns {@code true} when the plugin is absent <em>or</em> disabled.
+     * Returns {@code true} when the Task Management plugin is absent or disabled.
      */
     public static boolean isTasksPluginMissing() {
         return !isTasksPluginInstalled();

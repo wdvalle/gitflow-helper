@@ -238,6 +238,10 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.5.0</b></li>
+                <ul>
+                    <li>Monitoring Jenkins pipelines.</li>
+                </ul>
                 <li><b>2.4.0</b></li>
                 <ul>
                     <li>Previously detect plugin Task Management</li>
@@ -432,14 +436,6 @@
             <keyboard-shortcut
                     keymap="$default"
                     first-keystroke="ctrl alt 9"/>
-        </action>
-
-        <action
-                id="GitFlowHelper.UsageAction"
-                class="br.com.gitflowhelper.actions.UsageAction"
-                text="Usage"
-                description="How to use this plugin."
-                icon="AllIcons.General.ContextHelp">
         </action>
 
     </actions>

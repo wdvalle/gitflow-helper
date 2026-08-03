@@ -1,9 +1,11 @@
 build/
 .gradle/
-/.idea/gitflow-helper.xml
-.intellijPlatform/
+.idea/gitflow-helper.xml
+.idea/workspace.xml
+.le200intellijPlatform/
 *.DS_Store
 Thumbs.db
 *.log
 *.swp
 *.bak
+/.ai/mcp/mcp.json
