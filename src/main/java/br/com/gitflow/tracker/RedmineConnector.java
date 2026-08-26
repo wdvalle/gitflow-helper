@@ -68,8 +68,8 @@ public class RedmineConnector extends IssueTrackerConnector {
     }
 
     @Override
-    public boolean closeIssue(String issueId) {
-        return putRequest("/issues/" + issueId + ".json", "{\"issue\":{\"status_id\":3, \"notes\":\"Issue closed via GitFlow Helper\"}}");
+    public boolean closeIssue(String issueNumber, String issueId) {
+        return putRequest("/issues/" + issueNumber + ".json", "{\"issue\":{\"status_id\":3, \"notes\":\"Issue closed via GitFlow Helper\"}}");
     }
 
     @Override

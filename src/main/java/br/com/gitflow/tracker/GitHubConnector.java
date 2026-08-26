@@ -28,9 +28,9 @@ public class GitHubConnector extends IssueTrackerConnector {
     }
 
     @Override
-    public boolean closeIssue(String issueId) {
-        deleteRequest("/repos/" + repo + "/issues/" + issueId + "/labels/in-progress");
-        return patchRequest("/repos/" + repo + "/issues/" + issueId, "{\"state\":\"closed\"}");
+    public boolean closeIssue(String issueNumber, String issueId) {
+        deleteRequest("/repos/" + repo + "/issues/" + issueNumber + "/labels/in-progress");
+        return patchRequest("/repos/" + repo + "/issues/" + issueNumber, "{\"state\":\"closed\"}");
     }
 
     @Override

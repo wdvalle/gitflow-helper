@@ -51,6 +51,9 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
 
     public void setLoading(boolean loading) {
         this.loading = loading;
+        if (!loading && progressBar != null) {
+            progressBar.setValue(0);
+        }
         SwingUtilities.invokeLater(this::updateUI);
     }
 
@@ -62,13 +65,18 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
     public void setProgress(int value) {
         SwingUtilities.invokeLater(() -> {
             if (progressBar != null && component != null) {
+                this.loading = (value < 10);
                 CardLayout layout = (CardLayout) component.getLayout();
                 if (value < 10) {
                     progressBar.setIndeterminate(false);
                     progressBar.setValue(value);
                     layout.show(component, "progress");
                 } else {
+                    progressBar.setValue(0);
                     layout.show(component, "label");
+                }
+                if (statusBar != null) {
+                    statusBar.updateWidget("GitFlowWidget");
                 }
             }
         });
@@ -81,10 +89,12 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
 
             CardLayout layout = (CardLayout) component.getLayout();
             if (loading) {
-                progressBar.setIndeterminate(true);
                 layout.show(component, "progress");
             } else {
                 layout.show(component, "label");
+            }
+            if (statusBar != null) {
+                statusBar.updateWidget("GitFlowWidget");
             }
         }
     }

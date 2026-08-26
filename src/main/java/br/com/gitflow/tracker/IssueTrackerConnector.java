@@ -21,7 +21,7 @@ public abstract class IssueTrackerConnector {
 
     public abstract boolean startIssue(String issueId);
     public abstract boolean assignIssue(String issueId, String assignee);
-    public abstract boolean closeIssue(String issueId);
+    public abstract boolean closeIssue(String issueNumber, String issueId);
     public abstract IssueResponse getIssue(String issueId);
     public String getUserId(String username) {
         return username;

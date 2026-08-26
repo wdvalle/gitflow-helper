@@ -1,31 +1,32 @@
 package br.com.gitflowhelper.util;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectUtil;
 import git4idea.GitBranch;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 
+import java.util.List;
+
 public class GitBranchUtils {
 
     public static String getCurrentBranchName(Project project) {
+        if (project == null || project.isDisposed()) {
+            return null;
+        }
         GitRepositoryManager manager = GitRepositoryManager.getInstance(project);
-
-        GitRepository repository = manager.getRepositoryForFileQuick(
-                ProjectUtil.guessProjectDir(project)
-        );
-
-        if (repository == null) {
+        List<GitRepository> repositories = manager.getRepositories();
+        if (repositories.isEmpty()) {
             return null;
         }
 
+        GitRepository repository = repositories.get(0);
         GitBranch branch = repository.getCurrentBranch();
 
         if (branch != null) {
             return branch.getName();
         }
 
-        // Detached HEAD (ex: checkout em commit)
+        // Detached HEAD (e.g. checkout on commit)
         return repository.getCurrentRevision();
     }
 }

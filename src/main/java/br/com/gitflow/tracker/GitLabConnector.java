@@ -32,8 +32,8 @@ public class GitLabConnector extends IssueTrackerConnector {
     }
 
     @Override
-    public boolean closeIssue(String issueId) {
-        return putRequest("/api/v4/projects/" + projectId + "/issues/" + issueId, "{\"state_event\":\"close\", \"remove_labels\":\"Doing\"}");
+    public boolean closeIssue(String issueNumber, String issueId) {
+        return putRequest("/api/v4/projects/" + projectId + "/issues/" + issueNumber, "{\"state_event\":\"close\", \"remove_labels\":\"Doing\"}");
     }
 
     @Override

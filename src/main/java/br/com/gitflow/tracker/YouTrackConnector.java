@@ -25,7 +25,7 @@ public class YouTrackConnector extends IssueTrackerConnector {
     }
 
     @Override
-    public boolean closeIssue(String issueId) {
+    public boolean closeIssue(String issueNumber, String issueId) {
         return postRequest("/api/issues/" + issueId + "/executeCommand", "{\"query\":\"State Fixed\"}");
     }
 
