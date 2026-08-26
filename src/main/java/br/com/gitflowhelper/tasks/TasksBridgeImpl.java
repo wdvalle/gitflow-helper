@@ -139,7 +139,8 @@ public class TasksBridgeImpl implements TasksBridge {
         Optional<IssueTrackerConnector> connectorOpt = TrackerFactory.getConnector(project, task);
         connectorOpt.ifPresent(connector -> {
             try {
-                connector.closeIssue(task.getNumber());
+                //only Jira uses id
+                connector.closeIssue(task.getNumber(), task.getId());
             } catch (Exception e) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error closing issue: " + e.getMessage());
             }

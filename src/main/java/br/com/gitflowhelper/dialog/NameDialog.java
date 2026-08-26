@@ -41,6 +41,8 @@ public class NameDialog extends DialogWrapper {
     private JBScrollPane taskDetailScrollPane;
     private final JBCheckBox pushOnFinish;
     private final JBCheckBox activateTaskCheckBox;
+    private final JLabel betaLabel;
+    private JEditorPane jiraWarningPane;
     private final Consumer<NameResponse> onOk;
     private final String label;
     private final boolean showPush;
@@ -75,6 +77,9 @@ public class NameDialog extends DialogWrapper {
         this.pushOnFinish = new JBCheckBox("Push local branch when finished");
         this.activateTaskCheckBox = new JBCheckBox("Set task as active/started");
         this.activateTaskCheckBox.setSelected(true);
+        this.betaLabel = new JLabel(" (Beta for Jira)");
+        this.betaLabel.setForeground(Color.ORANGE);
+        this.betaLabel.setVisible(false);
         this.isComboLoading = true;
         ((AbstractDocument) nameField.getDocument()).setDocumentFilter( new DocumentFilter() {
             @Override
@@ -102,6 +107,10 @@ public class NameDialog extends DialogWrapper {
         if (preSelectedTask != null) {
             taskComboBox.setSelectedItem(preSelectedTask);
             taskComboBox.setEnabled(false);
+            betaLabel.setVisible(preSelectedTask.isJira());
+            if (jiraWarningPane != null) {
+                jiraWarningPane.setVisible(preSelectedTask.isJira());
+            }
         }
     }
 
@@ -160,9 +169,17 @@ public class NameDialog extends DialogWrapper {
                 if (selectedTask != null) {
                     nameField.setText(BranchNameRefiner.slugify(selectedTask));
                     updateTaskDetailPanel(selectedTask);
+                    betaLabel.setVisible(selectedTask.isJira());
+                    if (jiraWarningPane != null) {
+                        jiraWarningPane.setVisible(selectedTask.isJira());
+                    }
                 } else {
                     if (taskDetailScrollPane != null) {
                         taskDetailScrollPane.setVisible(false);
+                    }
+                    betaLabel.setVisible(false);
+                    if (jiraWarningPane != null) {
+                        jiraWarningPane.setVisible(false);
                     }
                 }
             } catch (Exception ex) {
@@ -199,16 +216,31 @@ public class NameDialog extends DialogWrapper {
         taskDescriptionPane.setText(taskFormatter.formatTaskDetail(task));
         taskDescriptionPane.setCaretPosition(0);
         taskDetailScrollPane.setVisible(true);
-        pack();
+
+        Window window = SwingUtilities.getWindowAncestor(taskDetailScrollPane);
+        if (window != null) {
+            window.revalidate();
+            window.repaint();
+            Dimension current = window.getSize();
+            Dimension preferred = window.getPreferredSize();
+            // Only grow the dialog, never shrink it
+            int newWidth = Math.max(current.width, preferred.width);
+            int newHeight = Math.max(current.height, preferred.height);
+            if (newWidth != current.width || newHeight != current.height) {
+                window.setSize(newWidth, newHeight);
+            }
+        }
     }
 
     @Override
     protected JComponent createCenterPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
+        panel.setMinimumSize(new Dimension(500, 0));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = JBUI.insets(4);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
 
         int currentGridY = 0;
 
@@ -217,6 +249,7 @@ public class NameDialog extends DialogWrapper {
             gbc.gridx = 0;
             gbc.gridy = currentGridY;
             gbc.weightx = 0;
+            gbc.gridwidth = 1;
 
             JPanel usernameLabelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
             usernameLabelPanel.add(new JLabel("Preferred username:"));
@@ -226,6 +259,7 @@ public class NameDialog extends DialogWrapper {
             gbc.gridx = 1;
             gbc.gridy = currentGridY;
             gbc.weightx = 1.0;
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
             panel.add(usernameField, gbc);
             currentGridY++;
 
@@ -233,15 +267,47 @@ public class NameDialog extends DialogWrapper {
             gbc.gridx = 0;
             gbc.gridy = currentGridY;
             gbc.weightx = 0;
+            gbc.gridwidth = 1;
             panel.add(new JLabel("Task:"), gbc);
 
             gbc.gridx = 1;
             gbc.weightx = 1.0;
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
 
             JPanel taskPanel = new JPanel(new BorderLayout(5, 0));
             taskPanel.add(taskComboBox, BorderLayout.CENTER);
 
             panel.add(taskPanel, gbc);
+            currentGridY++;
+
+            // Jira compatibility warning row
+            jiraWarningPane = new JEditorPane("text/html", "");
+            jiraWarningPane.setEditable(false);
+            jiraWarningPane.setOpaque(false);
+            jiraWarningPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+            jiraWarningPane.setText(
+                "<html><body style='margin:0;padding:0;'>" +
+                "<span style='color:orange;font-size:11px;'>" +
+                "&#9888; For Jira integration to work correctly, IntelliJ IDEA or<br/> " +
+                      "JetBrains Platform version 2025.2.2 or later is required.<br/> " +
+                      "Please make sure your IDE is compatible.</span>" +
+                "<span style='color:blue;font-size:11px;'>" +
+                " <a href='https://youtrack.jetbrains.com/issue/IJPL-202715/Jira-Task-Server-integration-fails-The-requested-API-has-been-removed-error-when-fetching-tasks'>Details here.</a>" +
+                "</span>" +
+                "</body></html>"
+            );
+            jiraWarningPane.addHyperlinkListener(e -> {
+                if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                    BrowserUtil.browse(e.getURL());
+                }
+            });
+            jiraWarningPane.setVisible(false);
+
+            gbc.gridx = 1;
+            gbc.gridy = currentGridY;
+            gbc.weightx = 1.0;
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            panel.add(jiraWarningPane, gbc);
             currentGridY++;
 
             // Task detail row
@@ -256,22 +322,29 @@ public class NameDialog extends DialogWrapper {
             });
 
             taskDetailScrollPane = new JBScrollPane(taskDescriptionPane);
-            taskDetailScrollPane.setPreferredSize(new Dimension(500, 150));
+            taskDetailScrollPane.setPreferredSize(new Dimension(0, 150));
+            taskDetailScrollPane.setMinimumSize(new Dimension(0, 100));
             taskDetailScrollPane.setVisible(false);
 
             gbc.gridx = 1;
             gbc.gridy = currentGridY;
             gbc.weightx = 1.0;
             gbc.weighty = 0.5;
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
             gbc.fill = GridBagConstraints.BOTH;
             panel.add(taskDetailScrollPane, gbc);
             currentGridY++;
 
+            gbc.weighty = 0.0;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.gridx = 1;
             gbc.gridy = currentGridY;
             gbc.weightx = 1.0;
-            gbc.weighty = 0.0;
-            panel.add(activateTaskCheckBox, gbc);
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            JPanel activatePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            activatePanel.add(activateTaskCheckBox);
+            activatePanel.add(betaLabel);
+            panel.add(activatePanel, gbc);
             currentGridY++;
         }
 
@@ -279,11 +352,14 @@ public class NameDialog extends DialogWrapper {
         gbc.gridx = 0;
         gbc.gridy = currentGridY;
         gbc.weightx = 0;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(new JLabel(label + ":"), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = currentGridY;
         gbc.weightx = 1.0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
         panel.add(nameField, gbc);
         currentGridY++;
 
@@ -291,6 +367,7 @@ public class NameDialog extends DialogWrapper {
             gbc.gridx = 1;
             gbc.gridy = currentGridY;
             gbc.weightx = 1.0;
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
             panel.add(pushOnFinish, gbc);
             currentGridY++;
         }
@@ -298,6 +375,7 @@ public class NameDialog extends DialogWrapper {
         // Add a vertical filler to push components to the top
         gbc.gridx = 0;
         gbc.gridy = currentGridY;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel.add(Box.createVerticalGlue(), gbc);

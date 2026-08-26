@@ -111,6 +111,7 @@ public class PluginUtils {
                         setProgressImpl(0, statusBar, sbw);
                     } else {
                         sbw.setCurrentValue("GitFlowHelper");
+                        setProgressImpl(10, statusBar, sbw);
                     }
                     statusBar.updateWidget("GitFlowWidget");
                 }
