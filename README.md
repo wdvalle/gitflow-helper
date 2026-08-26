@@ -143,7 +143,6 @@ Simplify your issue management by connecting your favorite platforms:
   * **GitHub**
   * **GitLab**
   * **Redmine**
-* **Coming Soon:**
   * **Jira**
 
 ![Toolwindow Screen](src/main/resources/screens/11-task-server-config.png)
