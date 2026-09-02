@@ -11,7 +11,7 @@ public class GitException extends RuntimeException {
 
     public GitException(String message) {
         super(message);
-        gitResult = null;
+        gitResult = new GitResult(Integer.MIN_VALUE, "(no command)", message);
     }
 
     public GitResult getGitResult() {

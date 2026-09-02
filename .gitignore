@@ -9,3 +9,4 @@ Thumbs.db
 *.swp
 *.bak
 /.ai/mcp/mcp.json
+.intellijPlatform/
