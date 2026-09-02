@@ -76,7 +76,7 @@ public class HotfixFinishAction extends BaseAction {
 
             GitLocalBranch hotfixBranch = repository.getCurrentBranch();
             if (hotfixBranch == null) {
-                throw new GitException("Branch atual não encontrada.");
+                throw new GitException("Current branch not found.");
             }
 
             setProgress(2, project);
@@ -85,7 +85,7 @@ public class HotfixFinishAction extends BaseAction {
 
             if (!hotfixName.startsWith("hotfix/")) {
                 throw new GitException(
-                        "Branch atual não é hotfix: " + hotfixName
+                        "Current branch is not a hotfix: " + hotfixName
                 );
             }
 

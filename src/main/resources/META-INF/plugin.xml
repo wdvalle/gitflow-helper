@@ -238,6 +238,10 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.6.1</b></li>
+                <ul>
+                    <li>Fixed NPE in InitAction.</li>
+                </ul>
                 <li><b>2.6.0</b></li>
                 <ul>
                     <li>Jira integration.</li>
