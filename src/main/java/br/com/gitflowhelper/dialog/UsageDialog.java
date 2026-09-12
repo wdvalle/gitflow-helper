@@ -309,7 +309,6 @@ public class UsageDialog extends DialogWrapper {
                         "  <li><b>GitLab Issues</b></li>" +
                         "  <li><b>Jira Software</b></li>" +
                         "  <li><b>Redmine</b></li>" +
-                        "  <li><b>JetBrains YouTrack</b></li>" +
                         "</ul>") +
 
                 card("Task-Driven Branching", getGreenHex(),
@@ -325,7 +324,7 @@ public class UsageDialog extends DialogWrapper {
                                 "</ul>") +
 
                 callout("How to Configure Tasks", getBlueHex(),
-                        "Go to <b>Settings &rarr; Tools &rarr; Tasks &rarr; Servers</b> in IntelliJ to add your Jira, GitHub, GitLab, Redmine, or YouTrack credentials. " +
+                        "Go to <b>Settings &rarr; Tools &rarr; Tasks &rarr; Servers</b> in IntelliJ to add your Jira, GitHub, GitLab or Redmine credentials. " +
                                 "GitFlow Helper will automatically discover and use them.");
     }
 
