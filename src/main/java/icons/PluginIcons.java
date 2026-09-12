@@ -9,5 +9,6 @@ public interface PluginIcons {
     Icon GitFlow = IconLoader.getIcon("/icons/gitflow.svg", PluginIcons.class);
     Icon GitFlowBig = IconLoader.getIcon("/icons/gitflow-big.svg", PluginIcons.class);
     Icon GitFlowGray = IconLoader.getIcon("/icons/gitflow_gray.svg", PluginIcons.class);
+    Icon GitFlowGrayDark = IconLoader.getIcon("/icons/gitflow_dark_gray.svg", PluginIcons.class);
     Icon GitFlowGrayLive = IconLoader.getIcon("/icons/gitflow_gray_live.svg", PluginIcons.class);
 }

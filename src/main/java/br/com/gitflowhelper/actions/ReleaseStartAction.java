@@ -17,7 +17,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 import br.com.gitflowhelper.tasks.TasksBridge;
 import org.jetbrains.annotations.NotNull;
 
@@ -62,7 +61,8 @@ public class ReleaseStartAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                !getRepositories(e.getProject()).isEmpty() &&
+                        StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
                         getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getDevelopBranch(e.getProject()))
         );
     }
@@ -71,10 +71,9 @@ public class ReleaseStartAction extends BaseAction {
         setProgress(1, project);
         String releaseBranch = getReleasePrefix(project) + releaseName;
         List<GitResult> results = new ArrayList<>();
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
 
-        for (GitRepository repository : repoManager.getRepositories()) {
+        for (GitRepository repository : getRepositories(project)) {
 
             VirtualFile root = repository.getRoot();
 

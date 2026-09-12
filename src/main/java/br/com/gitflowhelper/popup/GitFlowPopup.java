@@ -13,6 +13,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.*;
 import com.intellij.ui.awt.RelativePoint;
 import git4idea.GitLocalBranch;
@@ -88,9 +89,9 @@ public final class GitFlowPopup {
         group.add(new ViewTaskAction());
 
         group.addSeparator();
-        group.add(flowGroup("Feature", AllIcons.Actions.AddFile, GitFlowDescriptions.FEATURE_GROUP.getValue()));
-        group.add(flowGroup("Release", AllIcons.Nodes.UpFolder, GitFlowDescriptions.RELEASE_GROUP.getValue()));
-        group.add(flowGroup("Hotfix", AllIcons.General.ExternalTools, GitFlowDescriptions.HOTFIX_GROUP.getValue()));
+        group.add(flowGroup("Feature", AllIcons.Actions.AddFile, GitFlowDescriptions.FEATURE_GROUP.getValue(), project));
+        group.add(flowGroup("Release", AllIcons.Nodes.UpFolder, GitFlowDescriptions.RELEASE_GROUP.getValue(), project));
+        group.add(flowGroup("Hotfix", AllIcons.General.ExternalTools, GitFlowDescriptions.HOTFIX_GROUP.getValue(), project));
         group.addSeparator();
         group.add(new ResetAction("Reset"));
         group.add(new UsageAction("Usage..."));
@@ -103,8 +104,25 @@ public final class GitFlowPopup {
         return this.listPopup;
     }
 
-    private DefaultActionGroup flowGroup(String type, Icon icon, String description) {
-        DefaultActionGroup group = new DefaultActionGroup(type, description, icon);
+    private DefaultActionGroup flowGroup(String type, Icon icon, String description, Project project) {
+        DefaultActionGroup group = new DefaultActionGroup(type, description, icon) {
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                super.update(e);
+                Project p = e.getProject();
+                if (p != null) {
+                    boolean hasRepos = !GitFlowSettingsService.getInstance(p).getSelectedRepositories().isEmpty();
+                    if (!hasRepos) {
+                        e.getPresentation().setEnabled(false);
+                    }
+                }
+            }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
+        };
         group.setPopup(true);
         group.add(flowAction(type, "Start"));
         group.add(flowAction(type, "Publish"));
@@ -118,14 +136,72 @@ public final class GitFlowPopup {
         return ActionManager.getInstance().getAction("GitFlowHelper."+actionClassName);
     }
 
+    private String getRepoActionText(GitRepository repository, boolean isSelected) {
+        String branchText = repository.getCurrentBranch() != null ? "\u2387 " + repository.getCurrentBranch().getName() : "(No current branch)";
+        if (isSelected) {
+            return "<html>" + repository.getRoot().getName() + "   <font color='#888888'>" + branchText + "</font></html>";
+        } else {
+            return "<html><font color='#888888'>" + repository.getRoot().getName() + "   " + branchText + "</font></html>";
+        }
+    }
+
     private DefaultActionGroup repositoryBranchGroup(GitRepository repository, Project project) {
+        boolean isSelected = GitFlowSettingsService.getInstance(project).isRepoSelected(repository.getRoot().getPath());
+        Icon repoIcon = isSelected ? PluginIcons.GitFlowGray : PluginIcons.GitFlowGrayDark;
+        Icon checkIcon = isSelected ? AllIcons.Diff.GutterCheckBoxSelected : AllIcons.Diff.GutterCheckBox;
+
         DefaultActionGroup group = new DefaultActionGroup(
-                "<html>" + repository.getRoot().getName() + "   <font color='#888888'>" + (repository.getCurrentBranch() != null ? "\u2387 "+repository.getCurrentBranch().getName() : "(No current branch)") +"</font></html>",
+                getRepoActionText(repository, isSelected),
                 GitFlowDescriptions.REPO_GROUP.getValue(),
-                PluginIcons.GitFlowGray);
+                repoIcon) {
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                super.update(e);
+                boolean selected = GitFlowSettingsService.getInstance(project).isRepoSelected(repository.getRoot().getPath());
+                e.getPresentation().setIcon(selected ? PluginIcons.GitFlowGray : PluginIcons.GitFlowGrayDark);
+                e.getPresentation().setText(getRepoActionText(repository, selected));
+            }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
+        };
         group.setPopup(true);
 
         String currentBranch = repository.getCurrentBranchName();
+
+        group.add(new BaseAction(
+                () -> (GitFlowSettingsService.getInstance(project).isRepoSelected(repository.getRoot().getPath()) ? "Selected (click to unselect)" : "Unselected (click to select)"),
+                checkIcon
+        ) {
+            @Override
+            protected void updateImpl(@NotNull AnActionEvent e) {
+                boolean sel = GitFlowSettingsService.getInstance(project).isRepoSelected(repository.getRoot().getPath());
+                e.getPresentation().setIcon(sel ? AllIcons.Diff.GutterCheckBoxSelected : AllIcons.Diff.GutterCheckBox);
+                e.getPresentation().setText(sel ? "Git Flow enabled (click to disable)" : "Git Flow disabled (click to enable)");
+            }
+
+            @Override
+            protected void actionPerformedImpl(@NotNull AnActionEvent e) {
+                Project p = e.getProject() != null ? e.getProject() : project;
+                boolean sel = GitFlowSettingsService.getInstance(p).isRepoSelected(repository.getRoot().getPath());
+                if (sel) {
+                    int confirm = Messages.showYesNoDialog(
+                            p,
+                            "By disabling this project, Git Flow will not be applied to '" + repository.getRoot().getName() + "'.\nAre you sure you want to proceed?",
+                            "Disable Git Flow",
+                            Messages.getQuestionIcon()
+                    );
+                    if (confirm == Messages.YES) {
+                        GitFlowSettingsService.getInstance(p).setRepoSelected(repository.getRoot().getPath(), false);
+                    }
+                } else {
+                    GitFlowSettingsService.getInstance(p).setRepoSelected(repository.getRoot().getPath(), true);
+                }
+            }
+        });
+        group.addSeparator();
 
         group.add(new BaseAction("Show as tree...", GitFlowDescriptions.SHOW_AS_TREE.getValue(), AllIcons.General.Layout) {
             @Override

@@ -9,9 +9,13 @@ import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
+import git4idea.repo.GitRepository;
+import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service(Service.Level.PROJECT)
@@ -87,6 +91,39 @@ public final class GitFlowSettingsService
 
     public String getPreferredUsername() { return state.getPreferredUsername(); }
     public void setPreferredUsername(String v) { state.setPreferredUsername(v); notifySettingsChanged(); }
+
+    // ------------------------------------------------------------------
+    // Selected repositories / branches
+    // ------------------------------------------------------------------
+
+    public boolean isRepoSelected(String repoPath) {
+        return state.isRepoSelected(repoPath);
+    }
+
+    public void setRepoSelected(String repoPath, boolean selected) {
+        state.setRepoSelected(repoPath, selected);
+        notifySettingsChanged();
+    }
+
+    /**
+     * Returns the list of Git repositories that are selected/checked in the interface.
+     * Defaults to all repositories in the project.
+     */
+    @NotNull
+    public List<GitRepository> getSelectedRepositories() {
+        if (project == null || project.isDisposed()) {
+            return Collections.emptyList();
+        }
+        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
+        List<GitRepository> allRepos = repoManager.getRepositories();
+        List<GitRepository> selected = new ArrayList<>();
+        for (GitRepository repo : allRepos) {
+            if (isRepoSelected(repo.getRoot().getPath())) {
+                selected.add(repo);
+            }
+        }
+        return selected;
+    }
 
     // ------------------------------------------------------------------
     // CI/CD – per repository

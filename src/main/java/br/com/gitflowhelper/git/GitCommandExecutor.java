@@ -18,12 +18,13 @@ public class GitCommandExecutor {
     public static void run(Project project, List<String> command) throws GitException {
         String basePath = project.getBasePath();
         if (basePath == null) return;
+        String repoName = new File(basePath).getName();
         StringBuilder exit = new StringBuilder();
 
         //GitFlowOutputPanel output = GitFlowOutputPanel.getInstance();
 
         try {
-            PluginUtils.logCommand(project, String.join(" ", command));
+            PluginUtils.logCommand(project, repoName, String.join(" ", command));
             Process process = new ProcessBuilder(command)
                     .directory(new File(basePath))
                     .redirectErrorStream(true)
@@ -34,8 +35,8 @@ public class GitCommandExecutor {
                                  new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    PluginUtils.logOutput(project, line);
-                    exit.append(line+"\n");
+                    PluginUtils.logOutput(project, repoName, line);
+                    exit.append(line).append("\n");
                 }
             }
 
@@ -49,7 +50,7 @@ public class GitCommandExecutor {
             VirtualFileManager.getInstance().asyncRefresh(null);
 
         } catch (Exception e) {
-            PluginUtils.logError(project, "Erro: " + e.getMessage());
+            PluginUtils.logError(project, repoName, "Erro: " + e.getMessage());
         }
         if (isError()) {
             throw new GitException(lastMessage);

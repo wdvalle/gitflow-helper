@@ -1,7 +1,9 @@
 package br.com.gitflowhelper.settings;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class GitFlowSettingsState {
@@ -17,6 +19,12 @@ public class GitFlowSettingsState {
     private Boolean showDetails;
     private Boolean integrateWithTasks = false;
     private String  preferredUsername;
+
+    /**
+     * Map of repository root path to whether it is selected/checked.
+     * If a repository is absent, it defaults to true (checked).
+     */
+    private Map<String, Boolean> selectedRepositories = new HashMap<>();
 
     /**
      * CI/CD server configurations, one entry per Git repository root.
@@ -64,6 +72,30 @@ public class GitFlowSettingsState {
 
     public String getPreferredUsername()          { return preferredUsername; }
     public void setPreferredUsername(String v)    { this.preferredUsername = v; }
+
+    // ------------------------------------------------------------------
+    // Selected repositories / branches
+    // ------------------------------------------------------------------
+
+    public Map<String, Boolean> getSelectedRepositories() {
+        if (selectedRepositories == null) selectedRepositories = new HashMap<>();
+        return selectedRepositories;
+    }
+
+    public void setSelectedRepositories(Map<String, Boolean> selectedRepositories) {
+        this.selectedRepositories = selectedRepositories != null ? selectedRepositories : new HashMap<>();
+    }
+
+    public boolean isRepoSelected(String repoPath) {
+        if (repoPath == null) return true;
+        return getSelectedRepositories().getOrDefault(repoPath, true);
+    }
+
+    public void setRepoSelected(String repoPath, boolean selected) {
+        if (repoPath != null) {
+            getSelectedRepositories().put(repoPath, selected);
+        }
+    }
 
     // ------------------------------------------------------------------
     // Repo CI entries
@@ -145,6 +177,7 @@ public class GitFlowSettingsState {
                 ", developBranch='" + developBranch + '\'' +
                 ", showDetails=" + showDetails +
                 ", integrateWithTasks=" + integrateWithTasks +
+                ", selectedRepositories=" + selectedRepositories +
                 ", repoCiEntries=" + repoCiEntries +
                 ", preferredUsername='" + preferredUsername + '\'' +
                 '}';
@@ -162,6 +195,7 @@ public class GitFlowSettingsState {
                 Objects.equals(counter, that.counter) &&
                 Objects.equals(showDetails, that.showDetails) &&
                 Objects.equals(integrateWithTasks, that.integrateWithTasks) &&
+                Objects.equals(selectedRepositories, that.selectedRepositories) &&
                 Objects.equals(repoCiEntries, that.repoCiEntries) &&
                 Objects.equals(preferredUsername, that.preferredUsername);
     }
@@ -170,6 +204,6 @@ public class GitFlowSettingsState {
     public int hashCode() {
         return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch,
                 developBranch, counter, showDetails, integrateWithTasks,
-                repoCiEntries, preferredUsername);
+                selectedRepositories, repoCiEntries, preferredUsername);
     }
 }

@@ -17,7 +17,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.GitLocalBranch;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -41,7 +40,8 @@ public class InitAction extends BaseAction {
     @Override
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
-        presentation.setEnabled(StringUtil.isEmpty(getMainBranch(e.getProject())));
+        boolean enabled = StringUtil.isEmpty(getMainBranch(e.getProject())) && !getRepositories(e.getProject()).isEmpty();
+        presentation.setEnabled(enabled);
     }
 
     //invoked by InitDialog
@@ -66,7 +66,6 @@ public class InitAction extends BaseAction {
 
         List<GitResult> results = new ArrayList<>();
         GitExecutor executor = new GitExecutor(project);
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
 
         String mainBranch = getMainBranch(project);
         String developBranch = getDevelopBranch(project);
@@ -74,7 +73,7 @@ public class InitAction extends BaseAction {
         String releasePrefix = normalizePrefix(getReleasePrefix(project));
         String hotfixPrefix  = normalizePrefix(getHotfixPrefix(project));
 
-        for (GitRepository repository : repoManager.getRepositories()) {
+        for (GitRepository repository : getRepositories(project)) {
 
             VirtualFile root = repository.getRoot();
 

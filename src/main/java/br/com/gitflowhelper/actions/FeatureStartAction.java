@@ -17,7 +17,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -58,7 +57,8 @@ public class FeatureStartAction extends BaseAction {
     @Override
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
-        boolean enabled = StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+        boolean enabled = !getRepositories(e.getProject()).isEmpty() &&
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
                 getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getDevelopBranch(e.getProject()));
 
         if (enabled && "TasksToolWindowToolbar".equals(e.getPlace())) {
@@ -73,11 +73,10 @@ public class FeatureStartAction extends BaseAction {
         setProgress(1, project);
 
         String featureBranch = getFeaturePrefix(project) + featureName;
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
         List<GitResult> results = new ArrayList<>();
 
-        for (GitRepository repository : repoManager.getRepositories()) {
+        for (GitRepository repository : getRepositories(project)) {
             VirtualFile root = repository.getRoot();
 
             setProgress(2, project);

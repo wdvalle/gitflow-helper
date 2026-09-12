@@ -1,9 +1,9 @@
 package br.com.gitflowhelper.util;
 
+import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import com.intellij.openapi.project.Project;
 import git4idea.GitBranch;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 
 import java.util.List;
 
@@ -13,8 +13,7 @@ public class GitBranchUtils {
         if (project == null || project.isDisposed()) {
             return null;
         }
-        GitRepositoryManager manager = GitRepositoryManager.getInstance(project);
-        List<GitRepository> repositories = manager.getRepositories();
+        List<GitRepository> repositories = GitFlowSettingsService.getInstance(project).getSelectedRepositories();
         if (repositories.isEmpty()) {
             return null;
         }
