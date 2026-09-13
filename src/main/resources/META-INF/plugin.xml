@@ -136,12 +136,13 @@
                 <ul style="padding-left: 2em;">
                     <li style="margin: 0.5em 0;">The plugin is available directly from the <strong>IntelliJ Status Bar</strong>.</li>
                     <li style="margin: 0.5em 0;">Provides quick access to Git Flow actions without leaving the editor.</li>
-                    <li style="margin: 0.5em 0;">Ideal for fast branch switching and common Git Flow operations.</li>
+                    <li style="margin: 0.5em 0;">Shows real-time divergence badges when feature branches fall behind develop.</li>
+                    <li style="margin: 0.5em 0;">Ideal for fast branch switching, syncing, and common Git Flow operations.</li>
                 </ul>
 
                 <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
 
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">🪟 Command Execution Tool Window</h3>
+                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">🪵 Command Execution Tool Window</h3>
                 <ul style="padding-left: 2em;">
                     <li style="margin: 0.5em 0;">Includes a dedicated <strong>Tool Window</strong> to monitor Git Flow execution.</li>
                     <li style="margin: 0.5em 0;">Displays:
@@ -164,7 +165,7 @@
 
                 <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
 
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">🛈 Built-in Help Descriptions</h3>
+                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">ℹ️ Built-in Help Descriptions</h3>
                 <ul style="padding-left: 2em;">
                     <li style="margin: 0.5em 0;">Every menu item shows a <strong>contextual help description</strong> in the IntelliJ status bar footer.</li>
                     <li style="margin: 0.5em 0;">Descriptions explain:
@@ -240,6 +241,7 @@
             <ul>
                 <li><b>2.7.0</b></li>
                 <ul>
+                    <li>Proactive Divergence Indicator in Status Bar (commits behind develop with 1-click sync)</li>
                     <li>Work on separate branches (use carefully)</li>
                     <li>Name of repo in logs in tool window</li>
                     <li>New detailed About Dialog</li>
@@ -459,6 +461,8 @@
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="br.com.gitflowhelper.service.GitFlowDivergenceService"/>
+
         <statusBarWidgetFactory
                 id="GitFlowWidget"
                 implementation="br.com.gitflowhelper.statusbar.GitFlowStatusBarWidgetFactory"/>
