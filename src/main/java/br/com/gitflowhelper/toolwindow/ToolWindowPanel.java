@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.toolwindow;
 
+import br.com.gitflowhelper.events.GitFlowSettingsListener;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.PluginUtils;
 import com.intellij.openapi.actionSystem.ActionGroup;
@@ -18,10 +19,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +38,8 @@ public class ToolWindowPanel extends JPanel {
     private final Project project;
     private Runnable onNewContent;
     private String currentRepoName;
+    private String currentFontFamily;
+    private int currentFontSize;
 
     public ToolWindowPanel(Project project) {
         super(new BorderLayout());
@@ -56,8 +61,27 @@ public class ToolWindowPanel extends JPanel {
         doc = (HTMLDocument) textPane.getDocument();
         kit = (HTMLEditorKit) textPane.getEditorKit();
 
+        GitFlowSettingsService settingsService = GitFlowSettingsService.getInstance(project);
+        applyFont(settingsService.getLogFontFamily(), settingsService.getLogFontSize());
+
+        if (project != null && !project.isDisposed()) {
+            project.getMessageBus().connect().subscribe(GitFlowSettingsListener.TOPIC, () -> {
+                GitFlowSettingsService s = GitFlowSettingsService.getInstance(project);
+                String newFont = s.getLogFontFamily();
+                int newSize = s.getLogFontSize();
+                if (!Objects.equals(newFont, currentFontFamily) || newSize != currentFontSize) {
+                    applyFont(newFont, newSize);
+                }
+            });
+        }
+
         // Action Group
-        ActionGroup actionGroup = new WindowActionGroup(textPane, GitFlowSettingsService.getInstance(project).getShowDetails());
+        ActionGroup actionGroup = new WindowActionGroup(
+            project,
+            this,
+            textPane,
+            settingsService.getShowDetails()
+        );
         ActionToolbar toolbar = ActionManager.getInstance()
             .createActionToolbar(
                 "MyToolWindowToolbar",
@@ -77,6 +101,77 @@ public class ToolWindowPanel extends JPanel {
         JBScrollPane scrollPane = new JBScrollPane(textPane);
         add(scrollPane, BorderLayout.CENTER);
         add(toolbarPanel, BorderLayout.NORTH);
+    }
+
+    public void applyFont(String fontFamily, int fontSize) {
+        if (fontFamily == null || fontFamily.trim().isEmpty()) {
+            fontFamily = GitFlowSettingsService.getDefaultFontFamily();
+        }
+        if (fontSize <= 0) {
+            fontSize = GitFlowSettingsService.getDefaultFontSize();
+        }
+
+        this.currentFontFamily = fontFamily;
+        this.currentFontSize = fontSize;
+
+        try {
+            StyleSheet styleSheet = doc.getStyleSheet();
+            styleSheet.addRule("body, pre, code { font-family: '" + fontFamily + "', monospace; font-size: " + fontSize + "pt; }");
+            textPane.setFont(new Font(fontFamily, Font.PLAIN, fontSize));
+
+            int caretPos = textPane.getCaretPosition();
+            textPane.setUI(textPane.getUI());
+            if (doc.getLength() > 0) {
+                textPane.setCaretPosition(Math.min(caretPos, doc.getLength()));
+            }
+            textPane.revalidate();
+            textPane.repaint();
+        } catch (Exception e) {
+            PluginUtils.logError(this.project, PluginUtils.getStackTrace(e));
+        }
+    }
+
+    public String getCurrentFontFamily() {
+        if (currentFontFamily == null || currentFontFamily.trim().isEmpty()) {
+            if (project != null && !project.isDisposed()) {
+                currentFontFamily = GitFlowSettingsService.getInstance(project).getLogFontFamily();
+            } else {
+                currentFontFamily = GitFlowSettingsService.getDefaultFontFamily();
+            }
+        }
+        return currentFontFamily;
+    }
+
+    public int getCurrentFontSize() {
+        if (currentFontSize <= 0) {
+            if (project != null && !project.isDisposed()) {
+                currentFontSize = GitFlowSettingsService.getInstance(project).getLogFontSize();
+            } else {
+                currentFontSize = GitFlowSettingsService.getDefaultFontSize();
+            }
+        }
+        return currentFontSize;
+    }
+
+    public void setFontFamily(String fontFamily) {
+        this.currentFontFamily = fontFamily;
+        if (project != null && !project.isDisposed()) {
+            GitFlowSettingsService.getInstance(project).setLogFontFamily(fontFamily);
+        }
+        applyFont(fontFamily, getCurrentFontSize());
+    }
+
+    public void setFontSize(int fontSize) {
+        this.currentFontSize = fontSize;
+        if (project != null && !project.isDisposed()) {
+            GitFlowSettingsService.getInstance(project).setLogFontSize(fontSize);
+        }
+        applyFont(getCurrentFontFamily(), fontSize);
+    }
+
+    public void clear() {
+        this.textPane.setText("<html><body></body></html>");
+        applyFont(getCurrentFontFamily(), getCurrentFontSize());
     }
 
     public void setCurrentRepoName(@Nullable String currentRepoName) {

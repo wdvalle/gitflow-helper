@@ -14,15 +14,21 @@ import javax.swing.*;
 
 public class ClearToolWindowAction extends AnAction {
 
-    private JTextPane textPane;
+    private final ToolWindowPanel toolWindowPanel;
+    private final JTextPane textPane;
 
-    public ClearToolWindowAction(JTextPane textPane) {
+    public ClearToolWindowAction(ToolWindowPanel toolWindowPanel, JTextPane textPane) {
         super(
             "Clear",
             "Clear the text area",
             AllIcons.Actions.GC
         );
+        this.toolWindowPanel = toolWindowPanel;
         this.textPane = textPane;
+    }
+
+    public ClearToolWindowAction(JTextPane textPane) {
+        this(null, textPane);
     }
 
     @Override
@@ -34,7 +40,11 @@ public class ClearToolWindowAction extends AnAction {
             Messages.getQuestionIcon()
         );
         if (result == Messages.YES) {
-            this.textPane.setText("<html><body></body></html>");
+            if (toolWindowPanel != null) {
+                toolWindowPanel.clear();
+            } else {
+                this.textPane.setText("<html><body></body></html>");
+            }
             Project project = e.getProject();
             if (project != null) {
                 ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("GitFlow");

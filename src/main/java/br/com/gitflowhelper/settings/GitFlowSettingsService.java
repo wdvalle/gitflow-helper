@@ -8,6 +8,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.project.Project;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
@@ -25,6 +26,9 @@ import java.util.List;
 )
 public final class GitFlowSettingsService
         implements PersistentStateComponent<GitFlowSettingsState> {
+
+    public static final String DEFAULT_FONT_FAMILY = "JetBrains Mono";
+    public static final int DEFAULT_FONT_SIZE = 12;
 
     private final Project project;
     private GitFlowSettingsState state = new GitFlowSettingsState();
@@ -61,7 +65,8 @@ public final class GitFlowSettingsService
     public String getFeaturePrefix() { return state.getFeaturePrefix(); }
     public void setFeaturePrefix(String v) { state.setFeaturePrefix(v); notifySettingsChanged(); }
 
-    public String getReleasePrefix() { return state.getReleasePrefix(); }
+    public String getReleasePrefix() { return releasePrefix(); }
+    public String releasePrefix() { return state.getReleasePrefix(); }
     public void setReleasePrefix(String v) { state.setReleasePrefix(v); notifySettingsChanged(); }
 
     public String getHotfixPrefix() { return state.getHotfixPrefix(); }
@@ -91,6 +96,56 @@ public final class GitFlowSettingsService
 
     public String getPreferredUsername() { return state.getPreferredUsername(); }
     public void setPreferredUsername(String v) { state.setPreferredUsername(v); notifySettingsChanged(); }
+
+    // ------------------------------------------------------------------
+    // Log Font & Size settings
+    // ------------------------------------------------------------------
+
+    public static String getDefaultFontFamily() {
+        try {
+            String consoleFont = EditorColorsManager.getInstance().getGlobalScheme().getConsoleFontName();
+            if (consoleFont != null && !consoleFont.trim().isEmpty()) {
+                return consoleFont;
+            }
+        } catch (Throwable ignored) {
+        }
+        return DEFAULT_FONT_FAMILY;
+    }
+
+    public static int getDefaultFontSize() {
+        try {
+            int consoleSize = EditorColorsManager.getInstance().getGlobalScheme().getConsoleFontSize();
+            if (consoleSize > 0) {
+                return consoleSize;
+            }
+        } catch (Throwable ignored) {
+        }
+        return DEFAULT_FONT_SIZE;
+    }
+
+    public String getLogFontFamily() {
+        if (state.getLogFontFamily() == null || state.getLogFontFamily().trim().isEmpty()) {
+            return getDefaultFontFamily();
+        }
+        return state.getLogFontFamily();
+    }
+
+    public void setLogFontFamily(String v) {
+        state.setLogFontFamily(v);
+        notifySettingsChanged();
+    }
+
+    public int getLogFontSize() {
+        if (state.getLogFontSize() == null || state.getLogFontSize() <= 0) {
+            return getDefaultFontSize();
+        }
+        return state.getLogFontSize();
+    }
+
+    public void setLogFontSize(int v) {
+        state.setLogFontSize(v);
+        notifySettingsChanged();
+    }
 
     // ------------------------------------------------------------------
     // Selected repositories / branches

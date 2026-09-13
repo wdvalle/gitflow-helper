@@ -20,6 +20,9 @@ public class GitFlowSettingsState {
     private Boolean integrateWithTasks = false;
     private String  preferredUsername;
 
+    private String  logFontFamily;
+    private Integer logFontSize;
+
     /**
      * Map of repository root path to whether it is selected/checked.
      * If a repository is absent, it defaults to true (checked).
@@ -72,6 +75,12 @@ public class GitFlowSettingsState {
 
     public String getPreferredUsername()          { return preferredUsername; }
     public void setPreferredUsername(String v)    { this.preferredUsername = v; }
+
+    public String getLogFontFamily()              { return logFontFamily; }
+    public void setLogFontFamily(String v)        { this.logFontFamily = v; }
+
+    public Integer getLogFontSize()               { return logFontSize; }
+    public void setLogFontSize(Integer v)         { this.logFontSize = v; }
 
     // ------------------------------------------------------------------
     // Selected repositories / branches
@@ -180,6 +189,8 @@ public class GitFlowSettingsState {
                 ", selectedRepositories=" + selectedRepositories +
                 ", repoCiEntries=" + repoCiEntries +
                 ", preferredUsername='" + preferredUsername + '\'' +
+                ", logFontFamily='" + logFontFamily + '\'' +
+                ", logFontSize=" + logFontSize +
                 '}';
     }
 
@@ -197,13 +208,16 @@ public class GitFlowSettingsState {
                 Objects.equals(integrateWithTasks, that.integrateWithTasks) &&
                 Objects.equals(selectedRepositories, that.selectedRepositories) &&
                 Objects.equals(repoCiEntries, that.repoCiEntries) &&
-                Objects.equals(preferredUsername, that.preferredUsername);
+                Objects.equals(preferredUsername, that.preferredUsername) &&
+                Objects.equals(logFontFamily, that.logFontFamily) &&
+                Objects.equals(logFontSize, that.logFontSize);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch,
                 developBranch, counter, showDetails, integrateWithTasks,
-                selectedRepositories, repoCiEntries, preferredUsername);
+                selectedRepositories, repoCiEntries, preferredUsername,
+                logFontFamily, logFontSize);
     }
 }
