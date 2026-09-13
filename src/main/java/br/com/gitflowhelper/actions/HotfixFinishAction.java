@@ -14,7 +14,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.GitLocalBranch;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -51,7 +50,8 @@ public class HotfixFinishAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                !getRepositories(e.getProject()).isEmpty() &&
+                        StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
                         getBranchName(e.getProject()) != null && getBranchName(e.getProject()).startsWith(getHotfixPrefix(e.getProject()))
         );
     }
@@ -64,13 +64,12 @@ public class HotfixFinishAction extends BaseAction {
         setProgress(1, project);
 
         List<GitResult> results = new ArrayList<>();
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
 
         String mainBranch = getMainBranch(project);
         String developBranch = getDevelopBranch(project);
 
-        for (GitRepository repository : repoManager.getRepositories()) {
+        for (GitRepository repository : getRepositories(project)) {
 
             VirtualFile root = repository.getRoot();
 

@@ -20,6 +20,8 @@ import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
 
 public abstract class BaseAction extends AnAction /*implements PropertyChangeListener*/ {
@@ -78,6 +80,13 @@ public abstract class BaseAction extends AnAction /*implements PropertyChangeLis
     }
     public void addRepo(Project project, AnAction action, GitRepository repo) { ActionParamsService.addRepo(project, action, repo); }
     public GitRepository getRepo(Project project, AnAction action) { return ActionParamsService.getRepo(project, action); }
+
+    public List<GitRepository> getRepositories(Project project) {
+        if (project == null || project.isDisposed()) {
+            return Collections.emptyList();
+        }
+        return GitFlowSettingsService.getInstance(project).getSelectedRepositories();
+    }
 
     public void setLoading(boolean loading, Project project) {
         PluginUtils.setLoading(loading, project);

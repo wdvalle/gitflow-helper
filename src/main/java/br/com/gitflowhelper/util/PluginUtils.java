@@ -11,6 +11,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.content.Content;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.PrintWriter;
@@ -19,26 +20,42 @@ import java.io.StringWriter;
 public class PluginUtils {
 
     public static void logError(Project project, String message) {
-        logToMyWindow(project, "<pre style=\"margin:0; padding:0;\">"+
+        logError(project, null, message);
+    }
+
+    public static void logError(Project project, @Nullable String repoName, String message) {
+        logToMyWindow(project, repoName, "<pre style=\"margin:0; padding:0;\">"+
                 "<font color=\"orange\">"+message+"</font>" +
                 "</pre>");
     }
 
     public static void logCommand(Project project, String message) {
+        logCommand(project, null, message);
+    }
+
+    public static void logCommand(Project project, @Nullable String repoName, String message) {
         var show = GitFlowSettingsService.getInstance(project).getShowDetails();
         if (show != null && !show) {
             message = HtmlGitCleaner.commentGitCParams(message);
         }
-        logToMyWindow(project, "<pre style=\"margin:0; padding:0\">$ "+
+        logToMyWindow(project, repoName, "<pre style=\"margin:0; padding:0\">$ "+
                 "<font color=\"#4a8dff\">"+message+"</font>" +
                 "</pre>");
     }
 
     public static void logOutput(Project project, String message) {
-        logToMyWindow(project, "<pre style=\"margin:0; padding:0;\">"+message+"</pre>");
+        logOutput(project, null, message);
+    }
+
+    public static void logOutput(Project project, @Nullable String repoName, String message) {
+        logToMyWindow(project, repoName, "<pre style=\"margin:0; padding:0;\">"+message+"</pre>");
     }
 
     private static void logToMyWindow(Project project, String message) {
+        logToMyWindow(project, null, message);
+    }
+
+    private static void logToMyWindow(Project project, @Nullable String repoName, String message) {
         SwingUtilities.invokeLater(() -> {
             ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
             ToolWindow toolWindow = toolWindowManager.getToolWindow("GitFlow");
@@ -49,7 +66,7 @@ public class PluginUtils {
 
                 if (content != null && content.getComponent() instanceof ToolWindowPanel) {
                     ToolWindowPanel panel = (ToolWindowPanel) content.getComponent();
-                    panel.append(message);
+                    panel.append(repoName, message);
                 }
             }
         });

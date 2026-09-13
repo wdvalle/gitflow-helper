@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -43,18 +42,18 @@ public class FeaturePublishAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                !getRepositories(e.getProject()).isEmpty() &&
+                        StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
                         getBranchName(e.getProject()) != null && getBranchName(e.getProject()).startsWith(getFeaturePrefix(e.getProject()))
         );
     }
 
     private List<GitResult> featurePublish(Project project) {
         setProgress(1, project);
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
         List<GitResult> results = new ArrayList<>();
 
-        for (GitRepository repository : repoManager.getRepositories()) {
+        for (GitRepository repository : getRepositories(project)) {
             String currentBranch = repository.getCurrentBranchName();
 
             setProgress(2, project);

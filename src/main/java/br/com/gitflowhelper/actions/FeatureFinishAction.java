@@ -23,7 +23,6 @@ import git4idea.GitCommit;
 import git4idea.commands.GitCommand;
 import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -52,14 +51,13 @@ public class FeatureFinishAction extends BaseAction {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             //setLoading(true, true, project);
             try {
-                GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
                 GitExecutor executor = new GitExecutor(project);
 
                 setProgress(1, project);
 
                 // 1. Check for uncommitted changes first
                 boolean hasUncommitted = false;
-                for (GitRepository repository : repoManager.getRepositories()) {
+                for (GitRepository repository : getRepositories(project)) {
                     if (!ChangeListManager.getInstance(project).getChangesIn(repository.getRoot()).isEmpty()) {
                         hasUncommitted = true;
                         break;
@@ -86,7 +84,7 @@ public class FeatureFinishAction extends BaseAction {
 
                     String commitMessage = commitMsgRef.get();
                     try {
-                        for (GitRepository repository : repoManager.getRepositories()) {
+                        for (GitRepository repository : getRepositories(project)) {
                             if (!ChangeListManager.getInstance(project).getChangesIn(repository.getRoot()).isEmpty()) {
                                 executor.execute(repository.getRoot(), GitCommand.ADD, "-A");
                                 executor.execute(repository.getRoot(), GitCommand.COMMIT, "-m", commitMessage);
@@ -104,7 +102,7 @@ public class FeatureFinishAction extends BaseAction {
                 setProgress(3, project);
 
                 // Update remote references via fetch to detect new commits in origin/develop and feature branch
-                for (GitRepository repository : repoManager.getRepositories()) {
+                for (GitRepository repository : getRepositories(project)) {
                     try {
                         executor.execute(repository.getRoot(), GitCommand.FETCH, REMOTE);
                         repository.update();
@@ -116,7 +114,7 @@ public class FeatureFinishAction extends BaseAction {
 
                 // 2. Check for unpushed commits next
                 List<GitCommit> unpushedCommits = new ArrayList<>();
-                for (GitRepository repository : repoManager.getRepositories()) {
+                for (GitRepository repository : getRepositories(project)) {
                     try {
                         unpushedCommits.addAll(GitHistoryUtils.history(
                                 project, repository.getRoot(),
@@ -151,7 +149,7 @@ public class FeatureFinishAction extends BaseAction {
                     }
 
                     try {
-                        for (GitRepository repository : repoManager.getRepositories()) {
+                        for (GitRepository repository : getRepositories(project)) {
                             executor.execute(repository.getRoot(), GitCommand.PUSH, "-u", REMOTE, branchName);
                             repository.update();
                         }
@@ -166,7 +164,7 @@ public class FeatureFinishAction extends BaseAction {
                 // 3. Check if feature branch is behind develop (local and remote)
                 Map<String, GitCommit> behindMap = new LinkedHashMap<>();
                 String featureCommits = "";
-                for (GitRepository repository : repoManager.getRepositories()) {
+                for (GitRepository repository : getRepositories(project)) {
                     try {
                         List<GitCommit> behindRemote = GitHistoryUtils.history(
                                 project, repository.getRoot(),
@@ -259,7 +257,8 @@ public class FeatureFinishAction extends BaseAction {
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(
-                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+                !getRepositories(e.getProject()).isEmpty() &&
+                        StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
                         getBranchName(e.getProject()) != null && getBranchName(e.getProject()).startsWith(getFeaturePrefix(e.getProject()))
         );
     }
@@ -291,13 +290,11 @@ public class FeatureFinishAction extends BaseAction {
             String branchName) {
         setProgress(1, project);
 
-
         String baseBranch = getDevelopBranch(project);
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
         List<GitResult> results = new ArrayList<>();
 
-        for (GitRepository repository : repoManager.getRepositories()) {
+        for (GitRepository repository : getRepositories(project)) {
             VirtualFile root = repository.getRoot();
 
             switch (mode) {
@@ -377,7 +374,6 @@ public class FeatureFinishAction extends BaseAction {
                     );
 
                     CIDataToolWindowPanel.startMonitoringForRepo(project, root.getPath());
-
 
                     postAction[0] = "Feature finished and pushed to " + getDevelopBranch(project) + " successfully.";
 

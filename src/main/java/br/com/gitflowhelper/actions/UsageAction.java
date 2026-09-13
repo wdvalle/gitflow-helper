@@ -14,7 +14,7 @@ public class UsageAction extends BaseAction {
     }
 
     public UsageAction(String actionTitle) {
-        super(actionTitle, GitFlowDescriptions.USAGE.getValue(), AllIcons.General.ContextHelp);
+        super(actionTitle, GitFlowDescriptions.USAGE.getValue(), AllIcons.Actions.Help);
     }
 
     @Override

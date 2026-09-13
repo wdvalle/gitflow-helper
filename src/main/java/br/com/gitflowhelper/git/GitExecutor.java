@@ -24,7 +24,9 @@ public class GitExecutor {
 
         GitCommandResult result = git.runCommand(handler);
 
-        PluginUtils.logCommand(project, handler.printableCommandLine());
+        String repoName = root != null ? root.getName() : null;
+
+        PluginUtils.logCommand(project, repoName, handler.printableCommandLine());
 
         String output = String.join("\n", result.getOutput());
         String error = String.join("\n", result.getErrorOutput());
@@ -35,9 +37,9 @@ public class GitExecutor {
         GitResult gitResult = new GitResult(exitCode, handler.printableCommandLine(), message);
 
         if (exitCode == 0) {
-            PluginUtils.logOutput(project, message);
+            PluginUtils.logOutput(project, repoName, message);
         } else {
-            PluginUtils.logError(project, message);
+            PluginUtils.logError(project, repoName, message);
             throw new GitException(gitResult.getProcessMessage(), gitResult);
         }
 
