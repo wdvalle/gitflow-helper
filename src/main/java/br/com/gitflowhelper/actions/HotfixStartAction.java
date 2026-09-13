@@ -1,9 +1,6 @@
 package br.com.gitflowhelper.actions;
 
 import br.com.gitflow.tracker.GFTask;
-import br.com.gitflow.tracker.IssueTrackerConnector;
-import br.com.gitflow.tracker.TrackerFactory;
-import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
@@ -20,13 +17,10 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @SuppressWarnings("unused")
 public class HotfixStartAction extends BaseAction {
@@ -64,7 +58,8 @@ public class HotfixStartAction extends BaseAction {
     @Override
     public void updateImpl(@NotNull AnActionEvent e) {
         Presentation presentation = e.getPresentation();
-        boolean enabled = StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
+        boolean enabled = !getRepositories(e.getProject()).isEmpty() &&
+                StringUtil.isNotEmpty(getMainBranch(e.getProject())) &&
                 getBranchName(e.getProject()) != null && getBranchName(e.getProject()).equals(getMainBranch(e.getProject()));
 
         if (enabled && "TasksToolWindowToolbar".equals(e.getPlace())) {
@@ -79,13 +74,12 @@ public class HotfixStartAction extends BaseAction {
         setProgress(1, project);
 
         List<GitResult> results = new ArrayList<>();
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
 
         String mainBranch = getMainBranch(project);
         String hotfixBranch = getHotfixPrefix(project) + hotfixName;
 
-        for (GitRepository repository : repoManager.getRepositories()) {
+        for (GitRepository repository : getRepositories(project)) {
 
             VirtualFile root = repository.getRoot();
 

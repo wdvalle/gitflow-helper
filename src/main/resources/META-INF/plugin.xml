@@ -238,6 +238,12 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.7.0</b></li>
+                <ul>
+                    <li>Work on separate branches (use carefully)</li>
+                    <li>Name of repo in logs in tool window</li>
+                    <li>New detailed About Dialog</li>
+                </ul>
                 <li><b>2.6.1</b></li>
                 <ul>
                     <li>Fixed NPE in InitAction.</li>

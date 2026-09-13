@@ -11,7 +11,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -32,8 +31,7 @@ public class SyncAction extends BaseAction {
         }
 
         // Check for uncommitted changes first
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
-        for (GitRepository repository : repoManager.getRepositories()) {
+        for (GitRepository repository : getRepositories(project)) {
             if (!ChangeListManager.getInstance(project).getChangesIn(repository.getRoot()).isEmpty()) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Sync Cancelled",
                         "Repository '" + repository.getRoot().getName() + "' has uncommitted changes. Please commit or stash them first.");
@@ -56,10 +54,9 @@ public class SyncAction extends BaseAction {
     }
 
     private void sync(Project project, String currentBranch, String baseBranch) {
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         GitExecutor executor = new GitExecutor(project);
 
-        List<GitRepository> repositories = repoManager.getRepositories();
+        List<GitRepository> repositories = getRepositories(project);
         int totalSteps = repositories.size() * 5;
         int currentStep = 0;
 
@@ -101,7 +98,7 @@ public class SyncAction extends BaseAction {
     protected void updateImpl(@NotNull AnActionEvent e) {
         Project project = e.getProject();
         Presentation presentation = e.getPresentation();
-        if (project == null) {
+        if (project == null || getRepositories(project).isEmpty()) {
             presentation.setEnabled(false);
             return;
         }
