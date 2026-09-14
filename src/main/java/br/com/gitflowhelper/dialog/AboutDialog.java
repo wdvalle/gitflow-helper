@@ -22,7 +22,7 @@ import java.awt.*;
 
 public class AboutDialog extends DialogWrapper {
 
-    public static final String PLUGIN_VERSION = "2.7.0";
+    public static final String PLUGIN_VERSION = "2.8.0";
 
     private static final String PLUGIN_NAME = "GitFlow Helper";
     private static final String GITHUB_URL = "https://github.com/wdvalle/gitflow-helper";

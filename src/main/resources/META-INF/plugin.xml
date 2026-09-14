@@ -239,7 +239,7 @@
     <change-notes>
         <![CDATA[
             <ul>
-                <li><b>2.7.0</b></li>
+                <li><b>2.8.0</b></li>
                 <ul>
                     <li>Proactive Divergence Indicator in Status Bar (commits behind develop with 1-click sync)</li>
                     <li>Work on separate branches (use carefully)</li>
