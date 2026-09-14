@@ -3,6 +3,7 @@ package br.com.gitflowhelper.toolwindow;
 import br.com.gitflowhelper.events.GitFlowSettingsListener;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.settings.RepoCiEntry;
+import br.com.gitflowhelper.util.PluginUtils;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -10,17 +11,19 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
-
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.ContentManagerListener;
+import git4idea.repo.GitRepository;
+import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.HierarchyEvent;
 import java.util.List;
 
 public class GitFlowToolWindowFactory implements ToolWindowFactory {
@@ -56,6 +59,7 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
         toolWindow.getContentManager().addContent(ciDataContent);
         ciDataPanel.setOnNewContent(() -> notifyNewContent(toolWindow, ciDataContent, "CI/CD"));
 
+        // Listen for tab selection changes
         toolWindow.getContentManager().addContentManagerListener(new ContentManagerListener() {
             @Override
             public void selectionChanged(@NotNull ContentManagerEvent event) {
@@ -66,7 +70,56 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
                         if (displayName != null && displayName.endsWith(" •")) {
                             selected.setDisplayName(displayName.substring(0, displayName.length() - 2));
                         }
+                        if (selected == logsContent) {
+                            PluginUtils.clearLiveIndicator(toolWindow);
+                        }
                     }
+                }
+            }
+        });
+
+        // Listen for tool window show / state change to clear live indicator when opened
+        project.getMessageBus().connect(toolWindow.getDisposable()).subscribe(
+                ToolWindowManagerListener.TOPIC,
+                new ToolWindowManagerListener() {
+                    @Override
+                    public void toolWindowShown(@NotNull ToolWindow tw) {
+                        if ("GitFlow".equals(tw.getId())) {
+                            checkAndClearLiveIcon(tw, logsContent);
+                        }
+                    }
+
+                    @Override
+                    public void stateChanged(@NotNull ToolWindowManager toolWindowManager) {
+                        ToolWindow tw = toolWindowManager.getToolWindow("GitFlow");
+                        if (tw != null && tw.isVisible()) {
+                            checkAndClearLiveIcon(tw, logsContent);
+                        }
+                    }
+                }
+        );
+
+        // Detect when logsPanel becomes visible on screen
+        logsPanel.addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && logsPanel.isShowing()) {
+                checkAndClearLiveIcon(toolWindow, logsContent);
+            }
+        });
+
+        if (toolWindow.isVisible()) {
+            checkAndClearLiveIcon(toolWindow, logsContent);
+        }
+    }
+
+    private void checkAndClearLiveIcon(ToolWindow toolWindow, Content logsContent) {
+        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater(() -> {
+            if (toolWindow.isDisposed()) return;
+            PluginUtils.clearLiveIndicator(toolWindow);
+            Content selected = toolWindow.getContentManager().getSelectedContent();
+            if (selected == logsContent) {
+                String displayName = logsContent.getDisplayName();
+                if (displayName != null && displayName.endsWith(" •")) {
+                    logsContent.setDisplayName(displayName.substring(0, displayName.length() - 2));
                 }
             }
         });
@@ -126,12 +179,6 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
         // ---- North panel: toolbar (repo combo commented out) ----
         JPanel northPanel = new JPanel(new BorderLayout(4, 0));
         northPanel.add(toolbar.getComponent(), BorderLayout.WEST);
-
-        // JPanel comboWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
-        // comboWrapper.add(new JLabel("Repo:"));
-        // repoCombo.setPreferredSize(new Dimension(180, repoCombo.getPreferredSize().height));
-        // comboWrapper.add(repoCombo);
-        // northPanel.add(comboWrapper, BorderLayout.CENTER);
 
         panel.add(northPanel, BorderLayout.NORTH);
         panel.add(ciDataPanel, BorderLayout.CENTER);

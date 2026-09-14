@@ -55,18 +55,31 @@ public class PluginUtils {
         logToMyWindow(project, null, message);
     }
 
+    public static void clearLiveIndicator(@Nullable ToolWindow toolWindow) {
+        if (toolWindow != null && !toolWindow.isDisposed()) {
+            toolWindow.setIcon(icons.PluginIcons.GitFlowGray);
+        }
+    }
+
     private static void logToMyWindow(Project project, @Nullable String repoName, String message) {
         SwingUtilities.invokeLater(() -> {
             ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
             ToolWindow toolWindow = toolWindowManager.getToolWindow("GitFlow");
 
             if (toolWindow != null && toolWindow.getContentManager().getContentCount() > 0) {
-                toolWindow.setIcon(icons.PluginIcons.GitFlowGrayLive);
                 Content content = toolWindow.getContentManager().getContent(0);
 
                 if (content != null && content.getComponent() instanceof ToolWindowPanel) {
                     ToolWindowPanel panel = (ToolWindowPanel) content.getComponent();
                     panel.append(repoName, message);
+                }
+
+                Content selected = toolWindow.getContentManager().getSelectedContent();
+                boolean isLogsShowing = toolWindow.isVisible() && selected == content;
+                if (!isLogsShowing) {
+                    toolWindow.setIcon(icons.PluginIcons.GitFlowGrayLive);
+                } else {
+                    toolWindow.setIcon(icons.PluginIcons.GitFlowGray);
                 }
             }
         });

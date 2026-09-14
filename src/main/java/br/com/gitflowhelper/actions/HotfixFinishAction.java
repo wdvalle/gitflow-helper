@@ -81,14 +81,18 @@ public class HotfixFinishAction extends BaseAction {
             setProgress(2, project);
 
             String hotfixName = hotfixBranch.getName();
+            String hotfixPrefix = getHotfixPrefix(project);
+            if (StringUtil.isEmpty(hotfixPrefix)) {
+                hotfixPrefix = "hotfix/";
+            }
 
-            if (!hotfixName.startsWith("hotfix/")) {
+            if (!hotfixName.startsWith(hotfixPrefix)) {
                 throw new GitException(
                         "Current branch is not a hotfix: " + hotfixName
                 );
             }
 
-            String tagName = hotfixName.replace("hotfix/", "");
+            String tagName = hotfixName.substring(hotfixPrefix.length());
 
             // 1️⃣ checkout main
             results.add(

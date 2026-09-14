@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.toolwindow;
 
+import br.com.gitflowhelper.util.PluginUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -48,9 +49,7 @@ public class ClearToolWindowAction extends AnAction {
             Project project = e.getProject();
             if (project != null) {
                 ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("GitFlow");
-                if (toolWindow != null) {
-                    toolWindow.setIcon(icons.PluginIcons.GitFlowGray);
-                }
+                PluginUtils.clearLiveIndicator(toolWindow);
             }
         }
     }

@@ -68,9 +68,13 @@ public class HotfixPublishAction extends BaseAction {
             setProgress(3, project);
 
             String branchName = currentBranch.getName();
+            String hotfixPrefix = getHotfixPrefix(project);
+            if (StringUtil.isEmpty(hotfixPrefix)) {
+                hotfixPrefix = "hotfix/";
+            }
 
             // Validação básica de Git Flow
-            if (!branchName.startsWith("hotfix/")) {
+            if (!branchName.startsWith(hotfixPrefix)) {
                 throw new GitException(
                         "Branch atual não é uma hotfix: " + branchName
                 );
