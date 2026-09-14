@@ -469,8 +469,6 @@
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="br.com.gitflowhelper.service.GitFlowDivergenceService"/>
-
         <statusBarWidgetFactory
                 id="GitFlowWidget"
                 implementation="br.com.gitflowhelper.statusbar.GitFlowStatusBarWidgetFactory"/>
