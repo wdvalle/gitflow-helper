@@ -26,4 +26,15 @@ public class NotificationUtil {
                 )
                 .notify(project);
     }
+
+    public static void showGitFlowWarningNotification(Project project, String title, String message) {
+        NotificationGroupManager.getInstance()
+                .getNotificationGroup("GitFlowNotificationGroup") // O ID do plugin.xml
+                .createNotification(
+                        title,
+                        message,
+                        NotificationType.WARNING
+                )
+                .notify(project);
+    }
 }

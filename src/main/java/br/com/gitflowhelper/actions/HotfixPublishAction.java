@@ -62,7 +62,7 @@ public class HotfixPublishAction extends BaseAction {
 
             GitLocalBranch currentBranch = repository.getCurrentBranch();
             if (currentBranch == null) {
-                throw new GitException("Não foi possível identificar a branch atual.");
+                throw new GitException("Could not identify the current branch.");
             }
 
             setProgress(3, project);
@@ -73,10 +73,10 @@ public class HotfixPublishAction extends BaseAction {
                 hotfixPrefix = "hotfix/";
             }
 
-            // Validação básica de Git Flow
+            // Basic Git Flow validation
             if (!branchName.startsWith(hotfixPrefix)) {
                 throw new GitException(
-                        "Branch atual não é uma hotfix: " + branchName
+                        "Current branch is not a hotfix: " + branchName
                 );
             }
 
