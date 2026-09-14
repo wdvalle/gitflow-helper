@@ -242,6 +242,14 @@
                 <li><b>2.8.0</b></li>
                 <ul>
                     <li>Proactive Divergence Indicator in Status Bar (commits behind develop with 1-click sync)</li>
+                    <li>Customizable Log Typography: Select custom font family and font size directly in the Logs tool window.</li>
+                    <li>Repository Context in Logs & Flow: Interactive repo selection in the Flow diagram panel and clear repo name prefix in execution logs.</li>
+                    <li>Optional Task Selection on Feature Start: Create feature branches with or without binding to an issue tracker task.  </li>
+                    <li>Safe Background Execution: GitFlow menu is automatically disabled during background operations to prevent branch conflicts.</li>
+                    <li>New Interactive About Dialog: Comprehensive built-in documentation guide (`UsageDialog`).</li>
+                </ul>
+                <li><b>2.7.0</b></li>
+                <ul>
                     <li>Work on separate branches (use carefully)</li>
                     <li>Name of repo in logs in tool window</li>
                     <li>New detailed About Dialog</li>

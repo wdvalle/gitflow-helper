@@ -18,21 +18,21 @@
        height="48">
 </a>
 
-> **WHAT'S NEW IN v2.7.0**  
+> **WHAT'S NEW IN v2.8.0**  
+> • **Proactive Divergence Indicator in Status Bar**: Real-time badge showing commits behind `develop` (`⬇ N`) with instant 1-click branch synchronization!  
+> • **Customizable Log Typography**: Select custom font family and font size directly in the Logs tool window.  
+> • **Repository Context in Logs & Flow**: Interactive repo selection in the Flow diagram panel and clear repo name prefix in execution logs.  
+> • **Optional Task Selection on Feature Start**: Create feature branches with or without binding to an issue tracker task.  
+> • **Safe Background Execution**: GitFlow menu is automatically disabled during background operations to prevent branch conflicts.  
+> • **New Interactive About Dialog**: Comprehensive built-in documentation guide (`UsageDialog`).
+
+> **OTHER IMPORTANT FEARTURES**  
 > • **Extended Issue Tracker Integrations**: Full support for **Jira**, **GitHub**, **GitLab**, and **Redmine**!  
 > • **Dedicated 4-Tab Tool Window**: Dedicated views for **Logs**, **Issues** (rich task detail & actions), **Flow** (visual GitFlow branch graph), and **CI/CD** (Jenkins pipeline tracking)!  
 > • **Jenkins CI/CD Pipeline Monitoring**: Real-time build status tracking and progressive console log streaming.  
 > • **Comprehensive Safety Guardrails**: Pre-finish checks for uncommitted changes, unpushed commits, and divergence blocking, plus protected branch commit warnings for `main` and `develop`.  
 > • **Multi-Repository Workspace Support**: Independent configuration and execution across multi-repo projects.
 
-> **WHAT'S NEW IN v2.8.0**  
-> • **Proactive Divergence Indicator in Status Bar**: Real-time badge showing commits behind `develop` (`⬇ N`) with instant 1-click branch synchronization!  
-> • **Customizable Log Typography**: Select custom font family and font size directly in the Logs tool window.  
-> • **Repository Context in Logs & Flow**: Interactive repo selection in the Flow diagram panel and clear repo name prefix in execution logs.  
-> • **Optional Task Selection on Feature Start**: Create feature branches with or without binding to an issue tracker task.  
-> • **Live Activity & Unread Indicator**: Smart indicator in the tool window showing active background Git tasks and clearing unread logs.  
-> • **Safe Background Execution**: GitFlow menu is automatically disabled during background operations to prevent branch conflicts.  
-> • **New Interactive Usage & About Dialogs**: Comprehensive built-in documentation guide (`UsageDialog`) and modern About dialog.
 
 ---
 
