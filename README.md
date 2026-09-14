@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper">
-    <img src="https://img.shields.io/badge/JetBrains%20Marketplace-v2.7.0-blue?logo=intellij-idea&style=flat-square" alt="JetBrains Marketplace">
+    <img src="https://img.shields.io/badge/JetBrains%20Marketplace-v2.8.0-blue?logo=intellij-idea&style=flat-square" alt="JetBrains Marketplace">
   </a>
   <a href="https://github.com/wdvalle/gitflow-helper">
     <img src="https://img.shields.io/badge/GitHub-wdvalle%2Fgitflow--helper-181717?logo=github&style=flat-square" alt="GitHub">
@@ -19,11 +19,20 @@
 </a>
 
 > **WHAT'S NEW IN v2.7.0**  
-> • **Proactive Divergence Indicator in Status Bar**: Real-time badge showing commits behind `develop` with instant 1-click branch synchronization!  
-> • **Extended Issue Tracker Integrations**: Full support for **Jira**, **YouTrack**, **GitHub**, **GitLab**, and **Redmine**!  
-> • **Dedicated 4-Tab Tool Window**: Dedicated views for **Logs** (with customizable fonts and multi-repo tagging), **Issues** (rich task detail & actions), **Flow** (visual GitFlow branch graph), and **CI/CD** (Jenkins pipeline tracking)!  
+> • **Extended Issue Tracker Integrations**: Full support for **Jira**, **GitHub**, **GitLab**, and **Redmine**!  
+> • **Dedicated 4-Tab Tool Window**: Dedicated views for **Logs**, **Issues** (rich task detail & actions), **Flow** (visual GitFlow branch graph), and **CI/CD** (Jenkins pipeline tracking)!  
+> • **Jenkins CI/CD Pipeline Monitoring**: Real-time build status tracking and progressive console log streaming.  
 > • **Comprehensive Safety Guardrails**: Pre-finish checks for uncommitted changes, unpushed commits, and divergence blocking, plus protected branch commit warnings for `main` and `develop`.  
 > • **Multi-Repository Workspace Support**: Independent configuration and execution across multi-repo projects.
+
+> **WHAT'S NEW IN v2.8.0**  
+> • **Proactive Divergence Indicator in Status Bar**: Real-time badge showing commits behind `develop` (`⬇ N`) with instant 1-click branch synchronization!  
+> • **Customizable Log Typography**: Select custom font family and font size directly in the Logs tool window.  
+> • **Repository Context in Logs & Flow**: Interactive repo selection in the Flow diagram panel and clear repo name prefix in execution logs.  
+> • **Optional Task Selection on Feature Start**: Create feature branches with or without binding to an issue tracker task.  
+> • **Live Activity & Unread Indicator**: Smart indicator in the tool window showing active background Git tasks and clearing unread logs.  
+> • **Safe Background Execution**: GitFlow menu is automatically disabled during background operations to prevent branch conflicts.  
+> • **New Interactive Usage & About Dialogs**: Comprehensive built-in documentation guide (`UsageDialog`) and modern About dialog.
 
 ---
 
@@ -31,7 +40,7 @@
 
 **GitFlow Helper** brings the complete [Vincent Driessen Git Flow branching strategy](https://nvie.com/posts/a-successful-git-branching-model/) natively into JetBrains IDEs.
 
-It executes all Git operations programmatically via asynchronous IntelliJ Platform APIs without requiring external Git Flow CLI tools. In addition to branch automation, it deeply integrates with your **Issue Trackers** (Jira, GitHub, GitLab, Redmine, YouTrack), **CI/CD pipelines** (Jenkins), and provides interactive visual flow diagrams right inside your IDE.
+It executes all Git operations programmatically via asynchronous IntelliJ Platform APIs without requiring external Git Flow CLI tools. In addition to branch automation, it deeply integrates with your **Issue Trackers** (Jira, GitHub, GitLab, Redmine), **CI/CD pipelines** (Jenkins), and provides interactive visual flow diagrams right inside your IDE.
 
 ---
 
@@ -142,7 +151,6 @@ Seamlessly connects to IntelliJ IDEA's **Task Management** subsystem (`com.intel
   - **GitLab Issues & Merge Requests**
   - **Jira Software**
   - **Redmine**
-  - **YouTrack**
 - **Automated Workflow**:
   - Automatically sanitizes issue keys and titles into clean branch names (e.g. `feature/PROJ-1234-add-oauth-login`).
   - Automatically assigns the issue to you and sets status to **In Progress** when starting work.
