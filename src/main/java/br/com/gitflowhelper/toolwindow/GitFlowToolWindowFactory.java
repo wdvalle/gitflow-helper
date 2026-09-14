@@ -7,12 +7,15 @@ import br.com.gitflowhelper.util.PluginUtils;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
+import com.intellij.ui.GotItTooltip;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManagerEvent;
@@ -24,9 +27,13 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public class GitFlowToolWindowFactory implements ToolWindowFactory {
+
+    public static final String GOT_IT_FLOW_REDESIGN_ID = "gitflow.flow.graph.redesign.v2.9.0";
 
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
@@ -73,12 +80,13 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
                         if (selected == logsContent) {
                             PluginUtils.clearLiveIndicator(toolWindow);
                         }
+                        checkAndShowFlowGotIt(toolWindow, flowContent);
                     }
                 }
             }
         });
 
-        // Listen for tool window show / state change to clear live indicator when opened
+        // Listen for tool window show / state change to clear live indicator and show Flow got it
         project.getMessageBus().connect(toolWindow.getDisposable()).subscribe(
                 ToolWindowManagerListener.TOPIC,
                 new ToolWindowManagerListener() {
@@ -86,6 +94,7 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
                     public void toolWindowShown(@NotNull ToolWindow tw) {
                         if ("GitFlow".equals(tw.getId())) {
                             checkAndClearLiveIcon(tw, logsContent);
+                            checkAndShowFlowGotIt(tw, flowContent);
                         }
                     }
 
@@ -94,6 +103,7 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
                         ToolWindow tw = toolWindowManager.getToolWindow("GitFlow");
                         if (tw != null && tw.isVisible()) {
                             checkAndClearLiveIcon(tw, logsContent);
+                            checkAndShowFlowGotIt(tw, flowContent);
                         }
                     }
                 }
@@ -103,12 +113,164 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
         logsPanel.addHierarchyListener(e -> {
             if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && logsPanel.isShowing()) {
                 checkAndClearLiveIcon(toolWindow, logsContent);
+                checkAndShowFlowGotIt(toolWindow, flowContent);
+            }
+        });
+
+        // Detect when the tool window component itself becomes visible on screen
+        toolWindow.getComponent().addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && toolWindow.getComponent().isShowing()) {
+                checkAndShowFlowGotIt(toolWindow, flowContent);
             }
         });
 
         if (toolWindow.isVisible()) {
             checkAndClearLiveIcon(toolWindow, logsContent);
+            checkAndShowFlowGotIt(toolWindow, flowContent);
         }
+    }
+
+    private void checkAndShowFlowGotIt(ToolWindow toolWindow, Content flowContent) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            if (toolWindow.isDisposed()) return;
+
+            GotItTooltip tooltip = new GotItTooltip(
+                    GOT_IT_FLOW_REDESIGN_ID,
+                    "The Flow graph has been completely redesigned! It is now much more practical, intuitive, and useful for visualizing and managing your branch workflow.",
+                    toolWindow.getDisposable()
+            )
+            .withHeader("Flow Graph Redesigned!")
+            .withPosition(Balloon.Position.above)
+            .withButtonLabel("Got It")
+            .withLink("Switch to Flow", () -> {
+                if (!toolWindow.isDisposed()) {
+                    toolWindow.getContentManager().setSelectedContent(flowContent);
+                }
+            });
+
+            if (!tooltip.canShow()) {
+                return;
+            }
+
+            JComponent targetTab = findFlowTabComponent(toolWindow, flowContent);
+            if (targetTab != null && targetTab.isShowing() && targetTab.getWidth() > 0 && targetTab.getHeight() > 0) {
+                tooltip.show(targetTab, (comp, balloon) -> new Point(comp.getWidth() / 2, 0));
+            } else if (targetTab != null) {
+                targetTab.addHierarchyListener(new HierarchyListener() {
+                    @Override
+                    public void hierarchyChanged(HierarchyEvent e) {
+                        if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && targetTab.isShowing()) {
+                            targetTab.removeHierarchyListener(this);
+                            if (tooltip.canShow()) {
+                                ApplicationManager.getApplication().invokeLater(() -> {
+                                    if (targetTab.isShowing() && targetTab.getWidth() > 0 && tooltip.canShow()) {
+                                        tooltip.show(targetTab, (comp, balloon) -> new Point(comp.getWidth() / 2, 0));
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+            } else {
+                // The tool window header may not have finished layout yet; retry on the next EDT tick if still visible
+                if (toolWindow.isVisible()) {
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        if (toolWindow.isDisposed() || !tooltip.canShow()) return;
+                        JComponent retryTab = findFlowTabComponent(toolWindow, flowContent);
+                        if (retryTab != null && retryTab.isShowing() && retryTab.getWidth() > 0) {
+                            tooltip.show(retryTab, (comp, balloon) -> new Point(comp.getWidth() / 2, 0));
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /**
+     * Traverses the tool window Swing hierarchy (including the header in InternalDecorator)
+     * to find the exact tab label representing the Flow tab.
+     */
+    private JComponent findFlowTabComponent(ToolWindow toolWindow, Content flowContent) {
+        Container root = getToolWindowRoot(toolWindow);
+        if (root == null) {
+            return null;
+        }
+        return findTabComponent(root, flowContent, "Flow");
+    }
+
+    private Container getToolWindowRoot(ToolWindow toolWindow) {
+        Component comp = toolWindow.getComponent();
+        Container root = (comp instanceof Container) ? (Container) comp : null;
+        while (comp != null && !(comp instanceof Window)) {
+            if (comp instanceof Container container) {
+                root = container;
+                if (comp.getClass().getName().contains("InternalDecorator")) {
+                    break;
+                }
+            }
+            comp = comp.getParent();
+        }
+        return root;
+    }
+
+    private JComponent findTabComponent(Container container, Content targetContent, String title) {
+        if (container == null) return null;
+
+        for (Component comp : container.getComponents()) {
+            // 1. Direct ContentTabLabel matching our Content
+            if (comp.getClass().getName().contains("ContentTabLabel")) {
+                try {
+                    Method m = comp.getClass().getMethod("getContent");
+                    if (m.invoke(comp) == targetContent) {
+                        return (JComponent) comp;
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+
+            // 2. TabLabel (JBTabs in New UI) matching tab text
+            if (comp.getClass().getName().contains("TabLabel")) {
+                try {
+                    Method m = comp.getClass().getMethod("getInfo");
+                    Object info = m.invoke(comp);
+                    if (info != null) {
+                        Method getText = info.getClass().getMethod("getText");
+                        Object text = getText.invoke(info);
+                        if (text != null && text.toString().trim().startsWith(title)) {
+                            return (JComponent) comp;
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+
+            // 3. Any JLabel / ContentLabel whose text starts with "Flow" (e.g. "Flow" or "Flow •")
+            if (comp instanceof JLabel label) {
+                String text = label.getText();
+                if (text != null && text.trim().startsWith(title)) {
+                    if (label.getParent() instanceof JComponent parent &&
+                            (parent.getClass().getName().contains("Tab") || parent.getClass().getName().contains("Label"))) {
+                        return parent;
+                    }
+                    return label;
+                }
+            }
+
+            // 4. Accessible context matching tab title
+            if (comp.getAccessibleContext() != null) {
+                String name = comp.getAccessibleContext().getAccessibleName();
+                if (name != null && name.trim().startsWith(title)) {
+                    if (comp instanceof JComponent jComp) return jComp;
+                }
+            }
+
+            // Recurse into children
+            if (comp instanceof Container childContainer) {
+                JComponent found = findTabComponent(childContainer, targetContent, title);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
     private void checkAndClearLiveIcon(ToolWindow toolWindow, Content logsContent) {
@@ -160,11 +322,14 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
         populateRepoCombo(repoCombo, project, ciDataPanel, null);
 
         // Refresh combo when settings change (user edits config in ConfigDialog)
-        project.getMessageBus().connect().subscribe(
+        project.getMessageBus().connect(ciDataPanel).subscribe(
                 GitFlowSettingsListener.TOPIC,
-                () -> {
-                    String previousPath = ciDataPanel.getSelectedRepoPath();
-                    populateRepoCombo(repoCombo, project, ciDataPanel, previousPath);
+                new GitFlowSettingsListener() {
+                    @Override
+                    public void settingsChanged() {
+                        String previousPath = ciDataPanel.getSelectedRepoPath();
+                        populateRepoCombo(repoCombo, project, ciDataPanel, previousPath);
+                    }
                 });
 
         repoCombo.addActionListener(e -> {
