@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.HierarchyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -72,6 +73,12 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
             this.divergenceInfo = divergenceService.getLatestInfo();
             SwingUtilities.invokeLater(this::updateBadgeUI);
         }
+
+        SwingUtilities.invokeLater(() -> {
+            if (component != null && component.isShowing()) {
+                GitFlowGuideManager.checkAndShowStatusBarGotIt(project, component);
+            }
+        });
     }
 
     @Override
@@ -170,7 +177,7 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
         if (info != null && info.hasDivergence() && !loading) {
             int count = info.getCommitsBehind();
             String commitsStr = count + " commit" + (count > 1 ? "s" : "");
-            syncBadge.setText(" ⬇ " + count + " ");
+            syncBadge.setText(" \u2b07 " + count + " ");
             if (label != null && label.getFont() != null) {
                 syncBadge.setFont(label.getFont().deriveFont(Font.BOLD, Math.max(10f, label.getFont().getSize() - 1f)));
             }
@@ -353,6 +360,12 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
             ((CardLayout) component.getLayout()).show(component, "label");
 
             updateBadgeUI();
+
+            component.addHierarchyListener(e -> {
+                if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && component.isShowing()) {
+                    GitFlowGuideManager.checkAndShowStatusBarGotIt(project, component);
+                }
+            });
         }
         return component;
     }
