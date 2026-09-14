@@ -20,6 +20,7 @@ import git4idea.commands.GitCommand;
 import git4idea.commands.GitLineHandler;
 import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
+import git4idea.repo.GitRepositoryChangeListener;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,10 +46,10 @@ public final class GitFlowDivergenceService implements Disposable {
         MessageBusConnection projectConn = project.getMessageBus().connect(this);
 
         // 1. Trigger when any Git repository state changes (checkout, commit, pull, fetch, etc.)
-        projectConn.subscribe(GitRepository.GIT_REPO_CHANGE, repository -> requestCheck());
+        projectConn.subscribe(GitRepository.GIT_REPO_CHANGE, (GitRepositoryChangeListener) repository -> requestCheck());
 
         // 2. Trigger when GitFlow settings change (e.g. branch names, prefixes, selected repos)
-        projectConn.subscribe(GitFlowSettingsListener.TOPIC, this::requestCheck);
+        projectConn.subscribe(GitFlowSettingsListener.TOPIC, (GitFlowSettingsListener) this::requestCheck);
 
         // 3. Trigger when IDE window is activated/focused (e.g. switching back from browser/terminal)
         ApplicationManager.getApplication().getMessageBus().connect(this)
