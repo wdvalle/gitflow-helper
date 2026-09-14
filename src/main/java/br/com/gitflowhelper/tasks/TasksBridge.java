@@ -61,6 +61,11 @@ public interface TasksBridge {
     void openActiveTaskInBrowser(Project project);
 
     /**
+     * Returns {@code true} when there is at least one configured task server (repository).
+     */
+    boolean hasConfiguredServers(Project project);
+
+    /**
      * Returns all available tasks (open issues) from the configured task servers.
      * Returns an empty list when there are no configured servers or an error occurs.
      */

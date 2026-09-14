@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.tasks.LocalTask;
 import com.intellij.tasks.Task;
 import com.intellij.tasks.TaskManager;
+import com.intellij.tasks.TaskRepository;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -93,6 +94,25 @@ public class TasksBridgeImpl implements TasksBridge {
             if (url != null && !url.isEmpty()) {
                 BrowserUtil.browse(url);
             }
+        }
+    }
+
+    @Override
+    public boolean hasConfiguredServers(Project project) {
+        try {
+            TaskManager taskManager = TaskManager.getManager(project);
+            TaskRepository[] repositories = taskManager.getAllRepositories();
+            if (repositories == null || repositories.length == 0) {
+                return false;
+            }
+            for (TaskRepository repository : repositories) {
+                if (repository != null && (repository.isConfigured() || (repository.getUrl() != null && !repository.getUrl().trim().isEmpty()))) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
         }
     }
 

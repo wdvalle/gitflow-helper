@@ -2,8 +2,8 @@ package br.com.gitflowhelper.dialog;
 
 import br.com.gitflow.tracker.GFTask;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import br.com.gitflowhelper.tasks.TasksBridge;
 import br.com.gitflowhelper.util.BranchNameRefiner;
-import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.GitFlowBranchType;
 import br.com.gitflowhelper.util.PluginUtils;
 import br.com.gitflowhelper.util.TaskFormatter;
@@ -13,12 +13,13 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
-import br.com.gitflowhelper.tasks.TasksBridge;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.ContextHelpLabel;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -77,6 +78,7 @@ public class NameDialog extends DialogWrapper {
         this.pushOnFinish = new JBCheckBox("Push local branch when finished");
         this.activateTaskCheckBox = new JBCheckBox("Set task as active/started");
         this.activateTaskCheckBox.setSelected(true);
+        this.activateTaskCheckBox.setEnabled(preSelectedTask != null);
         this.betaLabel = new JLabel(" (Beta for Jira)");
         this.betaLabel.setForeground(Color.ORANGE);
         this.betaLabel.setVisible(false);
@@ -155,7 +157,7 @@ public class NameDialog extends DialogWrapper {
                         setText("Loading tasks" + ".".repeat(loadingDots));
                         setIcon(AllIcons.Actions.BuildLoadChanges);
                     } else {
-                        setText("Select a task...");
+                        setText("None (No task linked)");
                         setIcon(null);
                     }
                 }
@@ -173,6 +175,9 @@ public class NameDialog extends DialogWrapper {
                     if (jiraWarningPane != null) {
                         jiraWarningPane.setVisible(selectedTask.isJira());
                     }
+                    if (activateTaskCheckBox != null) {
+                        activateTaskCheckBox.setEnabled(true);
+                    }
                 } else {
                     if (taskDetailScrollPane != null) {
                         taskDetailScrollPane.setVisible(false);
@@ -180,6 +185,9 @@ public class NameDialog extends DialogWrapper {
                     betaLabel.setVisible(false);
                     if (jiraWarningPane != null) {
                         jiraWarningPane.setVisible(false);
+                    }
+                    if (activateTaskCheckBox != null) {
+                        activateTaskCheckBox.setEnabled(false);
                     }
                 }
             } catch (Exception ex) {
@@ -191,15 +199,18 @@ public class NameDialog extends DialogWrapper {
     private void loadTasksAsync() {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             List<GFTask> tasks = getTaskModel();
-            if (tasks != null && !project.isDisposed() && taskComboBox != null) {
-                taskComboBox.setModel(new CollectionComboBoxModel<>(tasks));
-                taskComboBox.setSelectedItem(null);
-                taskComboBox.revalidate();
-                isComboLoading = false;
-                if (loadingTimer != null) {
-                    loadingTimer.stop();
-                }
-                taskComboBox.repaint();
+            if (tasks != null && !project.isDisposed()) {
+                SwingUtilities.invokeLater(() -> {
+                    if (project.isDisposed() || taskComboBox == null) return;
+                    taskComboBox.setModel(new CollectionComboBoxModel<>(tasks));
+                    taskComboBox.setSelectedItem(null);
+                    taskComboBox.revalidate();
+                    isComboLoading = false;
+                    if (loadingTimer != null) {
+                        loadingTimer.stop();
+                    }
+                    taskComboBox.repaint();
+                });
             }
         });
     }
@@ -268,7 +279,11 @@ public class NameDialog extends DialogWrapper {
             gbc.gridy = currentGridY;
             gbc.weightx = 0;
             gbc.gridwidth = 1;
-            panel.add(new JLabel("Task:"), gbc);
+
+            JPanel taskLabelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+            taskLabelPanel.add(new JLabel("Task:"));
+            taskLabelPanel.add(ContextHelpLabel.create("Optional. Select a task to link, or leave as 'None' to create a branch manually."));
+            panel.add(taskLabelPanel, gbc);
 
             gbc.gridx = 1;
             gbc.weightx = 1.0;
@@ -384,6 +399,15 @@ public class NameDialog extends DialogWrapper {
     }
 
     @Override
+    protected @Nullable ValidationInfo doValidate() {
+        String name = nameField.getText();
+        if (name == null || name.trim().isEmpty()) {
+            return new ValidationInfo("Branch name cannot be empty", nameField);
+        }
+        return null;
+    }
+
+    @Override
     protected void doOKAction() {
         String name = nameField.getText();
         if (name == null || name.trim().isEmpty()) {
@@ -393,14 +417,8 @@ public class NameDialog extends DialogWrapper {
         String username = usernameField.getText();
         GitFlowSettingsService.getInstance(project).getState().setPreferredUsername(username);
 
-        if (GitFlowSettingsService.getInstance(project).isIntegrateWithTasks() && showIntegration) {
-            if (taskComboBox == null || taskComboBox.getSelectedItem() == null) {
-                return;
-            }
-        }
-
         GFTask selectedTask = taskComboBox != null ? (GFTask) taskComboBox.getSelectedItem() : null;
-        boolean activate = activateTaskCheckBox != null && activateTaskCheckBox.isSelected();
+        boolean activate = selectedTask != null && activateTaskCheckBox != null && activateTaskCheckBox.isEnabled() && activateTaskCheckBox.isSelected();
         onOk.accept(new NameResponse(name, pushOnFinish.isSelected(), selectedTask, activate, username));
         super.doOKAction();
     }
