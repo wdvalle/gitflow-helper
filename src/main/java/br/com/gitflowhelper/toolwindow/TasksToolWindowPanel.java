@@ -7,10 +7,12 @@ import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.PluginUtils;
 import br.com.gitflowhelper.util.TaskFormatter;
 import com.intellij.ide.ActivityTracker;
+import com.intellij.ide.DataManager;
 import com.intellij.openapi.Disposable;
 //import br.com.gitflowhelper.util.TaskProjectFilter;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
@@ -22,7 +24,6 @@ import com.intellij.util.ui.ComponentWithEmptyText;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.StatusText;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -169,16 +170,13 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
         if (!GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
             allTasks.clear();
             filterTasks();
-            updateEmptyText();
             return;
         }
         loading = true;
+        updateEmptyText();
         ActivityTracker.getInstance().inc();
-        PluginUtils.setLoading(true, project);
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            PluginUtils.setProgress(4, project);
             List<GFTask> tasks = getTasks();
-            PluginUtils.setProgress(8, project);
             ApplicationManager.getApplication().invokeLater(() -> {
                 try {
                     if (!project.isDisposed()) {
@@ -191,8 +189,8 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
                     }
                 } finally {
                     loading = false;
+                    updateEmptyText();
                     ActivityTracker.getInstance().inc();
-                    PluginUtils.setLoading(false, project);
                 }
             });
         });
@@ -206,22 +204,68 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
                 .sorted(Comparator.comparing(GFTask::getPresentableId, String.CASE_INSENSITIVE_ORDER))
                 .toList();
         taskList.setModel(new CollectionListModel<>(filtered));
+        updateEmptyText();
     }
 
     private void updateEmptyText() {
         StatusText emptyText = taskList.getEmptyText();
         emptyText.clear();
+
+        if (loading) {
+            emptyText.setText("Loading tasks...");
+            return;
+        }
+
+        if (PluginUtils.isTasksPluginMissing()) {
+            emptyText.setText("Task Management plugin is not installed or disabled");
+            emptyText.appendLine("Open ");
+            emptyText.appendText("Plugins settings", SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES, e -> {
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, "Plugins");
+            });
+            emptyText.appendLine(" to install it.");
+            return;
+        }
+
         if (!GitFlowSettingsService.getInstance(project).isIntegrateWithTasks()) {
             emptyText.setText("Task integration is disabled");
-            emptyText.appendLine("Enable it in Git Flow Helper settings");
-        } else {
-            emptyText.setText("No tasks found");
+            emptyText.appendLine("Enable it in ");
+            emptyText.appendText("Git Flow Helper settings", SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES, e -> {
+                AnAction action = ActionManager.getInstance().getAction("GitFlowHelper.IntegrateWithTasksAction");
+                if (action != null) {
+                    DataContext dataContext = DataManager.getInstance().getDataContext(this);
+                    AnActionEvent event = AnActionEvent.createFromAnAction(
+                            action,
+                            null,
+                            ActionPlaces.TOOLWINDOW_CONTENT,
+                            dataContext
+                    );
+                    ActionUtil.performActionDumbAwareWithCallbacks(action, event);
+                }
+            });
+            return;
+        }
+
+        TasksBridge bridge = TasksBridge.getInstance();
+        if (bridge == null || !bridge.hasConfiguredServers(project)) {
+            emptyText.setText("No task servers configured");
             emptyText.appendLine("Go to ");
             emptyText.appendText("Settings -> Tools -> Tasks -> Servers", SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES, e -> {
                 ShowSettingsUtil.getInstance().showSettingsDialog(project, "Tasks");
+                loadTasksAsync();
             });
             emptyText.appendLine(" to configure access to a task server.");
+            return;
         }
+
+        String query = searchField.getText().trim();
+        if (!query.isEmpty()) {
+            emptyText.setText("No tasks match '" + query + "'");
+            emptyText.appendLine("Clear the search field to see all tasks.");
+            return;
+        }
+
+        emptyText.setText("No tasks found");
+        emptyText.appendLine("Check your task server queries or click Reload.");
     }
 
     private List<GFTask> getTasks() {

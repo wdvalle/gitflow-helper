@@ -83,7 +83,7 @@ public final class GitFlowSettingsService
     // ------------------------------------------------------------------
 
     public Long getCounter() { return state.getCounter(); }
-    public void setCounter(Long v) { state.setCounter(v); notifySettingsChanged(); }
+    public void setCounter(Long v) { state.setCounter(v); }
 
     public Boolean getShowDetails() {
         if (state.getShowDetails() == null) state.setShowDetails(true);

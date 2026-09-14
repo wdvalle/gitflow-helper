@@ -170,6 +170,7 @@ public class IntegrateWithTasksAction extends BaseAction {
                 Messages.getQuestionIcon()) == Messages.YES) {
             settings.setIntegrateWithTasks(false);
             project.getMessageBus().syncPublisher(GitFlowTaskListener.TOPIC).tasksChanged();
+            refreshTasksPanel(project);
             NotificationUtil.showGitFlowSuccessNotification(project, "Git Flow Helper", "Task integration disabled successfully.");
         }
     }
