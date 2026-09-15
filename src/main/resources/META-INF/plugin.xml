@@ -247,6 +247,7 @@
                     <li>Optional Task Selection on Feature Start: Create feature branches with or without binding to an issue tracker task.  </li>
                     <li>Safe Background Execution: GitFlow menu is automatically disabled during background operations to prevent branch conflicts.</li>
                     <li>New Interactive About Dialog: Comprehensive built-in documentation guide (`UsageDialog`).</li>
+                    <li>Help on usage: Comprehensive tooltips guide.</li>
                 </ul>
                 <li><b>2.7.0</b></li>
                 <ul>

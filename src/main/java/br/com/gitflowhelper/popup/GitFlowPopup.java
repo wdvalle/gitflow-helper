@@ -93,7 +93,15 @@ public final class GitFlowPopup {
         group.add(flowGroup("Hotfix", AllIcons.General.ExternalTools, GitFlowDescriptions.HOTFIX_GROUP.getValue(), project));
         group.addSeparator();
         group.add(new ResetAction("Reset"));
-        group.add(new UsageAction("Usage..."));
+
+        DefaultActionGroup helpGroup = new DefaultActionGroup("Help", true);
+        helpGroup.setPopup(true);
+        helpGroup.getTemplatePresentation().setIcon(AllIcons.Actions.Help);
+        helpGroup.getTemplatePresentation().setDescription(GitFlowDescriptions.HELP_GROUP.getValue());
+        helpGroup.add(new UsageAction("Usage..."));
+        helpGroup.add(new ShowTooltipsAction("Show Tooltips"));
+        group.add(helpGroup);
+
         group.add(new ShowAboutAction("About..."));
         group.add(new ConfigAction("Config CI/CD..."));
         return group;
