@@ -2,7 +2,6 @@ package br.com.gitflowhelper;
 
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.settings.GitFlowSettingsState;
-import br.com.gitflowhelper.toolwindow.ToolWindowPanel;
 import br.com.gitflowhelper.util.HtmlGitCleaner;
 import org.junit.jupiter.api.Test;
 

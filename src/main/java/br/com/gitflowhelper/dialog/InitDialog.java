@@ -1,6 +1,5 @@
 package br.com.gitflowhelper.dialog;
 
-import br.com.gitflowhelper.util.ActionParamsService;
 import br.com.gitflowhelper.actions.InitAction;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import com.intellij.openapi.project.Project;

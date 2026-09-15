@@ -1,13 +1,13 @@
 package br.com.gitflowhelper.popup;
 
 import br.com.gitflowhelper.actions.*;
+import br.com.gitflowhelper.actions.branches.CheckoutLocalBranchAction;
+import br.com.gitflowhelper.actions.branches.CheckoutRemoteBranchAction;
 import br.com.gitflowhelper.actions.branches.DeleteLocalBranchAction;
 import br.com.gitflowhelper.actions.branches.DeleteRemoteBranchAction;
 import br.com.gitflowhelper.gittree.GitBranchPopupBuilder;
-import br.com.gitflowhelper.util.ActionParamsService;
-import br.com.gitflowhelper.actions.branches.CheckoutLocalBranchAction;
-import br.com.gitflowhelper.actions.branches.CheckoutRemoteBranchAction;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import br.com.gitflowhelper.util.ActionParamsService;
 import br.com.gitflowhelper.util.GitFlowDescriptions;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
@@ -18,7 +18,6 @@ import com.intellij.openapi.ui.popup.*;
 import com.intellij.ui.awt.RelativePoint;
 import git4idea.GitLocalBranch;
 import git4idea.GitRemoteBranch;
-import git4idea.repo.GitRemote;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import icons.PluginIcons;
