@@ -1,12 +1,9 @@
 package br.com.gitflowhelper.util;
 
-import com.intellij.ide.ActivityTracker;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.project.Project;
 import git4idea.repo.GitRepository;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;

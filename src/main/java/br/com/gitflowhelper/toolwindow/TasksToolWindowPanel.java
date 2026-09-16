@@ -3,20 +3,18 @@ package br.com.gitflowhelper.toolwindow;
 import br.com.gitflow.tracker.GFTask;
 import br.com.gitflowhelper.events.GitFlowTaskListener;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
-import br.com.gitflowhelper.util.ExceptionUtil;
+import br.com.gitflowhelper.tasks.TasksBridge;
 import br.com.gitflowhelper.util.PluginUtils;
 import br.com.gitflowhelper.util.TaskFormatter;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.ActivityTracker;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.Disposable;
-//import br.com.gitflowhelper.util.TaskProjectFilter;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
-import br.com.gitflowhelper.tasks.TasksBridge;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
@@ -32,6 +30,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
+//import br.com.gitflowhelper.util.TaskProjectFilter;
 
 public class TasksToolWindowPanel extends JPanel implements DataProvider, Disposable {
     public static final DataKey<GFTask> SELECTED_TASK = DataKey.create("SELECTED_TASK");

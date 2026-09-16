@@ -2,6 +2,7 @@ package br.com.gitflowhelper.events;
 
 import com.intellij.util.messages.Topic;
 
+@FunctionalInterface
 public interface GitFlowSettingsListener {
     Topic<GitFlowSettingsListener> TOPIC = Topic.create("GitFlowHelper.SettingsChanged", GitFlowSettingsListener.class);
 

@@ -1,240 +1,303 @@
-
 <idea-plugin>
     <id>br.com.gitflowhelper</id>
     <name>Git Flow Helper</name>
     <vendor>Git Flow Helper</vendor>
     <description>
         <![CDATA[
-            <html lang="pt-BR">
-            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; box-sizing: border-box; background-color: #ffffff;">
+            <h1>GitFlow Helper</h1>
 
-                <h1 style="color: #24292e; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; font-size: 2em;">GitFlow Helper</h1>
+            <p>
+                <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper">JetBrains Marketplace</a> |
+                <a href="https://github.com/wdvalle/gitflow-helper">GitHub</a> |
+                <a href="https://ko-fi.com/waltervalle">Buy Me a Coffee</a>
+            </p>
 
-                <a href="https://ko-fi.com/waltervalle" style="color: #0366d6; text-decoration: none;">
-                  <img src="https://storage.ko-fi.com/cdn/kofi5.png?v=3" alt="Buy Me a Coffee" height="50" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
-                </a>
-
-                <blockquote style="border-left: 0.25em solid #dfe2e5; padding: 10px 1em; color: #6a737d; margin: 1em 0; background-color: #f6f8fa;">
-                  <p style="margin: 0;"><strong>WHAT'S NEW</strong></p>
-                  <p style="margin: 5px 0 0 0;"><strong>New Task Servers Integration!</strong><br>
-                  Now you can link your tasks directly to Git Flow branch operations for a more integrated workflow.</p>
-                </blockquote>
-
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
-
-                <h2 style="color: #24292e; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; font-size: 1.5em; margin-top: 1.5em;">✨ Features</h2>
-
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">🌱 Git Flow Initialization</h3>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;">Initialize Git Flow directly from IntelliJ.</li>
-                    <li style="margin: 0.5em 0;">Configure all initial parameters, including:
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;"><code style="background-color: rgba(27,31,35,0.05); padding: 0.2em 0.4em; border-radius: 3px; font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">main</code> branch name</li>
-                            <li style="margin: 0.5em 0;"><code style="background-color: rgba(27,31,35,0.05); padding: 0.2em 0.4em; border-radius: 3px; font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">develop</code> branch name</li>
-                            <li style="margin: 0.5em 0;">Prefixes for:
-                                <ul style="padding-left: 2em;">
-                                    <li style="margin: 0.5em 0;">feature branches</li>
-                                    <li style="margin: 0.5em 0;">release branches</li>
-                                    <li style="margin: 0.5em 0;">hotfix branches</li>
-                                    <li style="margin: 0.5em 0;">tags</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li style="margin: 0.5em 0;">Configuration is stored and reused across all Git Flow operations.</li>
+            <blockquote>
+                <p><strong>WHAT'S NEW IN v2.8.0</strong></p>
+                <ul>
+                    <li><strong>Proactive Divergence Indicator in Status Bar:</strong> Real-time badge showing commits behind <code>develop</code> (<code>⬇ N</code>) with instant 1-click branch synchronization!</li>
+                    <li><strong>Customizable Log Typography:</strong> Select custom font family and font size directly in the Logs tool window.</li>
+                    <li><strong>Repository Context in Logs &amp; Flow:</strong> Interactive repo selection in the Flow diagram panel and clear repo name prefix in execution logs.</li>
+                    <li><strong>Optional Task Selection on Feature Start:</strong> Create feature branches with or without binding to an issue tracker task.</li>
+                    <li><strong>Safe Background Execution:</strong> GitFlow menu is automatically disabled during background operations to prevent branch conflicts.</li>
+                    <li><strong>New Interactive About Dialog:</strong> Comprehensive built-in documentation guide (<code>UsageDialog</code>).</li>
                 </ul>
+            </blockquote>
 
-                <img src="src/main/resources/screens/01-start.png" alt="Start Screen" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
-                <img src="src/main/resources/screens/02-init.png" alt="Init Screen" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
-
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
-
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">🌳 Git Flow Branching Model</h3>
-                <p>The plugin follows the standard Git Flow strategy:</p>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;"><strong>Main branch</strong>
-                        <ul style="padding-left: 2em;"><li>Represents production-ready code.</li></ul>
-                    </li>
-                    <li style="margin: 0.5em 0;"><strong>Develop branch</strong>
-                        <ul style="padding-left: 2em;"><li>Integration branch for ongoing development.</li></ul>
-                    </li>
-                    <li style="margin: 0.5em 0;"><strong>Feature branches</strong>
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;">One branch per feature.</li>
-                            <li style="margin: 0.5em 0;">Created from <code style="background-color: rgba(27,31,35,0.05); padding: 0.2em 0.4em; border-radius: 3px; font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">develop</code>.</li>
-                            <li style="margin: 0.5em 0;">Finished features are merged back into <code style="background-color: rgba(27,31,35,0.05); padding: 0.2em 0.4em; border-radius: 3px; font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">develop</code>.</li>
-                        </ul>
-                    </li>
-                    <li style="margin: 0.5em 0;"><strong>Release branches</strong>
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;">Used to prepare new production releases.</li>
-                            <li style="margin: 0.5em 0;">Allow stabilization and final adjustments.</li>
-                        </ul>
-                    </li>
-                    <li style="margin: 0.5em 0;"><strong>Hotfix branches</strong>
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;">Created from <code style="background-color: rgba(27,31,35,0.05); padding: 0.2em 0.4em; border-radius: 3px; font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">main</code> for urgent production fixes.</li>
-                            <li style="margin: 0.5em 0;">Merged back into both <code style="background-color: rgba(27,31,35,0.05); padding: 0.2em 0.4em; border-radius: 3px; font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">main</code> and <code style="background-color: rgba(27,31,35,0.05); padding: 0.2em 0.4em; border-radius: 3px; font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">develop</code>.</li>
-                        </ul>
-                    </li>
+            <blockquote>
+                <p><strong>OTHER IMPORTANT FEATURES</strong></p>
+                <ul>
+                    <li><strong>Extended Issue Tracker Integrations:</strong> Full support for <strong>Jira</strong>, <strong>GitHub</strong>, <strong>GitLab</strong>, and <strong>Redmine</strong>!</li>
+                    <li><strong>Dedicated 4-Tab Tool Window:</strong> Dedicated views for <strong>Logs</strong>, <strong>Issues</strong> (rich task detail &amp; actions), <strong>Flow</strong> (visual GitFlow branch graph), and <strong>CI/CD</strong> (Jenkins pipeline tracking)!</li>
+                    <li><strong>Jenkins CI/CD Pipeline Monitoring:</strong> Real-time build status tracking and progressive console log streaming.</li>
+                    <li><strong>Comprehensive Safety Guardrails:</strong> Pre-finish checks for uncommitted changes, unpushed commits, and divergence blocking, plus protected branch commit warnings for <code>main</code> and <code>develop</code>.</li>
+                    <li><strong>Multi-Repository Workspace Support:</strong> Independent configuration and execution across multi-repo projects.</li>
                 </ul>
+            </blockquote>
 
-                <img src="src/main/resources/screens/gitflow.png" alt="Gitflow" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
+            <hr>
 
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
+            <h2>📖 Overview</h2>
+            <p><strong>GitFlow Helper</strong> brings the complete <a href="https://nvie.com/posts/a-successful-git-branching-model/">Vincent Driessen Git Flow branching strategy</a> natively into JetBrains IDEs.</p>
+            <p>It executes all Git operations programmatically via asynchronous IntelliJ Platform APIs without requiring external Git Flow CLI tools. In addition to branch automation, it deeply integrates with your <strong>Issue Trackers</strong> (Jira, GitHub, GitLab, Redmine), <strong>CI/CD pipelines</strong> (Jenkins), and provides interactive visual flow diagrams right inside your IDE.</p>
 
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">🏷️ Tag Generation</h3>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;">Automatically creates Git tags when:
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;">Finishing a release</li>
-                            <li style="margin: 0.5em 0;">Finishing a hotfix</li>
-                        </ul>
-                    </li>
-                    <li style="margin: 0.5em 0;">Tag naming follows Git Flow conventions.</li>
-                    <li style="margin: 0.5em 0;">Ensures consistent and traceable versioning.</li>
-                </ul>
+            <hr>
 
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
+            <h2>✨ Key Features</h2>
 
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">🔀 Branch Navigation</h3>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;">Freely switch between branches directly from the plugin menus.</li>
-                    <li style="margin: 0.5em 0;">Supports:
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;">Local branches</li>
-                            <li style="margin: 0.5em 0;">Remote branches</li>
-                        </ul>
-                    </li>
-                    <li style="margin: 0.5em 0;">Smart checkout behavior:
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;">Switches to an existing local branch when available</li>
-                            <li style="margin: 0.5em 0;">Automatically tracks and checks out remote branches when needed</li>
-                        </ul>
-                    </li>
-                </ul>
+            <h3>🌱 Git Flow Initialization &amp; Configuration</h3>
+            <ul>
+                <li>Initialize Git Flow directly from your IDE with a single click.</li>
+                <li>Fully customizable parameters:
+                    <ul>
+                        <li><code>main</code> production branch name</li>
+                        <li><code>develop</code> integration branch name</li>
+                        <li>Branch prefixes for <code>feature/</code>, <code>release/</code>, and <code>hotfix/</code></li>
+                        <li>Version tag prefix (e.g. <code>v</code>)</li>
+                    </ul>
+                </li>
+                <li>Multi-repository workspace support: easily enable, disable, and configure Git Flow per repository.</li>
+                <li>Safe configuration reset action to reconfigure branch conventions whenever needed.</li>
+            </ul>
 
-                <img src="src/main/resources/screens/04-checkout.png" alt="Checkout Screen" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
-                <img src="src/main/resources/screens/10-tree-view.png" alt="Tree Screen" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
+            <hr>
 
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
+            <h3>🌳 Git Flow Branching Model</h3>
+            <p>The plugin follows the standard Git Flow strategy with zero CLI overhead:</p>
+            <ul>
+                <li><strong>Main Branch (<code>main</code> / <code>master</code>):</strong> Represents production-ready, release-tested code.</li>
+                <li><strong>Develop Branch (<code>develop</code>):</strong> Central integration branch for ongoing development.</li>
+                <li><strong>Feature Branches (<code>feature/*</code>):</strong> Created from <code>develop</code>. Finished features merge back into <code>develop</code>.</li>
+                <li><strong>Release Branches (<code>release/*</code>):</strong> Forked from <code>develop</code> for stabilization, version bumping, and release preparation. Merged back into both <code>main</code> and <code>develop</code> with automated version tags.</li>
+                <li><strong>Hotfix Branches (<code>hotfix/*</code>):</strong> Created directly from <code>main</code> for critical production fixes. Merged back into both <code>main</code> and <code>develop</code> with patch tags.</li>
+            </ul>
 
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">📋 Menu-Based Workflow</h3>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;">All Git Flow operations are available via IntelliJ menus.</li>
-                    <li style="margin: 0.5em 0;">Each action corresponds to a specific Git Flow command.</li>
-                    <li style="margin: 0.5em 0;">Menu items are context-aware and dynamically enabled or disabled to prevent invalid operations.</li>
-                </ul>
+            <hr>
 
-                <img src="src/main/resources/screens/05-new-feature.png" alt="New Feature Screen" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
-                <img src="src/main/resources/screens/06-new-feature-2.png" alt="New Feature Screen" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
-                <img src="src/main/resources/screens/07-feature-finish.png" alt="Feature Screen Screen" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
+            <h3>⚡ Proactive Divergence Indicator &amp; 1-Click Sync</h3>
+            <p>Never let your working branch become stale or drift far behind development:</p>
+            <ul>
+                <li><strong>Real-Time Status Bar Badge (<code>⬇ N</code>):</strong> Displays an interactive divergence badge whenever your active <code>feature</code>, <code>release</code>, or <code>hotfix</code> branch falls behind its base branch (<code>develop</code> or <code>main</code>).</li>
+                <li><strong>1-Click Synchronization:</strong> Click the status bar badge or select <strong>Feature Sync</strong>, <strong>Release Sync</strong>, or <strong>Hotfix Sync</strong> to automatically fetch remote changes and cleanly rebase/merge the base branch into your working branch.</li>
+                <li><strong>Continuous Background Awareness:</strong> Triggers automatically on repository updates, IDE focus activation, and background scheduled checks.</li>
+            </ul>
 
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
+            <hr>
 
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">📍 Status Bar Integration</h3>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;">The plugin is available directly from the <strong>IntelliJ Status Bar</strong>.</li>
-                    <li style="margin: 0.5em 0;">Provides quick access to Git Flow actions without leaving the editor.</li>
-                    <li style="margin: 0.5em 0;">Shows real-time divergence badges when feature branches fall behind develop.</li>
-                    <li style="margin: 0.5em 0;">Ideal for fast branch switching, syncing, and common Git Flow operations.</li>
-                </ul>
+            <h3>🛡️ Safety Guardrails &amp; Pre-Finish Checks</h3>
+            <p>GitFlow Helper prevents broken states, untracked work loss, and accidental direct commits:</p>
+            <ol>
+                <li><strong>Protected Branch Commit Guard (<code>CheckinHandler</code>):</strong> Intercepts commit attempts made directly to protected branches (<code>main</code> or <code>develop</code>). Displays a warning dialog urging developers to work within dedicated feature or hotfix branches.</li>
+                <li><strong>Uncommitted Changes Verification:</strong> Scans for dirty working tree files before finishing a branch. Prompts to commit changes or abort.</li>
+                <li><strong>Unpushed Commits Check:</strong> Verifies whether local commits have been pushed upstream before finishing to avoid history divergence.</li>
+                <li><strong>Divergence Blocker (<code>isBehind</code>):</strong> Blocks branch finishing if the branch is behind <code>develop</code>. Developers are instructed to synchronize first to resolve any potential merge conflicts in their own branch.</li>
+            </ol>
 
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
+            <hr>
 
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">🪵 Command Execution Tool Window</h3>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;">Includes a dedicated <strong>Tool Window</strong> to monitor Git Flow execution.</li>
-                    <li style="margin: 0.5em 0;">Displays:
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;">Each Git command executed by the plugin</li>
-                            <li style="margin: 0.5em 0;">Command output (stdout)</li>
-                            <li style="margin: 0.5em 0;">Errors and failures (stderr)</li>
-                        </ul>
-                    </li>
-                    <li style="margin: 0.5em 0;">Allows developers to:
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;">Track what is happening under the hood</li>
-                            <li style="margin: 0.5em 0;">Debug Git issues more easily</li>
-                            <li style="margin: 0.5em 0;">Maintain full transparency of operations</li>
-                        </ul>
-                    </li>
-                </ul>
+            <h3>🔀 Flexible Finish &amp; Approval Workflows</h3>
+            <p>When finishing a feature, choose the workflow that best matches your team's code review process:</p>
+            <ul>
+                <li><strong>Integrate Immediately:</strong> Checks out <code>develop</code>, pulls latest changes, performs a merge (standard <code>--no-ff</code> or squashed into a single clean commit), pushes to remote, and optionally deletes local and remote branches.</li>
+                <li><strong>Create Merge Request (GitLab):</strong> Uses native Git push options (<code>-o merge_request.create</code>, <code>-o merge_request.target</code>, etc.) to create an open MR automatically.</li>
+                <li><strong>Self-Create (GitHub / Bitbucket / Azure DevOps):</strong> Pushes your feature branch to remote origin and keeps it alive for manual pull request opening and code review.</li>
+                <li><strong>Automatic Task Closing:</strong> Automatically transitions and closes the linked issue tracker task upon successful completion.</li>
+            </ul>
 
-                <img src="src/main/resources/screens/03-toolwindow.png" alt="Toolwindow Screen" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
+            <hr>
 
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
+            <h3>🪟 Dedicated 4-Tab Tool Window</h3>
+            <p>Monitor every aspect of your Git workflow in a dedicated bottom Tool Window:</p>
+            <ol>
+                <li><strong>Logs Tab:</strong>
+                    <ul>
+                        <li>Real-time display of all Git commands executed by the plugin (stdout, stderr, exit codes).</li>
+                        <li>Live activity indicator on the tool window icon when commands are running.</li>
+                        <li>Customizable log font family and font size.</li>
+                        <li>Multi-repository tagging: clear repository prefixes in logs when working with multi-root projects.</li>
+                        <li>One-click log clearing.</li>
+                    </ul>
+                </li>
+                <li><strong>Issues Tab:</strong>
+                    <ul>
+                        <li>Side-by-side list and detail inspector for tasks assigned to you.</li>
+                        <li>Rich task summary, description, and comments.</li>
+                        <li>Direct buttons to start <strong>Feature</strong> or <strong>Hotfix</strong> branches directly from any task.</li>
+                    </ul>
+                </li>
+                <li><strong>Flow Tab:</strong>
+                    <ul>
+                        <li>Interactive visual graph of your local Git branches.</li>
+                        <li>Color-coded branches: Main (Blue), Develop (Green), Features (Orange), Releases (Cyan), Hotfixes (Red).</li>
+                        <li>Shows origin connection lines, active checkout markers, and per-repository selector.</li>
+                    </ul>
+                </li>
+                <li><strong>CI/CD Tab:</strong>
+                    <ul>
+                        <li>Dedicated Continuous Integration monitoring.</li>
+                        <li>Live streaming of build console logs with color highlights.</li>
+                        <li>Build status tracking and stop/clear controls.</li>
+                    </ul>
+                </li>
+            </ol>
 
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">ℹ️ Built-in Help Descriptions</h3>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;">Every menu item shows a <strong>contextual help description</strong> in the IntelliJ status bar footer.</li>
-                    <li style="margin: 0.5em 0;">Descriptions explain:
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;">What the action does</li>
-                            <li style="margin: 0.5em 0;">When it should be used</li>
-                            <li style="margin: 0.5em 0;">How it affects branches and tags</li>
-                        </ul>
-                    </li>
-                    <li style="margin: 0.5em 0;">This makes Git Flow easier to understand, even for beginners.</li>
-                </ul>
+            <hr>
 
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
+            <h3>🔗 Issue Trackers &amp; Task Management</h3>
+            <p>Seamlessly connects to IntelliJ IDEA's <strong>Task Management</strong> subsystem (<code>com.intellij.tasks</code>):</p>
+            <ul>
+                <li><strong>Supported Platforms:</strong>
+                    <ul>
+                        <li><strong>GitHub Issues</strong></li>
+                        <li><strong>GitLab Issues &amp; Merge Requests</strong></li>
+                        <li><strong>Jira Software</strong></li>
+                        <li><strong>Redmine</strong></li>
+                    </ul>
+                </li>
+                <li><strong>Automated Workflow:</strong>
+                    <ul>
+                        <li>Automatically sanitizes issue keys and titles into clean branch names (e.g. <code>feature/PROJ-1234-add-oauth-login</code>).</li>
+                        <li>Automatically assigns the issue to you and sets status to <strong>In Progress</strong> when starting work.</li>
+                        <li>Quick action to open the active task directly in your default browser.</li>
+                        <li>Automatically closes the task on the server when finishing the branch.</li>
+                    </ul>
+                </li>
+            </ul>
 
-                <h3 style="color: #24292e; font-size: 1.25em; margin-top: 1em;">🔗 Task Management & Integration</h3>
-                <p>The <strong>GitFlow Helper</strong> centralizes your workflow, allowing you to start and finish tasks directly from your IDE.</p>
+            <hr>
 
-                <h4 style="color: #24292e; font-size: 1.1em; margin-top: 1em;"><strong>Task Tool Window</strong></h4>
-                <p>Access the new <strong>dedicated Tool Window</strong> to view all your open tasks in a rich, intuitive layout:</p>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;"><strong>Detailed View:</strong> Click on any task in the list to display comprehensive details, descriptions, and comments in a side-by-side view.</li>
-                    <li style="margin: 0.5em 0;"><strong>Integrated Git Flow Actions:</strong> Kick off a new <strong>Feature</strong> or <strong>Hotfix</strong> directly from the task detail screen.</li>
-                    <li style="margin: 0.5em 0;"><strong>Workflow Automation:</strong> When you start a task, the plugin automatically:
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;"><strong>Assigns the task</strong> to you in your task server.</li>
-                            <li style="margin: 0.5em 0;"><strong>Updates the status</strong> to "In Progress."</li>
-                        </ul>
-                    </li>
-                </ul>
+            <h3>🚀 CI/CD Pipeline Monitoring (Jenkins)</h3>
+            <p>Stay in your flow without switching back and forth to your browser:</p>
+            <ul>
+                <li>Per-repository CI/CD server configuration.</li>
+                <li>Connects directly to <strong>Jenkins</strong> pipelines.</li>
+                <li>Automatically initiates build monitoring when pushing finished code.</li>
+                <li>Streams live console chunks progressively with smart ANSI color parsing.</li>
+                <li>Secure token storage backed by IntelliJ's <code>PasswordSafe</code>.</li>
+            </ul>
 
-                <h4 style="color: #24292e; font-size: 1.1em; margin-top: 1em;"><strong>Task Server Integration</strong></h4>
-                <p>Simplify your issue management by connecting your favorite platforms:</p>
+            <hr>
 
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;"><strong>Currently Supported:</strong>
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;"><strong>GitHub</strong></li>
-                            <li style="margin: 0.5em 0;"><strong>GitLab</strong></li>
-                            <li style="margin: 0.5em 0;"><strong>Redmine</strong></li>
-                        </ul>
-                    </li>
-                    <li style="margin: 0.5em 0;"><strong>Coming Soon:</strong>
-                        <ul style="padding-left: 2em;">
-                            <li style="margin: 0.5em 0;"><strong>Jira</strong></li>
-                        </ul>
-                    </li>
-                </ul>
+            <h3>🗂️ Branch Navigation &amp; Interactive Tree View</h3>
+            <ul>
+                <li><strong>Status Bar Integration:</strong> Access all operations, view current branch status, and trigger actions directly from the IDE status bar.</li>
+                <li><strong>Interactive Tree Explorer (<code>Show as tree...</code>):</strong>
+                    <ul>
+                        <li>Hierarchical visualization grouping branches into <code>feature</code>, <code>release</code>, <code>hotfix</code>, and base folders.</li>
+                        <li><strong>Speed Search:</strong> Start typing to immediately filter and highlight branches.</li>
+                        <li>One-click checkout and branch deletion (local and remote).</li>
+                        <li>Bookmark indicators for current active branch and production branches.</li>
+                    </ul>
+                </li>
+            </ul>
 
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
+            <hr>
 
-                <h2 style="color: #24292e; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; font-size: 1.5em; margin-top: 1.5em;">🛠️ Implementation Details</h2>
-                <ul style="padding-left: 2em;">
-                    <li style="margin: 0.5em 0;">Built using IntelliJ Platform APIs.</li>
-                    <li style="margin: 0.5em 0;">Executes Git commands programmatically.</li>
-                    <li style="margin: 0.5em 0;">Does not rely on external Git Flow CLI tools.</li>
-                    <li style="margin: 0.5em 0;">Designed to be transparent, safe, and IDE-native.</li>
-                </ul>
+            <h2>⌨️ Keyboard Shortcuts</h2>
+            <p>All primary Git Flow operations have default keyboard shortcuts configured:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>macOS Shortcut</th>
+                        <th>Windows / Linux Shortcut</th>
+                        <th>Target Base</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Feature Start</strong></td>
+                        <td><code>⌃ ⌥ 1</code></td>
+                        <td><code>Ctrl + Alt + 1</code></td>
+                        <td><code>develop</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Feature Publish</strong></td>
+                        <td><code>⌃ ⌥ 2</code></td>
+                        <td><code>Ctrl + Alt + 2</code></td>
+                        <td>remote origin</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Feature Finish</strong></td>
+                        <td><code>⌃ ⌥ 3</code></td>
+                        <td><code>Ctrl + Alt + 3</code></td>
+                        <td><code>develop</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Release Start</strong></td>
+                        <td><code>⌃ ⌥ 4</code></td>
+                        <td><code>Ctrl + Alt + 4</code></td>
+                        <td><code>develop</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Release Publish</strong></td>
+                        <td><code>⌃ ⌥ 5</code></td>
+                        <td><code>Ctrl + Alt + 5</code></td>
+                        <td>remote origin</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Release Finish</strong></td>
+                        <td><code>⌃ ⌥ 6</code></td>
+                        <td><code>Ctrl + Alt + 6</code></td>
+                        <td><code>main</code> + <code>develop</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hotfix Start</strong></td>
+                        <td><code>⌃ ⌥ 7</code></td>
+                        <td><code>Ctrl + Alt + 7</code></td>
+                        <td><code>main</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hotfix Publish</strong></td>
+                        <td><code>⌃ ⌥ 8</code></td>
+                        <td><code>Ctrl + Alt + 8</code></td>
+                        <td>remote origin</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hotfix Finish</strong></td>
+                        <td><code>⌃ ⌥ 9</code></td>
+                        <td><code>Ctrl + Alt + 9</code></td>
+                        <td><code>main</code> + <code>develop</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><em>Tip: You can customize any keybinding anytime under: <strong>Settings (Preferences) → Keymap → Plugins → GitFlow Helper</strong></em></p>
 
-                <img src="src/main/resources/screens/08-checkout-branch.png" alt="Checkout Screen" style="max-width: 100%; height: auto; margin: 10px 0; display: block;">
+            <hr>
 
-                <hr style="height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0;">
+            <h2>📋 Requirements &amp; Compatibility</h2>
+            <ul>
+                <li><strong>IDE Version:</strong> IntelliJ IDEA 2024.2+ (Community or Ultimate), Android Studio, or compatible JetBrains IDEs.</li>
+                <li><strong>Java:</strong> Runtime Java 21+.</li>
+                <li><strong>Git Plugin:</strong> Standard bundled <code>Git4Idea</code> plugin enabled.</li>
+                <li><strong>Task Management (Optional):</strong> Bundled <code>com.intellij.tasks</code> plugin enabled for issue tracker features.</li>
+            </ul>
 
-                <h2 style="color: #24292e; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; font-size: 1.5em; margin-top: 1.5em;">📦 Repository</h2>
-                <p>Source code available at:<br>
-                👉 <a href="https://github.com/wdvalle/gitflow-helper" style="color: #0366d6; text-decoration: none;">https://github.com/wdvalle/gitflow-helper</a></p>
+            <hr>
 
-            </body>
-            </html>
-]]>
+            <h2>🛠️ Installation</h2>
+            <ol>
+                <li>Open your JetBrains IDE.</li>
+                <li>Go to <strong>Settings / Preferences (<code>⌘,</code> / <code>Ctrl+Alt+S</code>) → Plugins → Marketplace</strong>.</li>
+                <li>Search for <strong>Git Flow Helper</strong> and click <strong>Install</strong>.</li>
+                <li>Restart your IDE if prompted.</li>
+            </ol>
+            <p>Alternatively, download the plugin release directly from the <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper">JetBrains Marketplace</a>.</p>
+
+            <hr>
+
+            <h2>🤝 Contributing &amp; Support</h2>
+            <ul>
+                <li><strong>Bug Reports &amp; Feature Requests:</strong> <a href="https://github.com/wdvalle/gitflow-helper/issues">GitHub Issues</a></li>
+                <li><strong>Source Code:</strong> <a href="https://github.com/wdvalle/gitflow-helper">wdvalle/gitflow-helper</a></li>
+                <li><strong>Support the Project:</strong> If GitFlow Helper saves you time and simplifies your daily workflow, consider <a href="https://ko-fi.com/waltervalle">buying a coffee on Ko-fi</a>!</li>
+            </ul>
+
+            <hr>
+
+            <h2>📄 License</h2>
+            <p>Distributed under the Apache 2.0 License. See <code>LICENSE</code> for more information.</p>
+        ]]>
     </description>
     <change-notes>
         <![CDATA[
@@ -247,6 +310,7 @@
                     <li>Optional Task Selection on Feature Start: Create feature branches with or without binding to an issue tracker task.  </li>
                     <li>Safe Background Execution: GitFlow menu is automatically disabled during background operations to prevent branch conflicts.</li>
                     <li>New Interactive About Dialog: Comprehensive built-in documentation guide (`UsageDialog`).</li>
+                    <li>Help on usage: Comprehensive tooltips guide.</li>
                 </ul>
                 <li><b>2.7.0</b></li>
                 <ul>

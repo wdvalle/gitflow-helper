@@ -1,7 +1,6 @@
 package br.com.gitflowhelper.actions;
 
 import br.com.gitflow.tracker.GFTask;
-import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.dialog.NameDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
@@ -17,7 +16,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.commands.GitCommand;
 import git4idea.repo.GitRepository;
-import br.com.gitflowhelper.tasks.TasksBridge;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

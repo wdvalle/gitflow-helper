@@ -7,11 +7,7 @@ import br.com.gitflowhelper.service.GitFlowDivergenceService;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.ActionParamsService;
 import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionPlaces;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.CustomStatusBarWidget;
@@ -61,9 +57,12 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
 
         project.getMessageBus().connect(this).subscribe(
                 GitFlowDivergenceListener.TOPIC,
-                info -> {
-                    this.divergenceInfo = info;
-                    SwingUtilities.invokeLater(this::updateBadgeUI);
+                new GitFlowDivergenceListener() {
+                    @Override
+                    public void divergenceUpdated(DivergenceInfo info) {
+                        divergenceInfo = info;
+                        SwingUtilities.invokeLater(GitFlowStatusBarWidget.this::updateBadgeUI);
+                    }
                 }
         );
 
