@@ -64,7 +64,7 @@ public final class GitFlowGuideManager {
         props.unsetValue("got.it.tooltip." + GitFlowToolWindowFactory.GOT_IT_CICD_TAB_ID);
         props.unsetValue("got.it.tooltip." + GitFlowToolWindowFactory.GOT_IT_FLOW_REDESIGN_ID);
         props.unsetValue("got.it.tooltip.gitflow.flow.graph.redesign.v2.9.0");
-        props.unsetValue("got.it.tooltip.gitflow.flow.graph.redesign.v2.9.0-2");
+        props.unsetValue("got.it.tooltip.gitflow.flow.graph.redesign.v2.9.0");
         GitFlowToolWindowFactory.resetTourState();
     }
 
