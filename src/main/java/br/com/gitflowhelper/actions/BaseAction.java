@@ -2,7 +2,6 @@ package br.com.gitflowhelper.actions;
 
 import br.com.gitflow.tracker.GFTask;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
-import br.com.gitflowhelper.statusbar.GitFlowStatusBarWidget;
 import br.com.gitflowhelper.tasks.TasksBridge;
 import br.com.gitflowhelper.util.ActionParamsService;
 import br.com.gitflowhelper.util.ExceptionUtil;
@@ -14,8 +13,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NlsActions;
-import com.intellij.openapi.wm.StatusBar;
-import com.intellij.openapi.wm.WindowManager;
 import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 

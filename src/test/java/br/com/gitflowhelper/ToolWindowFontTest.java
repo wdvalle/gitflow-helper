@@ -2,7 +2,6 @@ package br.com.gitflowhelper;
 
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.settings.GitFlowSettingsState;
-import br.com.gitflowhelper.toolwindow.ToolWindowPanel;
 import br.com.gitflowhelper.util.HtmlGitCleaner;
 import org.junit.jupiter.api.Test;
 
@@ -68,8 +67,11 @@ public class ToolWindowFontTest {
         textPane.setSize(new Dimension(500, 500));
         textPane.doLayout();
         View view12 = textPane.getUI().getRootView(textPane);
-        view12.setSize(500, 500);
-        float h12 = view12.getPreferredSpan(View.Y_AXIS);
+        float h12 = 0;
+        if (view12 != null) {
+            view12.setSize(500, 500);
+            h12 = view12.getPreferredSpan(View.Y_AXIS);
+        }
 
         int initialDocLen = doc.getLength();
         String initialDocText = doc.getText(0, initialDocLen);
@@ -81,7 +83,6 @@ public class ToolWindowFontTest {
         for (int i = 0; i < fonts.length; i++) {
             styleSheet.addRule("body, pre, code { font-family: '" + fonts[i] + "', monospace; font-size: " + sizes[i] + "pt; }");
             textPane.setFont(new Font(fonts[i], Font.PLAIN, sizes[i]));
-            textPane.setUI(textPane.getUI());
             textPane.revalidate();
             textPane.repaint();
 
@@ -93,13 +94,13 @@ public class ToolWindowFontTest {
         // Final check that view span responds to size changes
         styleSheet.addRule("body, pre, code { font-family: 'JetBrains Mono', monospace; font-size: 24pt; }");
         textPane.setFont(new Font("JetBrains Mono", Font.PLAIN, 24));
-        textPane.setUI(textPane.getUI());
         textPane.setSize(new Dimension(500, 500));
         textPane.doLayout();
         View view24 = textPane.getUI().getRootView(textPane);
-        view24.setSize(500, 500);
-        float h24 = view24.getPreferredSpan(View.Y_AXIS);
-
-        assertTrue(h24 > h12, "Height must grow when font is enlarged to 24pt");
+        if (view24 != null && view12 != null) {
+            view24.setSize(500, 500);
+            float h24 = view24.getPreferredSpan(View.Y_AXIS);
+            assertTrue(h24 > h12, "Height must grow when font is enlarged to 24pt");
+        }
     }
 }

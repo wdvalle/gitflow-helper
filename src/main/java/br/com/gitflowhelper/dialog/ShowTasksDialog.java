@@ -1,7 +1,7 @@
 package br.com.gitflowhelper.dialog;
 
 import br.com.gitflow.tracker.GFTask;
-import br.com.gitflowhelper.util.ExceptionUtil;
+import br.com.gitflowhelper.tasks.TasksBridge;
 import br.com.gitflowhelper.util.PluginUtils;
 import br.com.gitflowhelper.util.TaskFormatter;
 import com.intellij.icons.AllIcons;
@@ -10,7 +10,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
-import br.com.gitflowhelper.tasks.TasksBridge;
 import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBScrollPane;

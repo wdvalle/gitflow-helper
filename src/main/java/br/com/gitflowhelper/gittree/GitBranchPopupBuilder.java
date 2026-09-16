@@ -8,7 +8,9 @@ import br.com.gitflowhelper.actions.branches.DeleteRemoteBranchAction;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.ActionParamsService;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPopupMenu;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
@@ -25,7 +27,6 @@ import com.intellij.util.ui.JBUI;
 import git4idea.GitLocalBranch;
 import git4idea.GitRemoteBranch;
 import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryManager;
 import icons.PluginIcons;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +39,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.List;
 
 public class GitBranchPopupBuilder {
 

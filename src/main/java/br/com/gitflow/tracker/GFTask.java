@@ -1,6 +1,5 @@
 package br.com.gitflow.tracker;
 
-import com.intellij.lang.javascript.boilerplate.GithubProjectGeneratorPeer;
 import com.intellij.tasks.Task;
 
 import javax.swing.*;

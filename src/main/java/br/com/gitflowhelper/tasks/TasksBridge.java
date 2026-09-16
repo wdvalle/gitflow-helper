@@ -1,9 +1,7 @@
 package br.com.gitflowhelper.tasks;
 
 import br.com.gitflow.tracker.GFTask;
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 
 import java.util.List;

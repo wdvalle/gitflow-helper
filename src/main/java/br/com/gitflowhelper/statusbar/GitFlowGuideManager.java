@@ -1,5 +1,7 @@
 package br.com.gitflowhelper.statusbar;
 
+import br.com.gitflowhelper.toolwindow.GitFlowToolWindowFactory;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.impl.ActionButton;
@@ -8,6 +10,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupListener;
 import com.intellij.openapi.ui.popup.LightweightWindowEvent;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.WindowManager;
@@ -31,6 +35,68 @@ public final class GitFlowGuideManager {
     public static final String GOT_IT_TOOL_WINDOW_STRIPE_ID = "gitflow.toolwindow.stripe.guide.v2.9.0";
 
     private GitFlowGuideManager() {
+    }
+
+    /**
+     * Returns true if either the Status Bar guide or the Tool Window Stripe guide is still pending.
+     * While this is true, the tool window tabs tour must not start automatically.
+     */
+    public static boolean isInitialGuidePending() {
+        if (ApplicationManager.getApplication() == null) return false;
+        PropertiesComponent props = PropertiesComponent.getInstance();
+        if (props == null) return false;
+        return props.getInt("got.it.tooltip." + GOT_IT_STATUS_BAR_ID, 0) < 1 ||
+               props.getInt("got.it.tooltip." + GOT_IT_TOOL_WINDOW_STRIPE_ID, 0) < 1;
+    }
+
+    /**
+     * Resets all GotItTooltip stored counters programmatically so they can be shown again.
+     */
+    public static void resetAllTooltips() {
+        if (ApplicationManager.getApplication() == null) return;
+        PropertiesComponent props = PropertiesComponent.getInstance();
+        if (props == null) return;
+        props.unsetValue("got.it.tooltip." + GOT_IT_STATUS_BAR_ID);
+        props.unsetValue("got.it.tooltip." + GOT_IT_TOOL_WINDOW_STRIPE_ID);
+        props.unsetValue("got.it.tooltip." + GitFlowToolWindowFactory.GOT_IT_LOGS_TAB_ID);
+        props.unsetValue("got.it.tooltip." + GitFlowToolWindowFactory.GOT_IT_ISSUES_TAB_ID);
+        props.unsetValue("got.it.tooltip." + GitFlowToolWindowFactory.GOT_IT_FLOW_TAB_ID);
+        props.unsetValue("got.it.tooltip." + GitFlowToolWindowFactory.GOT_IT_CICD_TAB_ID);
+        props.unsetValue("got.it.tooltip." + GitFlowToolWindowFactory.GOT_IT_FLOW_REDESIGN_ID);
+        props.unsetValue("got.it.tooltip.gitflow.flow.graph.redesign.v2.9.0");
+        props.unsetValue("got.it.tooltip.gitflow.flow.graph.redesign.v2.9.0");
+        GitFlowToolWindowFactory.resetTourState();
+    }
+
+    /**
+     * Resets all tooltips and triggers the onboarding tour again, starting at the status bar widget.
+     */
+    public static void resetAndShowAllTooltips(@NotNull Project project) {
+        resetAllTooltips();
+
+        AppExecutorUtil.getAppScheduledExecutorService().schedule(() -> {
+            if (project.isDisposed()) return;
+            ApplicationManager.getApplication().invokeLater(() -> {
+                if (project.isDisposed()) return;
+                StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+                JComponent widgetComponent = null;
+                if (statusBar != null) {
+                    StatusBarWidget widget = statusBar.getWidget("GitFlowWidget");
+                    if (widget instanceof GitFlowStatusBarWidget sbw) {
+                        widgetComponent = sbw.getComponent();
+                    }
+                }
+
+                if (widgetComponent != null && widgetComponent.isShowing() && widgetComponent.getWidth() > 0) {
+                    checkAndShowStatusBarGotIt(project, widgetComponent);
+                } else {
+                    if (ApplicationManager.getApplication() != null) {
+                        PropertiesComponent.getInstance().setValue("got.it.tooltip." + GOT_IT_STATUS_BAR_ID, "1");
+                    }
+                    showToolWindowStripeGotIt(project);
+                }
+            });
+        }, 200, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -62,7 +128,11 @@ public final class GitFlowGuideManager {
             AtomicBoolean nextTriggered = new AtomicBoolean(false);
             Runnable triggerNext = () -> {
                 if (nextTriggered.compareAndSet(false, true)) {
-                    ApplicationManager.getApplication().invokeLater(() -> showToolWindowStripeGotIt(project));
+                    AppExecutorUtil.getAppScheduledExecutorService().schedule(() -> {
+                        if (!project.isDisposed()) {
+                            ApplicationManager.getApplication().invokeLater(() -> showToolWindowStripeGotIt(project));
+                        }
+                    }, 120, TimeUnit.MILLISECONDS);
                 }
             };
 
@@ -127,16 +197,54 @@ public final class GitFlowGuideManager {
                     parentDisposable
             )
             .withHeader("Git Flow Tool Window")
-            .withButtonLabel("Got It")
+            .withButtonLabel("Next")
             .withLink("Open Tool Window", () -> {
                 if (toolWindow != null && !toolWindow.isDisposed()) {
-                    toolWindow.show(null);
+                    toolWindow.show(() -> {
+                        GitFlowToolWindowFactory.triggerTabsTourIfVisible(project);
+                    });
                 }
             });
 
             if (!tooltip.canShow()) {
+                GitFlowToolWindowFactory.triggerTabsTourIfVisible(project);
                 return;
             }
+
+            AtomicBoolean tourTriggered = new AtomicBoolean(false);
+            Runnable triggerTourIfVisible = () -> {
+                if (tourTriggered.compareAndSet(false, true)) {
+                    AppExecutorUtil.getAppScheduledExecutorService().schedule(() -> {
+                        if (project.isDisposed()) return;
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            if (!project.isDisposed()) {
+                                if (toolWindow != null && !toolWindow.isDisposed()) {
+                                    toolWindow.show(() -> {
+                                        GitFlowToolWindowFactory.triggerTabsTourIfVisible(project);
+                                    });
+                                } else {
+                                    GitFlowToolWindowFactory.triggerTabsTourIfVisible(project);
+                                }
+                            }
+                        });
+                    }, 120, TimeUnit.MILLISECONDS);
+                }
+            };
+
+            tooltip.withGotItButtonAction(() -> {
+                triggerTourIfVisible.run();
+                return kotlin.Unit.INSTANCE;
+            });
+
+            tooltip.setOnBalloonCreated(balloon -> {
+                balloon.addListener(new JBPopupListener() {
+                    @Override
+                    public void onClosed(@NotNull LightweightWindowEvent event) {
+                        triggerTourIfVisible.run();
+                    }
+                });
+                return kotlin.Unit.INSTANCE;
+            });
 
             JComponent stripeButton = findToolWindowStripeButton(project, "GitFlow");
             if (stripeButton != null && stripeButton.isShowing() && stripeButton.getWidth() > 0) {
