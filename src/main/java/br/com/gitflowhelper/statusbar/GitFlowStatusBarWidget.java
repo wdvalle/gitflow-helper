@@ -6,9 +6,7 @@ import br.com.gitflowhelper.service.DivergenceInfo;
 import br.com.gitflowhelper.service.GitFlowDivergenceService;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.ActionParamsService;
-import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.CustomStatusBarWidget;
 import com.intellij.openapi.wm.StatusBar;
@@ -249,14 +247,13 @@ public class GitFlowStatusBarWidget implements CustomStatusBarWidget {
         AnAction action = ActionManager.getInstance().getAction(actionId);
         if (action != null) {
             ActionParamsService.setBranchName(project, branchName);
-            DataContext dataContext = DataManager.getInstance().getDataContext(syncBadge != null ? syncBadge : component);
-            AnActionEvent event = AnActionEvent.createFromAnAction(
+            ActionManager.getInstance().tryToExecute(
                     action,
                     null,
+                    syncBadge != null ? syncBadge : component,
                     ActionPlaces.STATUS_BAR_PLACE,
-                    dataContext
+                    true
             );
-            ActionUtil.performActionDumbAwareWithCallbacks(action, event);
         }
     }
 
