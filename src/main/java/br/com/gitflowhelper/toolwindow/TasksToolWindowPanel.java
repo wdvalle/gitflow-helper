@@ -8,10 +8,8 @@ import br.com.gitflowhelper.util.PluginUtils;
 import br.com.gitflowhelper.util.TaskFormatter;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.ActivityTracker;
-import com.intellij.ide.DataManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
@@ -232,14 +230,13 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
             emptyText.appendText("Git Flow Helper settings", SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES, e -> {
                 AnAction action = ActionManager.getInstance().getAction("GitFlowHelper.IntegrateWithTasksAction");
                 if (action != null) {
-                    DataContext dataContext = DataManager.getInstance().getDataContext(this);
-                    AnActionEvent event = AnActionEvent.createFromAnAction(
+                    ActionManager.getInstance().tryToExecute(
                             action,
                             null,
+                            this,
                             ActionPlaces.TOOLWINDOW_CONTENT,
-                            dataContext
+                            true
                     );
-                    ActionUtil.performActionDumbAwareWithCallbacks(action, event);
                 }
             });
             return;
