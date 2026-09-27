@@ -43,7 +43,7 @@ public class SyncAction extends BaseAction {
         // Check for uncommitted changes first
         for (GitRepository repository : repositories) {
             if (!ChangeListManager.getInstance(project).getChangesIn(repository.getRoot()).isEmpty()) {
-                NotificationUtil.showGitFlowErrorNotification(project, "Sync Cancelled",
+                NotificationUtil.showGitFlowErrorNotification(project, "Sync Canceled",
                         "Repository '" + repository.getRoot().getName() + "' has uncommitted changes. Please commit or stash them first.");
                 return;
             }
@@ -108,7 +108,7 @@ public class SyncAction extends BaseAction {
 
                 // 3. Execute sync
                 sync(project, currentBranch, baseBranch, repositories);
-                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Branch '" + currentBranch + "' synced with '" + baseBranch + "'");
+                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Branch '" + currentBranch + "' synced with '" + baseBranch + "'.");
 
                 if (divergenceService != null) {
                     divergenceService.requestCheck();

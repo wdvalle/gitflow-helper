@@ -33,7 +33,7 @@ public class ActionChoiceDialog extends DialogWrapper {
     private boolean isBehind = false;
     
     public static final String INTEGRATE = "Integrate immediately";
-    public static final String AUTO_CREATE = "Create merge request (Gitlab only)";
+    public static final String AUTO_CREATE = "Create merge request (GitLab only)";
     public static final String SELF_CREATE = "I will create a merge/pull request";
 
     public ActionChoiceDialog(@Nullable Project project, String branchName, String targetBranch,
@@ -50,7 +50,7 @@ public class ActionChoiceDialog extends DialogWrapper {
         this.log = log;
         this.warnings = warnings;
         this.isBehind = isBehind;
-        setTitle("Finish feature");
+        setTitle("Finish Feature");
         setOKButtonText("Yes");
         setCancelButtonText("No");
         init();

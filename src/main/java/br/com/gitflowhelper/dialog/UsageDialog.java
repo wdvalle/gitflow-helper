@@ -190,9 +190,9 @@ public class UsageDialog extends DialogWrapper {
                 "</style></head><body>" + bodyContent + "</body></html>";
     }
 
-    // ---------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
     // Tab HTML Contents
-    // ---------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
     private String getOverviewHtml() {
         String defaultShortcutHint = SystemInfo.isMac ? "<code>⌃ ⌥ 1..9</code> (Control + Option)" : "<code>Ctrl + Alt + 1..9</code>";
@@ -256,7 +256,7 @@ public class UsageDialog extends DialogWrapper {
                         "<p>Hotfixes are urgent fixes for critical bugs detected in production. " +
                         "Unlike features, they branch directly off <code>main</code> to avoid including untested development code.</p>" +
                         "<ul>" +
-                        "  <li><b>Start:</b> Creates a hotfix branch branched from <code>main</code> (e.g., <code>hotfix/1.2.1</code>).</li>" +
+                        "  <li><b>Start:</b> Creates a hotfix branch from <code>main</code> (e.g., <code>hotfix/1.2.1</code>).</li>" +
                         "  <li><b>Publish:</b> Pushes to remote origin for quick code review and CI verification.</li>" +
                         "  <li><b>Sync (Beta):</b> Keeps the hotfix branch synchronized with the latest commits on <code>main</code>.</li>" +
                         "  <li><b>Finish:</b> Merges into <b>both</b> <code>main</code> and <code>develop</code>, and automatically creates an updated patch tag (e.g. <code>v1.2.1</code>).</li>" +
@@ -429,9 +429,9 @@ public class UsageDialog extends DialogWrapper {
         }
     }
 
-    // ---------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
     // Card & Layout Helpers
-    // ---------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
     private String card(String title, String accentHex, String content) {
         return "<table width='100%' cellpadding='8' cellspacing='0' style='margin-bottom: 10px; background-color: " + getCardBgHex() + "; border: 1px solid " + getBorderHex() + ";'>" +
@@ -449,9 +449,9 @@ public class UsageDialog extends DialogWrapper {
                 "</td></tr></table>";
     }
 
-    // ---------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
     // Theme Colors
-    // ---------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
     private String toHex(Color color) {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());

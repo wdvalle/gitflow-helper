@@ -27,7 +27,7 @@ public class UnpushedCommitsDialog extends DialogWrapper {
         this.branchName = branchName;
         this.unpushedCommits = unpushedCommits;
         setTitle("Unpushed Commits");
-        setOKButtonText("Push commits and continue...");
+        setOKButtonText("Push Commits and Continue...");
         setCancelButtonText("Cancel");
         init();
     }
@@ -74,7 +74,7 @@ public class UnpushedCommitsDialog extends DialogWrapper {
             commitsArea.setCaretPosition(0);
         }
 
-        JBLabel label = new JBLabel("Unpushed commits list:");
+        JBLabel label = new JBLabel("Unpushed commits:");
         label.setBorder(JBUI.Borders.emptyBottom(4));
 
         JBScrollPane scrollPane = new JBScrollPane(commitsArea);

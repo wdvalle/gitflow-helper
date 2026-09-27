@@ -1,8 +1,12 @@
 package br.com.gitflowhelper.dialog;
 
+import br.com.gitflow.cicd.JenkinsConnector;
 import br.com.gitflowhelper.settings.CiServerConfig;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import br.com.gitflowhelper.toolwindow.CIDataToolWindowPanel;
+import br.com.gitflowhelper.util.NotificationUtil;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -16,6 +20,8 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,9 +33,16 @@ import java.util.List;
  *
  * <p>Selecting a repository loads its {@link CiServerConfig}; clicking "Delete"
  * clears its server settings. Clicking OK or Apply persists non-empty configs
- * and removes any cleared/empty server configurations.
+ * and removes any cleared/empty server configurations.</p>
  */
 public class ConfigDialog extends DialogWrapper {
+
+    static final String HELP_TRIGGER_BUILD =
+            "<html><i>The plugin itself will trigger the build on the CI/CD server upon feature finish.</i></html>";
+    static final String HELP_WAIT_BUILD =
+            "<html><i>The plugin will wait for Git to trigger the build and then collect the logs.</i></html>";
+    static final String HELP_DO_NOTHING =
+            "<html><i>The plugin will do nothing upon feature finish.</i></html>";
 
     private final Project project;
 
@@ -48,6 +61,14 @@ public class ConfigDialog extends DialogWrapper {
     private final JBPasswordField ciTokenField   = new JBPasswordField();
     private final JBTextField     ciLoginField   = new JBTextField();
 
+    private final JRadioButton    triggerBuildRadio =
+            new JRadioButton(CiServerConfig.ACTION_TRIGGER_BUILD);
+    private final JRadioButton    waitBuildRadio    =
+            new JRadioButton(CiServerConfig.ACTION_WAIT_BUILD);
+    private final JRadioButton    doNothingRadio    =
+            new JRadioButton(CiServerConfig.ACTION_DO_NOTHING);
+    private final JLabel          actionHelpLabel   = new JLabel();
+
     // -----------------------------------------------------------------------
     // Internal state & Actions
     // -----------------------------------------------------------------------
@@ -61,6 +82,7 @@ public class ConfigDialog extends DialogWrapper {
     private boolean             updatingFields = false;
 
     private Action applyAction;
+    private Action runNowAction;
 
     private final JPanel             panel = new JPanel(new GridBagLayout());
     private final GridBagConstraints gbc   = new GridBagConstraints();
@@ -77,6 +99,25 @@ public class ConfigDialog extends DialogWrapper {
         ciUrlField.getEmptyText().setText("e.g. https://jenkins.example.com/job/mypipeline");
         ciLoginField.getEmptyText().setText("e.g. username");
         ciTokenField.getEmptyText().setText("API token or password");
+
+        ButtonGroup actionGroup = new ButtonGroup();
+        actionGroup.add(triggerBuildRadio);
+        actionGroup.add(waitBuildRadio);
+        actionGroup.add(doNothingRadio);
+        waitBuildRadio.setSelected(true);
+
+        actionHelpLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+        updateActionHelpText();
+
+        ActionListener actionRadioListener = e -> {
+            updateActionHelpText();
+            if (!updatingFields) {
+                setModified(true);
+            }
+        };
+        triggerBuildRadio.addActionListener(actionRadioListener);
+        waitBuildRadio.addActionListener(actionRadioListener);
+        doNothingRadio.addActionListener(actionRadioListener);
 
         if (project != null) {
             loadRepositories();
@@ -143,6 +184,9 @@ public class ConfigDialog extends DialogWrapper {
             private void onFieldChanged() {
                 if (!updatingFields && !updatingCombo) {
                     setModified(true);
+                    if (runNowAction != null) {
+                        runNowAction.setEnabled(currentIndex >= 0 && !ciUrlField.getText().trim().isEmpty());
+                    }
                     if (currentIndex >= 0 && workingConfigs != null && currentIndex < workingConfigs.length) {
                         workingConfigs[currentIndex].setCiUrl(ciUrlField.getText().trim());
                         updateComboItem(currentIndex);
@@ -154,6 +198,16 @@ public class ConfigDialog extends DialogWrapper {
         ciUrlField.getDocument().addDocumentListener(changeListener);
         ciLoginField.getDocument().addDocumentListener(changeListener);
         ciTokenField.getDocument().addDocumentListener(changeListener);
+    }
+
+    private void updateActionHelpText() {
+        if (triggerBuildRadio.isSelected()) {
+            actionHelpLabel.setText(HELP_TRIGGER_BUILD);
+        } else if (doNothingRadio.isSelected()) {
+            actionHelpLabel.setText(HELP_DO_NOTHING);
+        } else {
+            actionHelpLabel.setText(HELP_WAIT_BUILD);
+        }
     }
 
     private void setModified(boolean modified) {
@@ -181,25 +235,23 @@ public class ConfigDialog extends DialogWrapper {
         }
 
         // Fetch tokens asynchronously off the EDT to avoid SlowOperations exception
-        com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
             for (int i = 0; i < repositories.size(); i++) {
                 String path = repositories.get(i).getRoot().getPath();
                 String token = svc.getTokenForRepo(path);
                 final int index = i;
                 final String loadedToken = token != null ? token : "";
-                //com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater(() -> {
-                    if (workingTokens != null && index < workingTokens.length) {
-                        workingTokens[index] = loadedToken;
-                        if (index == currentIndex) {
-                            updatingFields = true;
-                            try {
-                                ciTokenField.setText(loadedToken);
-                            } finally {
-                                updatingFields = false;
-                            }
+                if (workingTokens != null && index < workingTokens.length) {
+                    workingTokens[index] = loadedToken;
+                    if (index == currentIndex) {
+                        updatingFields = true;
+                        try {
+                            ciTokenField.setText(loadedToken);
+                        } finally {
+                            updatingFields = false;
                         }
                     }
-                //});
+                }
             }
         });
     }
@@ -208,7 +260,7 @@ public class ConfigDialog extends DialogWrapper {
         GitRepository repo = repositories.get(repoIndex);
         String repoName = repo.getRoot().getName();
         String branchPart = repo.getCurrentBranch() != null
-                ? "\u2387 " + repo.getCurrentBranch().getName()
+                ? "⎇ " + repo.getCurrentBranch().getName()
                 : "(No current branch)";
 
         boolean isConfigured = workingConfigs != null
@@ -268,6 +320,13 @@ public class ConfigDialog extends DialogWrapper {
             cfg.setCiType((String) ciTypeComboBox.getSelectedItem());
             cfg.setCiUrl(ciUrlField.getText().trim());
             cfg.setCiLogin(ciLoginField.getText().trim());
+            String selectedAction = CiServerConfig.ACTION_WAIT_BUILD;
+            if (triggerBuildRadio.isSelected()) {
+                selectedAction = CiServerConfig.ACTION_TRIGGER_BUILD;
+            } else if (doNothingRadio.isSelected()) {
+                selectedAction = CiServerConfig.ACTION_DO_NOTHING;
+            }
+            cfg.setAction(selectedAction);
             if (workingTokens[currentIndex] != null) {
                 workingTokens[currentIndex] = new String(ciTokenField.getPassword()).trim();
             }
@@ -283,13 +342,22 @@ public class ConfigDialog extends DialogWrapper {
                 ciUrlField.setText(cfg.getCiUrl());
                 ciLoginField.setText(cfg.getCiLogin());
                 ciTokenField.setText(workingTokens[currentIndex] != null ? workingTokens[currentIndex] : "");
+                if (CiServerConfig.ACTION_TRIGGER_BUILD.equals(cfg.getAction())) {
+                    triggerBuildRadio.setSelected(true);
+                } else if (CiServerConfig.ACTION_DO_NOTHING.equals(cfg.getAction())) {
+                    doNothingRadio.setSelected(true);
+                } else {
+                    waitBuildRadio.setSelected(true);
+                }
             } else {
                 // Default empty option selected → clear fields and disable controls
                 ciTypeComboBox.setSelectedItem("Jenkins");
                 ciUrlField.setText("");
                 ciLoginField.setText("");
                 ciTokenField.setText("");
+                waitBuildRadio.setSelected(true);
             }
+            updateActionHelpText();
             updateEnabledState();
         } finally {
             updatingFields = false;
@@ -304,7 +372,14 @@ public class ConfigDialog extends DialogWrapper {
         ciUrlField.setEnabled(hasSelectedRepo);
         ciTokenField.setEnabled(hasSelectedRepo);
         ciLoginField.setEnabled(isJenkins);
+        triggerBuildRadio.setEnabled(hasSelectedRepo);
+        waitBuildRadio.setEnabled(hasSelectedRepo);
+        doNothingRadio.setEnabled(hasSelectedRepo);
+        actionHelpLabel.setEnabled(hasSelectedRepo);
         deleteButton.setEnabled(hasSelectedRepo);
+        if (runNowAction != null) {
+            runNowAction.setEnabled(hasSelectedRepo && !ciUrlField.getText().trim().isEmpty());
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -317,7 +392,7 @@ public class ConfigDialog extends DialogWrapper {
         gbc.fill    = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        panel.setPreferredSize(new Dimension(640, 230));
+        panel.setPreferredSize(new Dimension(640, 290));
 
         // ---- Repository selector & Delete button row ----
         JPanel repoRowPanel = new JPanel(new BorderLayout(5, 0));
@@ -338,6 +413,28 @@ public class ConfigDialog extends DialogWrapper {
         addRow("URL:", ciUrlField);
         addRow("Login:", ciLoginField);
         addRow("Token:", ciTokenField);
+
+        // ---- Action row ----
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        actionPanel.setOpaque(false);
+        triggerBuildRadio.setOpaque(false);
+        waitBuildRadio.setOpaque(false);
+        doNothingRadio.setOpaque(false);
+        actionPanel.add(triggerBuildRadio);
+        actionPanel.add(Box.createHorizontalStrut(16));
+        actionPanel.add(waitBuildRadio);
+        actionPanel.add(Box.createHorizontalStrut(16));
+        actionPanel.add(doNothingRadio);
+        addRow("On feature finish:", actionPanel);
+
+        // ---- Action Help row ----
+        gbc.gridy     = row++;
+        gbc.gridx     = 1;
+        gbc.gridwidth = 1;
+        gbc.weightx   = 1;
+        gbc.insets    = new Insets(0, 4, 6, 4);
+        panel.add(actionHelpLabel, gbc);
+        gbc.insets    = new Insets(4, 4, 4, 4);
 
         // ---- Hint ----
         gbc.gridy     = row++;
@@ -364,6 +461,60 @@ public class ConfigDialog extends DialogWrapper {
         panel.add(field, gbc);
     }
 
+    private void triggerBuildNow() {
+        saveCurrentFields();
+
+        String url = ciUrlField.getText().trim();
+        if (url.isEmpty()) {
+            NotificationUtil.showGitFlowWarningNotification(project, "CI/CD", "Please enter a valid CI/CD URL.");
+            return;
+        }
+
+        String login = ciLoginField.getText().trim();
+        String token = new String(ciTokenField.getPassword()).trim();
+        if (token.isEmpty() && currentIndex >= 0 && workingTokens != null && workingTokens[currentIndex] != null) {
+            token = workingTokens[currentIndex];
+        }
+
+        final String finalUrl = url;
+        final String finalLogin = login;
+        final String finalToken = token;
+
+        String repoPath = (currentIndex >= 0 && repositories != null && currentIndex < repositories.size())
+                ? repositories.get(currentIndex).getRoot().getPath()
+                : null;
+        if (repoPath == null && project != null) {
+            List<GitRepository> repos = GitRepositoryManager.getInstance(project).getRepositories();
+            if (!repos.isEmpty()) {
+                repoPath = repos.get(0).getRoot().getPath();
+            }
+        }
+        final String targetRepoPath = repoPath;
+
+        // Apply changes and close dialog immediately
+        applyChanges();
+        close(OK_EXIT_CODE);
+
+        // Start build log monitoring
+        if (project != null && targetRepoPath != null) {
+            CIDataToolWindowPanel.startMonitoringForRepo(project, targetRepoPath);
+        }
+
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            try {
+                JenkinsConnector connector = new JenkinsConnector(finalUrl, finalLogin, finalToken);
+                connector.triggerBuild();
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    NotificationUtil.showGitFlowSuccessNotification(project, "CI/CD", "Build triggered successfully on Jenkins.");
+                });
+            } catch (Exception ex) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    NotificationUtil.showGitFlowErrorNotification(project, "CI/CD Error", "Failed to trigger build: " + ex.getMessage());
+                });
+            }
+        });
+    }
+
     private void applyChanges() {
         saveCurrentFields();
 
@@ -385,7 +536,7 @@ public class ConfigDialog extends DialogWrapper {
             }
 
             // Save tokens to PasswordSafe asynchronously off the EDT
-            com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 for (int i = 0; i < reposToSave.size(); i++) {
                     GitRepository repo = reposToSave.get(i);
                     String path = repo.getRoot().getPath();
@@ -417,9 +568,32 @@ public class ConfigDialog extends DialogWrapper {
         };
         applyAction.setEnabled(false);
 
-        Action[] actions = new Action[defaultActions.length + 1];
-        System.arraycopy(defaultActions, 0, actions, 0, defaultActions.length);
-        actions[defaultActions.length] = applyAction;
-        return actions;
+        runNowAction = new AbstractAction("Run now") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                triggerBuildNow();
+            }
+        };
+        runNowAction.setEnabled(currentIndex >= 0 && !ciUrlField.getText().trim().isEmpty());
+
+        List<Action> actions = new ArrayList<>();
+        for (Action action : defaultActions) {
+            if (action == getCancelAction()) {
+                actions.add(runNowAction);
+            }
+            actions.add(action);
+        }
+        if (!actions.contains(runNowAction)) {
+            actions.add(runNowAction);
+        }
+        actions.add(applyAction);
+        return actions.toArray(new Action[0]);
     }
+
+    // Package-private getters for testing
+    JRadioButton getTriggerBuildRadio() { return triggerBuildRadio; }
+    JRadioButton getWaitBuildRadio() { return waitBuildRadio; }
+    JRadioButton getDoNothingRadio() { return doNothingRadio; }
+    JLabel getActionHelpLabel() { return actionHelpLabel; }
+    Action getRunNowAction() { return runNowAction; }
 }

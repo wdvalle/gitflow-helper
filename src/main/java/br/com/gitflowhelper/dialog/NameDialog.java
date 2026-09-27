@@ -264,7 +264,7 @@ public class NameDialog extends DialogWrapper {
 
             JPanel usernameLabelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
             usernameLabelPanel.add(new JLabel("Preferred username:"));
-            usernameLabelPanel.add(ContextHelpLabel.create("Your login on the task server"));
+            usernameLabelPanel.add(ContextHelpLabel.create("Your username on the task server."));
             panel.add(usernameLabelPanel, gbc);
 
             gbc.gridx = 1;
@@ -402,7 +402,7 @@ public class NameDialog extends DialogWrapper {
     protected @Nullable ValidationInfo doValidate() {
         String name = nameField.getText();
         if (name == null || name.trim().isEmpty()) {
-            return new ValidationInfo("Branch name cannot be empty", nameField);
+            return new ValidationInfo("Branch name cannot be empty.", nameField);
         }
         return null;
     }

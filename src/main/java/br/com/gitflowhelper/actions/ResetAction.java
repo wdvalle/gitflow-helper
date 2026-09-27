@@ -43,7 +43,7 @@ public class ResetAction extends BaseAction {
             setLoading(true, project);
             try {
                 GitFlowSettingsService.getInstance(project).resetAndDeleteStorage();
-                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Reset successfully.");
+                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Configuration reset successfully.");
 
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());

@@ -1,17 +1,22 @@
 package br.com.gitflowhelper.actions;
 
+import br.com.gitflow.cicd.JenkinsConnector;
 import br.com.gitflowhelper.dialog.ActionChoiceDialog;
 import br.com.gitflowhelper.dialog.UncommittedChangesDialog;
 import br.com.gitflowhelper.dialog.UnpushedCommitsDialog;
 import br.com.gitflowhelper.git.GitException;
 import br.com.gitflowhelper.git.GitExecutor;
 import br.com.gitflowhelper.git.GitResult;
+import br.com.gitflowhelper.settings.CiServerConfig;
+import br.com.gitflowhelper.settings.GitFlowSettingsService;
+import br.com.gitflowhelper.settings.RepoCiEntry;
 import br.com.gitflowhelper.toolwindow.CIDataToolWindowPanel;
 import br.com.gitflowhelper.util.ExceptionUtil;
 import br.com.gitflowhelper.util.NotificationUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.VcsException;
@@ -20,7 +25,10 @@ import com.intellij.openapi.vcs.changes.VcsDirtyScopeManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.GitCommit;
+import git4idea.commands.Git;
 import git4idea.commands.GitCommand;
+import git4idea.commands.GitCommandResult;
+import git4idea.commands.GitLineHandler;
 import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +53,8 @@ public class FeatureFinishAction extends BaseAction {
         Project project = e.getProject();
         if (project == null) return;
 
+        FileDocumentManager.getInstance().saveAllDocuments();
+
         String branchName = getBranchName(project);
         String developBranch = getDevelopBranch(project);
 
@@ -55,10 +65,15 @@ public class FeatureFinishAction extends BaseAction {
 
                 setProgress(1, project);
 
+                // Save all open documents so memory buffers are flushed to disk before Git operations
+                ApplicationManager.getApplication().invokeAndWait(() -> {
+                    FileDocumentManager.getInstance().saveAllDocuments();
+                });
+
                 // 1. Check for uncommitted changes first
                 boolean hasUncommitted = false;
                 for (GitRepository repository : getRepositories(project)) {
-                    if (!ChangeListManager.getInstance(project).getChangesIn(repository.getRoot()).isEmpty()) {
+                    if (hasUncommittedChanges(repository, project)) {
                         hasUncommitted = true;
                         break;
                     }
@@ -69,6 +84,7 @@ public class FeatureFinishAction extends BaseAction {
                     AtomicReference<String> commitMsgRef = new AtomicReference<>("");
 
                     ApplicationManager.getApplication().invokeAndWait(() -> {
+                        FileDocumentManager.getInstance().saveAllDocuments();
                         UncommittedChangesDialog uncommittedDialog = new UncommittedChangesDialog(project);
                         if (uncommittedDialog.showAndGet()) {
                             userConfirmed.set(true);
@@ -85,9 +101,16 @@ public class FeatureFinishAction extends BaseAction {
                     String commitMessage = commitMsgRef.get();
                     try {
                         for (GitRepository repository : getRepositories(project)) {
-                            if (!ChangeListManager.getInstance(project).getChangesIn(repository.getRoot()).isEmpty()) {
+                            if (hasUncommittedChanges(repository, project)) {
                                 executor.execute(repository.getRoot(), GitCommand.ADD, "-A");
-                                executor.execute(repository.getRoot(), GitCommand.COMMIT, "-m", commitMessage);
+                                try {
+                                    executor.execute(repository.getRoot(), GitCommand.COMMIT, "-m", commitMessage);
+                                } catch (GitException ex) {
+                                    String msg = ex.getGitResult() != null ? ex.getGitResult().getProcessMessage() : ex.getMessage();
+                                    if (msg == null || (!msg.contains("nothing to commit") && !msg.contains("working tree clean"))) {
+                                        throw ex;
+                                    }
+                                }
                                 repository.update();
                                 VfsUtil.markDirtyAndRefresh(false, true, true, repository.getRoot());
                             }
@@ -240,7 +263,7 @@ public class FeatureFinishAction extends BaseAction {
 
                         NotificationUtil.showGitFlowSuccessNotification(project, "Success", postAction[0]);
                     } catch (GitException ex) {
-                        NotificationUtil.showGitFlowErrorNotification(project, "Error", "Error message: " + ex.getGitResult().getProcessMessage());
+                        NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
                     } catch (Throwable ex) {
                         ExceptionUtil.handleException(project, ex);
                     }
@@ -251,6 +274,19 @@ public class FeatureFinishAction extends BaseAction {
                 setProgress(10, project);
             }
         });
+    }
+
+    private boolean hasUncommittedChanges(GitRepository repository, Project project) {
+        try {
+            GitLineHandler handler = new GitLineHandler(project, repository.getRoot(), GitCommand.STATUS);
+            handler.addParameters("--porcelain");
+            GitCommandResult result = Git.getInstance().runCommand(handler);
+            if (result.success()) {
+                return !result.getOutputAsJoinedString().trim().isEmpty();
+            }
+        } catch (Exception ignored) {
+        }
+        return !ChangeListManager.getInstance(project).getChangesIn(repository.getRoot()).isEmpty();
     }
 
     @Override
@@ -373,9 +409,35 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
-                    CIDataToolWindowPanel.startMonitoringForRepo(project, root.getPath());
+                    GitFlowSettingsService settingsService = GitFlowSettingsService.getInstance(project);
+                    RepoCiEntry repoEntry = settingsService.getRepoCiEntry(root.getPath());
+                    CiServerConfig ciConfig = repoEntry != null ? repoEntry.ciServer : null;
+                    if (ciConfig != null && ciConfig.isActive() && !ciConfig.isDoNothing()) {
+                        CIDataToolWindowPanel.startMonitoringForRepo(project, root.getPath());
+                        if (ciConfig.isTriggerBuild()) {
+                            String token = settingsService.getTokenForRepo(root.getPath());
+                            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                                try {
+                                    JenkinsConnector connector = new JenkinsConnector(
+                                            ciConfig.getCiUrl(),
+                                            ciConfig.getCiLogin(),
+                                            token != null ? token : ""
+                                    );
+                                    connector.triggerBuild();
+                                } catch (Exception ex) {
+                                    ApplicationManager.getApplication().invokeLater(() -> {
+                                        NotificationUtil.showGitFlowErrorNotification(
+                                                project,
+                                                "CI/CD Error",
+                                                "Failed to trigger build on feature finish: " + ex.getMessage()
+                                        );
+                                    });
+                                }
+                            });
+                        }
+                    }
 
-                    postAction[0] = "Feature finished and pushed to " + getDevelopBranch(project) + " successfully.";
+                    postAction[0] = "Feature finished and pushed to '" + getDevelopBranch(project) + "' successfully.";
 
                     setProgress(8, project);
 
@@ -420,7 +482,7 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
-                    postAction[0] = "Feature pushed to " + branchName + " successfully. Create yourself a merge/pull request.";
+                    postAction[0] = "Feature branch '" + branchName + "' pushed successfully. You can now create a merge/pull request.";
 
                     setProgress(8, project);
                 }
@@ -476,7 +538,7 @@ public class FeatureFinishAction extends BaseAction {
                             )
                     );
 
-                    postAction[0] = "Feature pushed to " + branchName + " and merge request created successfully.";
+                    postAction[0] = "Feature branch '" + branchName + "' pushed and merge request created successfully.";
                 }
             }
 

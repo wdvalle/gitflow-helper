@@ -22,7 +22,7 @@ import java.awt.*;
 
 public class AboutDialog extends DialogWrapper {
 
-    public static final String PLUGIN_VERSION = "2.8.0";
+    public static final String PLUGIN_VERSION = "2.9.0";
 
     private static final String PLUGIN_NAME = "GitFlow Helper";
     private static final String GITHUB_URL = "https://github.com/wdvalle/gitflow-helper";
@@ -139,7 +139,7 @@ public class AboutDialog extends DialogWrapper {
 
         // Buy me a Coffee
         c.gridx = 1;
-        JButton coffeeBtn = new JButton("Buy me a Coffee", AllIcons.FileTypes.Java);
+        JButton coffeeBtn = new JButton("Buy Me a Coffee", AllIcons.FileTypes.Java);
         coffeeBtn.addActionListener(e -> BrowserUtil.browse(KOFI_URL));
         links.add(coffeeBtn, c);
 

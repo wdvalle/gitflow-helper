@@ -36,8 +36,8 @@ public class ClearToolWindowAction extends AnAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         int result = Messages.showYesNoDialog(
             e.getProject(),
-            "Clear all git flow logs?",
-            "Confirmation",
+            "Clear all Git Flow logs?",
+            "Clear Logs",
             Messages.getQuestionIcon()
         );
         if (result == Messages.YES) {

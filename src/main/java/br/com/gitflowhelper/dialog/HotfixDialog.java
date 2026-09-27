@@ -36,7 +36,7 @@ public class HotfixDialog extends DialogWrapper {
             TasksBridge bridge = TasksBridge.getInstance();
             if (bridge != null && bridge.hasActiveTask(project)) {
                 gbc.gridy++;
-                finishTaskCheckBox.setText("Finish associated task " + bridge.getActiveTaskName(project));
+                finishTaskCheckBox.setText("Close associated task: " + bridge.getActiveTaskName(project));
                 finishTaskCheckBox.setSelected(true);
                 panel.add(finishTaskCheckBox, gbc);
             }

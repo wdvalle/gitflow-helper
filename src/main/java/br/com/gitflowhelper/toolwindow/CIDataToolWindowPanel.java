@@ -234,8 +234,10 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             com.intellij.openapi.wm.ToolWindow toolWindow =
                     com.intellij.openapi.wm.ToolWindowManager.getInstance(project).getToolWindow("GitFlow");
             if (toolWindow != null) {
+                toolWindow.show();
                 com.intellij.ui.content.Content content = toolWindow.getContentManager().findContent("CI/CD");
                 if (content != null) {
+                    toolWindow.getContentManager().setSelectedContent(content);
                     CIDataToolWindowPanel panel = findCIDataPanel(content.getComponent());
                     if (panel != null) {
                         panel.startMonitoring(repoPath);
@@ -297,7 +299,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             });
         } else {
             repoConnectors.remove(path);
-            appendPluginLog(path, cfg.getCiType() + " not yet supported.");
+            appendPluginLog(path, cfg.getCiType() + " is not yet supported.");
             stopMonitoring(path);
         }
     }
@@ -306,7 +308,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         CiServerConfig cfg = resolveConfigForRepo(repoPath);
         if (cfg == null || !cfg.isActive()) {
             stopMonitoring(repoPath);
-            appendPluginLog(repoPath, "CI/CD integration disabled. Stopping monitor.");
+            appendPluginLog(repoPath, "CI/CD integration is disabled. Stopping monitoring.");
             return;
         }
 
@@ -323,7 +325,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                 stopMonitoring(repoPath);
             }
         } else {
-            appendPluginLog(repoPath, cfg.getCiType() + " not yet supported.");
+            appendPluginLog(repoPath, cfg.getCiType() + " is not yet supported.");
             stopMonitoring(repoPath);
         }
     }

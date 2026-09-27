@@ -9,9 +9,14 @@ import java.util.Objects;
  */
 public class CiServerConfig {
 
+    public static final String ACTION_TRIGGER_BUILD = "Trigger build on feature finish";
+    public static final String ACTION_WAIT_BUILD    = "Wait build start and listen logs";
+    public static final String ACTION_DO_NOTHING    = "Do nothing";
+
     private String ciType  = "Jenkins";
     private String ciUrl   = "";
     private String ciLogin = "";
+    private String action  = ACTION_WAIT_BUILD;
 
     public CiServerConfig() {
     }
@@ -44,6 +49,26 @@ public class CiServerConfig {
         this.ciLogin = ciLogin;
     }
 
+    public String getAction() {
+        return (action == null || action.isBlank()) ? ACTION_WAIT_BUILD : action;
+    }
+
+    public void setAction(String action) {
+        this.action = (action == null || action.isBlank()) ? ACTION_WAIT_BUILD : action;
+    }
+
+    public boolean isTriggerBuild() {
+        return ACTION_TRIGGER_BUILD.equals(getAction());
+    }
+
+    public boolean isWaitBuild() {
+        return ACTION_WAIT_BUILD.equals(getAction());
+    }
+
+    public boolean isDoNothing() {
+        return ACTION_DO_NOTHING.equals(getAction());
+    }
+
     // -------------------------------------------------------------------------
 
     /**
@@ -60,6 +85,7 @@ public class CiServerConfig {
         c.ciType  = this.ciType;
         c.ciUrl   = this.ciUrl;
         c.ciLogin = this.ciLogin;
+        c.action  = this.action;
         return c;
     }
 
@@ -70,16 +96,17 @@ public class CiServerConfig {
         CiServerConfig that = (CiServerConfig) o;
         return Objects.equals(ciType, that.ciType) &&
                 Objects.equals(ciUrl, that.ciUrl) &&
-                Objects.equals(ciLogin, that.ciLogin);
+                Objects.equals(ciLogin, that.ciLogin) &&
+                Objects.equals(action, that.action);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ciType, ciUrl, ciLogin);
+        return Objects.hash(ciType, ciUrl, ciLogin, action);
     }
 
     @Override
     public String toString() {
-        return "CiServerConfig{ciType='" + ciType + "', ciUrl='" + ciUrl + "', ciLogin='" + ciLogin + "'}";
+        return "CiServerConfig{ciType='" + ciType + "', ciUrl='" + ciUrl + "', ciLogin='" + ciLogin + "', action='" + action + "'}";
     }
 }

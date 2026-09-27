@@ -37,7 +37,7 @@ public class HotfixFinishAction extends BaseAction {
                 try {
                     hotfixFinish(project, true, true, true);
                     doFinishTask(finishTask, project);
-                    NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix finished and tag pushed successfully");
+                    NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix finished and tag pushed successfully.");
                 } catch (GitException ex) {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
                 }
@@ -88,7 +88,7 @@ public class HotfixFinishAction extends BaseAction {
 
             if (!hotfixName.startsWith(hotfixPrefix)) {
                 throw new GitException(
-                        "Current branch is not a hotfix: " + hotfixName
+                        "Current branch is not a hotfix branch: " + hotfixName
                 );
             }
 

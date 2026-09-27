@@ -56,7 +56,7 @@ public class InitAction extends BaseAction {
             try {
                 List<GitResult> results = init(true, project);
                 if (results != null) {
-                    NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Git Flow Initialization Successful");
+                    NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Git Flow initialized successfully.");
                 }
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
@@ -144,7 +144,7 @@ public class InitAction extends BaseAction {
                 NotificationUtil.showGitFlowWarningNotification(
                         project,
                         "Git Flow Init",
-                        "Procedure cancelled. No changes were made."
+                        "Procedure canceled. No changes were made."
                 );
                 return null;
             }
@@ -194,7 +194,7 @@ public class InitAction extends BaseAction {
             // 1 main branch
             if (!localBranches.containsKey(mainBranch)) {
                 throw new GitException(
-                        "Main branch '" + mainBranch + "' does not exist in this repo." +
+                        "Main branch '" + mainBranch + "' does not exist in this repository: " +
                                 root.getPath()
                 );
             }
@@ -338,7 +338,7 @@ public class InitAction extends BaseAction {
         } else {
             message.append("\nDo you want to download them from the remote repository and proceed with Init?\n\n");
         }
-        message.append("Warning: If you choose 'No', nothing will be done and the procedure will be cancelled.");
+        message.append("Warning: If you choose 'No', nothing will be done and the procedure will be canceled.");
 
         return message.toString();
     }

@@ -71,7 +71,7 @@ public final class GitFlowPopup {
         DefaultActionGroup group = new DefaultActionGroup();
         Long counter = GitFlowSettingsService.getInstance(project).getCounter();
         if ((counter % BaseAction.COUNTER_RESET >= BaseAction.COUNTER_RESET - 5) && (counter < 1000)) {
-            group.add(new LikeAction("Enjoyng? Give a like!"));
+            group.add(new LikeAction("Enjoying? Give a like!"));
             group.addSeparator();
         }
         GitFlowSettingsService.getInstance(project).setCounter(++counter);
@@ -144,7 +144,7 @@ public final class GitFlowPopup {
     }
 
     private String getRepoActionText(GitRepository repository, boolean isSelected) {
-        String branchText = repository.getCurrentBranch() != null ? "\u2387 " + repository.getCurrentBranch().getName() : "(No current branch)";
+        String branchText = repository.getCurrentBranch() != null ? "⎇ " + repository.getCurrentBranch().getName() : "(No current branch)";
         if (isSelected) {
             return "<html>" + repository.getRoot().getName() + "   <font color='#888888'>" + branchText + "</font></html>";
         } else {
@@ -196,7 +196,7 @@ public final class GitFlowPopup {
                 if (sel) {
                     int confirm = Messages.showYesNoDialog(
                             p,
-                            "By disabling this project, Git Flow will not be applied to '" + repository.getRoot().getName() + "'.\nAre you sure you want to proceed?",
+                            "By disabling Git Flow for this repository, Git Flow operations will not be applied to '" + repository.getRoot().getName() + "'.\nAre you sure you want to proceed?",
                             "Disable Git Flow",
                             Messages.getQuestionIcon()
                     );
@@ -356,9 +356,7 @@ public final class GitFlowPopup {
         // 1) current branch
 //        if (currentBranchName != null && byName.containsKey(currentBranchName)) {
 //            result.add(byName.remove(currentBranchName));
-//        }
-
-        // 2) main
+//        }\n\n        // 2) main
         if (byName.containsKey(service.getMainBranch())) {
             result.add(byName.remove(service.getMainBranch()));
         }

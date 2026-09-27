@@ -25,7 +25,7 @@ public class InitActionTest {
         assertTrue(msg.contains("The following branch does not exist locally:"));
         assertTrue(msg.contains("• main"));
         assertTrue(msg.contains("Do you want to download it from the remote repository and proceed with Init?"));
-        assertTrue(msg.contains("Warning: If you choose 'No', nothing will be done and the procedure will be cancelled."));
+        assertTrue(msg.contains("Warning: If you choose 'No', nothing will be done and the procedure will be canceled."));
     }
 
     @Test
@@ -40,7 +40,7 @@ public class InitActionTest {
         assertTrue(msg.contains("• main"));
         assertTrue(msg.contains("• develop"));
         assertTrue(msg.contains("Do you want to download them from the remote repository and proceed with Init?"));
-        assertTrue(msg.contains("Warning: If you choose 'No', nothing will be done and the procedure will be cancelled."));
+        assertTrue(msg.contains("Warning: If you choose 'No', nothing will be done and the procedure will be canceled."));
     }
 
     @Test

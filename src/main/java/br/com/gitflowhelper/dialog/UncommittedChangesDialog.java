@@ -24,7 +24,7 @@ public class UncommittedChangesDialog extends DialogWrapper {
     public UncommittedChangesDialog(@Nullable Project project) {
         super(project);
         setTitle("Uncommitted Changes");
-        setOKButtonText("Commit and continue...");
+        setOKButtonText("Commit and Continue...");
         setCancelButtonText("Cancel");
         init();
         setOKActionEnabled(false);
@@ -44,14 +44,14 @@ public class UncommittedChangesDialog extends DialogWrapper {
                 JBUI.Borders.empty(10, 12)
         ));
 
-        JBLabel warningTitle = new JBLabel("⚠️ Pending changes");
+        JBLabel warningTitle = new JBLabel("⚠️ Pending Changes");
         warningTitle.setForeground(warningText);
         warningTitle.setFont(warningTitle.getFont().deriveFont(Font.BOLD));
         warningTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         warningPanel.add(warningTitle);
         warningPanel.add(Box.createVerticalStrut(4));
 
-        JBLabel warningDesc = new JBLabel("There is uncommitted code in your repository. Please provide a commit message to commit changes and continue.");
+        JBLabel warningDesc = new JBLabel("There are uncommitted changes in your repository. Please provide a commit message to commit and continue.");
         warningDesc.setForeground(warningText);
         warningDesc.setComponentStyle(UIUtil.ComponentStyle.SMALL);
         warningDesc.setAlignmentX(Component.LEFT_ALIGNMENT);

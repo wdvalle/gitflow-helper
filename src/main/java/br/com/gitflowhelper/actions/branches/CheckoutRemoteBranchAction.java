@@ -78,7 +78,7 @@ public class CheckoutRemoteBranchAction extends BaseAction {
 
                 setProgress(10, project);
 
-                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Remote branch " + checkoutBranchName + " checked out successfully");
+                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Remote branch '" + checkoutBranchName + "' checked out successfully.");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
