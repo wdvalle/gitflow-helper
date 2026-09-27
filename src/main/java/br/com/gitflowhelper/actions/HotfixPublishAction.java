@@ -32,7 +32,7 @@ public class HotfixPublishAction extends BaseAction {
             setLoading(true, true, project);
             try {
                 hotfixPublish(project);
-                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix published successfully");
+                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix published successfully.");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }
@@ -76,7 +76,7 @@ public class HotfixPublishAction extends BaseAction {
             // Basic Git Flow validation
             if (!branchName.startsWith(hotfixPrefix)) {
                 throw new GitException(
-                        "Current branch is not a hotfix: " + branchName
+                        "Current branch is not a hotfix branch: " + branchName
                 );
             }
 

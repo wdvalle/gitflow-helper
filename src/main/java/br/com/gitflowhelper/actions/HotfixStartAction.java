@@ -34,7 +34,7 @@ public class HotfixStartAction extends BaseAction {
         Project project = e.getProject();
         GFTask preSelectedTask = e.getData(TasksToolWindowPanel.SELECTED_TASK);
 
-        new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " start", "Hotfix description", true, true, GitFlowBranchType.HOTFIX, preSelectedTask, response ->
+        new NameDialog(project, GitFlowBranchType.HOTFIX.getValue() + " Start", "Hotfix description", true, true, GitFlowBranchType.HOTFIX, preSelectedTask, response ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);
@@ -43,7 +43,7 @@ public class HotfixStartAction extends BaseAction {
 
                     doStartTask(response.getSelectedTask(), response.isActivateTask(), response.getUsername(), project);
 
-                    NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New hotfix created successfully");
+                    NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Hotfix branch created successfully.");
                 } catch (GitException ex) {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
                 } catch (Throwable ex) {

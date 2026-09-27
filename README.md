@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper">
-    <img src="https://img.shields.io/badge/JetBrains%20Marketplace-v2.8.0-blue?logo=intellij-idea&style=flat-square" alt="JetBrains Marketplace">
+    <img src="https://img.shields.io/badge/JetBrains%20Marketplace-v2.9.0-blue?logo=intellij-idea&style=flat-square" alt="JetBrains Marketplace">
   </a>
   <a href="https://github.com/wdvalle/gitflow-helper">
     <img src="https://img.shields.io/badge/GitHub-wdvalle%2Fgitflow--helper-181717?logo=github&style=flat-square" alt="GitHub">
@@ -18,13 +18,14 @@
        height="48">
 </a>
 
-> **WHAT'S NEW IN v2.8.0**  
+> **WHAT'S NEW IN v2.8.0 / 2.9.0**  
 > • **Proactive Divergence Indicator in Status Bar**: Real-time badge showing commits behind `develop` (`⬇ N`) with instant 1-click branch synchronization!  
 > • **Customizable Log Typography**: Select custom font family and font size directly in the Logs tool window.  
 > • **Repository Context in Logs & Flow**: Interactive repo selection in the Flow diagram panel and clear repo name prefix in execution logs.  
 > • **Optional Task Selection on Feature Start**: Create feature branches with or without binding to an issue tracker task.  
 > • **Safe Background Execution**: GitFlow menu is automatically disabled during background operations to prevent branch conflicts.  
 > • **New Interactive About Dialog**: Comprehensive built-in documentation guide (`UsageDialog`).
+> • **CI/CD Config Dialog:** Its now possible do trigger build in Jenkins directly from plugin.</li>
 
 > **OTHER IMPORTANT FEARTURES**  
 > • **Extended Issue Tracker Integrations**: Full support for **Jira**, **GitHub**, **GitLab**, and **Redmine**!  

@@ -39,7 +39,7 @@ public class ShowTasksDialog extends DialogWrapper {
         super(project);
         this.project = project;
         this.taskFormatter = new TaskFormatter(project);
-        setTitle("Show project tasks");
+        setTitle("Show Project Tasks");
         init();
     }
 

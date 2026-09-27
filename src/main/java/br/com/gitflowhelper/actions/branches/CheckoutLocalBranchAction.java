@@ -55,7 +55,7 @@ public class CheckoutLocalBranchAction extends BaseAction {
             setLoading(true, true, project);
             try {
                 checkout(repository, project, checkoutBranchName);
-                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Local branch "+checkoutBranchName+" checked out successfully");
+                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Local branch '" + checkoutBranchName + "' checked out successfully.");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }

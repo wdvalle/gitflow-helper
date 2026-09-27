@@ -141,9 +141,9 @@ public class IntegrateWithTasksAction extends BaseAction {
 
         JLabel label = new JLabel("<html><body>" +
                 "Task integration links Git Flow branches with your issue tracker " +
-                "<span style='color:orange'>(at this time <b>GitHub, GitLab and Redmine</b>, more trackers coming soon)</span>.<br><br>" +
+                "<span style='color:orange'>(<b>GitHub, GitLab, Jira, and Redmine</b>)</span>.<br><br>" +
                 "&bull; <b>Starting a feature or hotfix</b>: Select a task to auto-generate the branch name and optionally mark it as 'In Progress'.<br>" +
-                "&bull; <b>Finishing a feature or hotfix</b>: Option to merge the branch in develop or main, close the associated task and switch back to the default context.<br><br>" +
+                "&bull; <b>Finishing a feature or hotfix</b>: Option to merge the branch into develop or main, close the associated task, and switch back to the default context.<br><br>" +
                 "Note: You must configure your Task Servers at: <b>Settings &#x2192; Tools &#x2192; Tasks &#x2192; Servers</b>.<br><br>" +
                 "Enable task integration now?</body></html>");
         panel.add(label, BorderLayout.CENTER);

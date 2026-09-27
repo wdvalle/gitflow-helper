@@ -33,7 +33,7 @@ public class FeatureStartAction extends BaseAction {
         Project project = e.getProject();
         GFTask preSelectedTask = e.getData(TasksToolWindowPanel.SELECTED_TASK);
 
-        new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " start", "Feature description", false,true, GitFlowBranchType.FEATURE, preSelectedTask, response ->
+        new NameDialog(project, GitFlowBranchType.FEATURE.getValue() + " Start", "Feature description", false, true, GitFlowBranchType.FEATURE, preSelectedTask, response ->
         {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 setLoading(true, true, project);
@@ -42,7 +42,7 @@ public class FeatureStartAction extends BaseAction {
 
                     doStartTask(response.getSelectedTask(), response.isActivateTask(), response.getUsername(), project);
 
-                    NotificationUtil.showGitFlowSuccessNotification(project, "Success", "New feature created successfully");
+                    NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Feature branch created successfully.");
 
                 } catch (GitException ex) {
                     NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());

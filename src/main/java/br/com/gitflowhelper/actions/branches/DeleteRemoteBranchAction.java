@@ -62,7 +62,7 @@ public class DeleteRemoteBranchAction extends BaseAction {
             setLoading(true, true, project);
             try {
                 delete(repository, project, remoteBranchName);
-                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Remote branch "+remoteBranchName+" deleted successfully");
+                NotificationUtil.showGitFlowSuccessNotification(project, "Success", "Remote branch '" + remoteBranchName + "' deleted successfully.");
             } catch (GitException ex) {
                 NotificationUtil.showGitFlowErrorNotification(project, "Error", ex.getGitResult().getProcessMessage());
             }

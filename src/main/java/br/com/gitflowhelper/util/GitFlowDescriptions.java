@@ -18,9 +18,9 @@ public enum GitFlowDescriptions {
     DELETE_LOCAL("Delete local branch "),
     DELETE_REMOTE("Delete remote branch "),
 
-    FEATURE_GROUP("Feature related commands."),
-    RELEASE_GROUP("Release related commands."),
-    HOTFIX_GROUP("Bugs and hotfix related commands.");
+    FEATURE_GROUP("Feature-related commands."),
+    RELEASE_GROUP("Release-related commands."),
+    HOTFIX_GROUP("Hotfix and bug-related commands.");
 
     private final String value;
 

@@ -29,8 +29,8 @@ public class GitFlowCheckinHandler extends CheckinHandler {
             if (isMain || isDevelop) {
                 int result = Messages.showYesNoDialog(
                         project,
-                        "You are trying to commit directly to a protected branch (" + currentBranch + ").\n" +
-                                "It is recommended to use features or hotfixes.\n\n" +
+                        "You are trying to commit directly to a protected branch ('" + currentBranch + "').\n" +
+                                "It is recommended to use feature or hotfix branches.\n\n" +
                                 "Do you want to proceed anyway?",
                         "Protected Branch Warning",
                         "Commit Anyway",

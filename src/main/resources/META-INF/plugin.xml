@@ -13,7 +13,7 @@
             </p>
 
             <blockquote>
-                <p><strong>WHAT'S NEW IN v2.8.0</strong></p>
+                <p><strong>WHAT'S NEW IN v2.8.0 / 2.9.0</strong></p>
                 <ul>
                     <li><strong>Proactive Divergence Indicator in Status Bar:</strong> Real-time badge showing commits behind <code>develop</code> (<code>⬇ N</code>) with instant 1-click branch synchronization!</li>
                     <li><strong>Customizable Log Typography:</strong> Select custom font family and font size directly in the Logs tool window.</li>
@@ -21,6 +21,7 @@
                     <li><strong>Optional Task Selection on Feature Start:</strong> Create feature branches with or without binding to an issue tracker task.</li>
                     <li><strong>Safe Background Execution:</strong> GitFlow menu is automatically disabled during background operations to prevent branch conflicts.</li>
                     <li><strong>New Interactive About Dialog:</strong> Comprehensive built-in documentation guide (<code>UsageDialog</code>).</li>
+                    <li><strong>CI/CD Config Dialog:</strong> It's now possible to trigger builds in Jenkins directly from the plugin.</li>
                 </ul>
             </blockquote>
 
@@ -302,6 +303,10 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.9.0</b></li>
+                <ul>
+                    <li><strong>CI/CD Config Dialog:</strong> It's now possible to trigger builds in Jenkins directly from the plugin.</li>
+                </ul>
                 <li><b>2.8.0</b></li>
                 <ul>
                     <li>Proactive Divergence Indicator in Status Bar (commits behind develop with 1-click sync)</li>
@@ -326,9 +331,9 @@
                 <ul>
                     <li>Jira integration.</li>
                     <li>Improved pre-finish checks.</li>
-                    <li>Checks uncommited code and asks for commit.</li>
-                    <li>Checks unpushed commits and asks for push.</li>
-                    <li>Checks if feature is behind develop and evicts finish.</li>
+                    <li>Checks uncommitted code and prompts to commit.</li>
+                    <li>Checks unpushed commits and prompts to push.</li>
+                    <li>Checks if feature is behind develop and prevents finishing until synchronized.</li>
                 </ul>
                 <li><b>2.5.0</b></li>
                 <ul>
@@ -447,7 +452,7 @@
                 id="GitFlowHelper.FeatureFinishAction"
                 class="br.com.gitflowhelper.actions.FeatureFinishAction"
                 text="Feature Finish"
-                description="Merges current feature branch into develop chain and deletes current branch or creates a merge request (git flow feature finish)."
+                description="Merges current feature branch into develop branch and deletes current branch or creates a merge request (git flow feature finish)."
                 icon="AllIcons.Vcs.Patch_applied">
             <keyboard-shortcut
                     keymap="$default"
@@ -485,7 +490,7 @@
                 id="GitFlowHelper.ReleaseFinishAction"
                 class="br.com.gitflowhelper.actions.ReleaseFinishAction"
                 text="Release Finish"
-                description="Merges current release branch into master chain and deletes current branch (git flow release finish)."
+                description="Merges current release branch into main and develop branches and deletes current branch (git flow release finish)."
                 icon="AllIcons.Vcs.Patch_applied">
             <keyboard-shortcut
                     keymap="$default"
@@ -523,7 +528,7 @@
                 id="GitFlowHelper.HotfixFinishAction"
                 class="br.com.gitflowhelper.actions.HotfixFinishAction"
                 text="Hotfix Finish"
-                description="Merges current hotfix branch into master and develop chains and deletes current branch (git flow hotfix finish)."
+                description="Merges current hotfix branch into main and develop branches and deletes current branch (git flow hotfix finish)."
                 icon="AllIcons.Vcs.Patch_applied">
             <keyboard-shortcut
                     keymap="$default"
