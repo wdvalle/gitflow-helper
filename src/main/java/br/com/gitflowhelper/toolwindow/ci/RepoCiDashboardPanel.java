@@ -25,9 +25,8 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * Hybrid dashboard panel for a single repository CI/CD pipeline:
- * - North: PipelineHeaderPanel with build status, timer and actions
- * - Splitter Left: PipelineDagCanvas (DAG visualization with connected stages and stacked steps)
- * - Splitter Right: Console log viewer with streaming output
+ * - North: PipelineHeaderPanel with build status, timer, and actions
+ * - Center: Single panel (Pipeline DAG canvas only) or Split panel (DAG on left, Console on right)
  */
 public class RepoCiDashboardPanel extends JPanel {
 
@@ -37,9 +36,13 @@ public class RepoCiDashboardPanel extends JPanel {
     private final PipelineHeaderPanel headerPanel = new PipelineHeaderPanel();
     private final PipelineDagCanvas dagCanvas = new PipelineDagCanvas();
     private final JBHtmlEditorPane consolePane = new JBHtmlEditorPane();
+    private final JBScrollPane dagScrollPane;
     private final JBScrollPane consoleScrollPane;
+    private final JPanel consoleContainer;
     private final JBSplitter splitter;
+    private final JPanel centerPanel = new JPanel(new BorderLayout());
 
+    private boolean splitMode = false;
     private boolean autoScroll = true;
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
@@ -55,23 +58,23 @@ public class RepoCiDashboardPanel extends JPanel {
         // Top: Pipeline Header
         add(headerPanel, BorderLayout.NORTH);
 
-        // Center Splitter: Left = DAG Graph, Right = Console Output
-        splitter = new JBSplitter(false, 0.48f);
-
-        JBScrollPane dagScrollPane = new JBScrollPane(dagCanvas);
+        // DAG Canvas scroll pane
+        dagScrollPane = new JBScrollPane(dagCanvas);
         dagScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        splitter.setFirstComponent(dagScrollPane);
 
-        // Right side: Console output with mini toolbar
-        JPanel consoleContainer = new JPanel(new BorderLayout());
+        // Console container with mini toolbar
+        consoleContainer = new JPanel(new BorderLayout());
         consoleScrollPane = new JBScrollPane(consolePane);
         consoleScrollPane.setBorder(BorderFactory.createEmptyBorder());
         consoleContainer.add(consoleScrollPane, BorderLayout.CENTER);
         consoleContainer.add(createConsoleToolbar(), BorderLayout.NORTH);
 
-        splitter.setSecondComponent(consoleContainer);
+        // Center Splitter: Left = DAG Graph, Right = Console Output
+        splitter = new JBSplitter(false, 0.48f);
 
-        add(splitter, BorderLayout.CENTER);
+        // Center holder starts in single-panel mode (DAG only)
+        add(centerPanel, BorderLayout.CENTER);
+        setSplitMode(false);
 
         headerPanel.setCallbacks(
                 () -> {
@@ -79,8 +82,38 @@ public class RepoCiDashboardPanel extends JPanel {
                 },
                 () -> {
                     if (onStopMonitoring != null) onStopMonitoring.run();
-                }
+                },
+                () -> setSplitMode(!splitMode)
         );
+    }
+
+    /**
+     * Toggles between single panel (DAG only) and two-panel split view (DAG + Console).
+     *
+     * @param split true to show two panels side-by-side; false to show single panel DAG
+     */
+    public void setSplitMode(boolean split) {
+        if (this.splitMode == split && centerPanel.getComponentCount() > 0) return;
+        this.splitMode = split;
+
+        centerPanel.removeAll();
+        if (split) {
+            splitter.setFirstComponent(dagScrollPane);
+            splitter.setSecondComponent(consoleContainer);
+            centerPanel.add(splitter, BorderLayout.CENTER);
+        } else {
+            splitter.setFirstComponent(null);
+            splitter.setSecondComponent(null);
+            centerPanel.add(dagScrollPane, BorderLayout.CENTER);
+        }
+        headerPanel.setSplitMode(split);
+
+        centerPanel.revalidate();
+        centerPanel.repaint();
+    }
+
+    public boolean isSplitMode() {
+        return splitMode;
     }
 
     private JComponent createConsoleToolbar() {
@@ -97,6 +130,12 @@ public class RepoCiDashboardPanel extends JPanel {
         JPanel bar = new JPanel(new BorderLayout());
         bar.setOpaque(false);
         bar.add(left, BorderLayout.WEST);
+
+        JButton hideBtn = new JButton(AllIcons.Actions.ToggleVisibility);
+        hideBtn.setToolTipText("Switch to single panel (hide console)");
+        hideBtn.setPreferredSize(new Dimension(24, 24));
+        hideBtn.addActionListener(e -> setSplitMode(false));
+        toolbar.add(hideBtn);
 
         JButton scrollBtn = new JButton(AllIcons.Actions.MoveDown);
         scrollBtn.setToolTipText("Auto-scroll to bottom");
@@ -160,6 +199,11 @@ public class RepoCiDashboardPanel extends JPanel {
 
     public void appendConsoleLog(@NotNull String content, boolean isPluginLog) {
         ApplicationManager.getApplication().invokeLater(() -> {
+            // When log content arrives during execution, automatically ensure two-panel split mode
+            if (!splitMode) {
+                setSplitMode(true);
+            }
+
             String timestamp = dtf.format(LocalDateTime.now());
             String toAppend;
             if (isPluginLog) {
@@ -212,6 +256,10 @@ public class RepoCiDashboardPanel extends JPanel {
 
     public @NotNull JEditorPane getConsolePane() {
         return consolePane;
+    }
+
+    public void dispose() {
+        dagCanvas.dispose();
     }
 
     private static class JBHtmlEditorPane extends JEditorPane implements ComponentWithEmptyText {

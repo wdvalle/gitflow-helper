@@ -125,6 +125,7 @@ public class PipelineModelsAndCanvasTest {
     public void testPipelineHeaderPanel() {
         PipelineHeaderPanel header = new PipelineHeaderPanel();
         header.setPlatformName("Jenkins");
+        header.setSplitMode(false);
 
         PipelineRun run = new PipelineRun("12", "Build #12", PipelineStatus.SUCCESS);
         run.setBranch("develop");
@@ -132,6 +133,7 @@ public class PipelineModelsAndCanvasTest {
         run.setWebUrl("http://localhost:8080/job/test/12");
 
         header.updatePipelineRun(run, "Jenkins");
+        header.setSplitMode(true);
         assertNotNull(header);
     }
 }

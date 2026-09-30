@@ -27,6 +27,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,7 +79,6 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         mainContainer.add(tabbedPane, CARD_TABS);
 
         add(mainContainer, BorderLayout.CENTER);
-        cardLayout.show(mainContainer, CARD_EMPTY);
 
         tabbedPane.addChangeListener(new ChangeListener() {
             @Override
@@ -101,7 +101,119 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             }
         });
 
-        project.getMessageBus().connect(this).subscribe(GitFlowSettingsListener.TOPIC, this::updateEmptyText);
+        // Initialize tabs based on active CI configuration
+        syncTabsWithSettings();
+
+        project.getMessageBus().connect(this).subscribe(GitFlowSettingsListener.TOPIC, this::syncTabsWithSettings);
+    }
+
+    /**
+     * Synchronizes tabs with the current CI/CD settings:
+     * - If no CI/CD is configured, displays the empty state message.
+     * - If at least one CI/CD is configured, displays a tab for each configured repo in single-panel mode.
+     */
+    public void syncTabsWithSettings() {
+        GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
+        List<RepoCiEntry> configuredEntries = new ArrayList<>();
+        for (RepoCiEntry entry : svc.getRepoCiEntries()) {
+            if (entry.ciServer != null && entry.ciServer.isActive()) {
+                configuredEntries.add(entry);
+            }
+        }
+
+        if (configuredEntries.isEmpty()) {
+            stopAllMonitoring();
+            updateEmptyText();
+            cardLayout.show(mainContainer, CARD_EMPTY);
+            return;
+        }
+
+        // Show tabs for each configured CI repository
+        for (RepoCiEntry entry : configuredEntries) {
+            RepoCiDashboardPanel dashboard = getOrCreateTab(entry.repoPath);
+            dashboard.setPlatformName(entry.ciServer.getCiType());
+
+            // If not actively monitoring/executing, keep in single panel mode
+            if (!repoExecutors.containsKey(entry.repoPath)) {
+                dashboard.setSplitMode(false);
+            }
+
+            loadInitialPipelineRunIfPossible(entry.repoPath, entry.ciServer);
+        }
+
+        // Remove unconfigured tabs if they are not actively executing
+        for (String existingRepoPath : new ArrayList<>(repoDashboards.keySet())) {
+            boolean stillConfigured = configuredEntries.stream().anyMatch(e -> e.repoPath.equals(existingRepoPath));
+            if (!stillConfigured && !repoExecutors.containsKey(existingRepoPath)) {
+                removeTab(existingRepoPath);
+            }
+        }
+
+        // Select the active/target tab
+        String targetPath = selectedRepoPath;
+        if (targetPath == null || !repoDashboards.containsKey(targetPath)) {
+            targetPath = configuredEntries.get(0).repoPath;
+            selectedRepoPath = targetPath;
+        }
+        Component comp = repoTabComponents.get(targetPath);
+        if (comp != null) {
+            isProgrammaticTabChange = true;
+            try {
+                tabbedPane.setSelectedComponent(comp);
+            } finally {
+                isProgrammaticTabChange = false;
+            }
+        }
+
+        cardLayout.show(mainContainer, CARD_TABS);
+    }
+
+    private void loadInitialPipelineRunIfPossible(String repoPath, CiServerConfig cfg) {
+        if (cfg == null || !cfg.isActive() || !"Jenkins".equals(cfg.getCiType())) return;
+        RepoCiDashboardPanel dashboard = repoDashboards.get(repoPath);
+        if (dashboard == null) return;
+
+        // Skip background query if actively executing
+        if (repoExecutors.containsKey(repoPath)) return;
+
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            try {
+                String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(repoPath);
+                JenkinsConnector connector = new JenkinsConnector(
+                        cfg.getCiUrl(),
+                        cfg.getCiLogin(),
+                        token != null ? token : ""
+                );
+                PipelineRun run = connector.fetchPipelineRun();
+                if (run != null) {
+                    GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
+                    for (GitRepository repo : repoManager.getRepositories()) {
+                        if (repo.getRoot().getPath().equals(repoPath)) {
+                            run.setBranch(repo.getCurrentBranchName());
+                            break;
+                        }
+                    }
+                    dashboard.updatePipelineRun(run, connector.getPlatformName());
+                }
+            } catch (Throwable ignored) {
+            }
+        });
+    }
+
+    private void removeTab(String repoPath) {
+        Component comp = repoTabComponents.remove(repoPath);
+        RepoCiDashboardPanel dashboard = repoDashboards.remove(repoPath);
+        if (comp != null) {
+            isProgrammaticTabChange = true;
+            try {
+                tabbedPane.remove(comp);
+            } finally {
+                isProgrammaticTabChange = false;
+            }
+        }
+        if (dashboard != null) {
+            dashboard.dispose();
+        }
     }
 
     private JBHtmlEditorPane createHtmlEditorPane() {
@@ -129,7 +241,6 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     public void setSelectedRepoPath(@Nullable String repoPath) {
         if (!Objects.equals(this.selectedRepoPath, repoPath)) {
             this.selectedRepoPath = repoPath;
-            updateEmptyText();
             if (repoPath != null && repoTabComponents.containsKey(repoPath)) {
                 Component comp = repoTabComponents.get(repoPath);
                 isProgrammaticTabChange = true;
@@ -138,6 +249,8 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                 } finally {
                     isProgrammaticTabChange = false;
                 }
+            } else {
+                syncTabsWithSettings();
             }
         }
     }
@@ -287,14 +400,14 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
 
     public void startMonitoring(String path) {
         if (path == null) {
-            updateEmptyText();
+            syncTabsWithSettings();
             return;
         }
         CiServerConfig cfg = resolveConfigForRepo(path);
         if (cfg == null || !cfg.isActive()) {
             RepoCiDashboardPanel dashboard = getOrCreateTab(path);
+            dashboard.setSplitMode(true);
             dashboard.appendPluginLog("CI/CD integration is disabled — configure a server URL first.");
-            updateEmptyText();
             return;
         }
 
@@ -303,6 +416,8 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         RepoCiDashboardPanel dashboard = getOrCreateTab(path);
         dashboard.clear();
         dashboard.setPlatformName(cfg.getCiType());
+        // Switch to two-panel (split view) upon execution
+        dashboard.setSplitMode(true);
         dashboard.appendPluginLog("Starting CI/CD monitoring...");
 
         if ("Jenkins".equals(cfg.getCiType())) {
@@ -443,16 +558,9 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             stopAllMonitoring();
             for (RepoCiDashboardPanel dashboard : repoDashboards.values()) {
                 dashboard.clear();
+                dashboard.setSplitMode(false);
             }
-            isProgrammaticTabChange = true;
-            try {
-                tabbedPane.removeAll();
-            } finally {
-                isProgrammaticTabChange = false;
-            }
-            repoDashboards.clear();
-            repoTabComponents.clear();
-            cardLayout.show(mainContainer, CARD_EMPTY);
+            syncTabsWithSettings();
         });
     }
 
@@ -463,8 +571,8 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         StatusText emptyText = emptyLogPane.getEmptyText();
         emptyText.clear();
         if (!hasActiveConfig) {
-            emptyText.setText("CI/CD integration is disabled.");
-            emptyText.appendLine("Configure a server URL in Git Flow Helper settings",
+            emptyText.setText("CI/CD integration is not configured.");
+            emptyText.appendLine("Configure a server URL in Git Flow Helper settings to view pipelines",
                     SimpleTextAttributes.LINK_PLAIN_ATTRIBUTES,
                     e -> new ConfigDialog(project).show());
         } else {
@@ -479,6 +587,9 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     @Override
     public void dispose() {
         stopAllMonitoring();
+        for (RepoCiDashboardPanel dashboard : repoDashboards.values()) {
+            dashboard.dispose();
+        }
     }
 
     // -----------------------------------------------------------------------

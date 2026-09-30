@@ -27,10 +27,13 @@ public class PipelineHeaderPanel extends JPanel {
     private final StatusBadge statusBadge = new StatusBadge();
     private final JLabel branchLabel = new JLabel();
     private final JLabel durationLabel = new JLabel();
+    private final JButton toggleSplitBtn = new JButton(AllIcons.Actions.PreviewDetails);
 
     private String buildUrl = null;
     private Runnable onRerunTrigger;
     private Runnable onStopMonitoring;
+    private Runnable onToggleSplit;
+    private boolean isSplit = false;
 
     public PipelineHeaderPanel() {
         super(new BorderLayout());
@@ -69,6 +72,15 @@ public class PipelineHeaderPanel extends JPanel {
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         actionsPanel.setOpaque(false);
 
+        toggleSplitBtn.setToolTipText("Toggle single panel / split console view");
+        toggleSplitBtn.setFocusable(false);
+        toggleSplitBtn.addActionListener(e -> {
+            if (onToggleSplit != null) {
+                onToggleSplit.run();
+            }
+        });
+        actionsPanel.add(toggleSplitBtn);
+
         JButton openBrowserBtn = new JButton("Open in Browser", AllIcons.Ide.External_link_arrow);
         openBrowserBtn.setToolTipText("Open pipeline URL in default browser");
         openBrowserBtn.setFocusable(false);
@@ -106,9 +118,19 @@ public class PipelineHeaderPanel extends JPanel {
         platformLabel.setText(platformName);
     }
 
+    public void setSplitMode(boolean split) {
+        this.isSplit = split;
+        toggleSplitBtn.setToolTipText(split ? "Switch to single panel (DAG only)" : "Switch to two panels (DAG + Console)");
+    }
+
     public void setCallbacks(@Nullable Runnable onRerun, @Nullable Runnable onStop) {
+        setCallbacks(onRerun, onStop, null);
+    }
+
+    public void setCallbacks(@Nullable Runnable onRerun, @Nullable Runnable onStop, @Nullable Runnable onToggleSplit) {
         this.onRerunTrigger = onRerun;
         this.onStopMonitoring = onStop;
+        this.onToggleSplit = onToggleSplit;
     }
 
     public void updatePipelineRun(@Nullable PipelineRun run, @Nullable String platformName) {
