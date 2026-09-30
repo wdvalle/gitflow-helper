@@ -1,5 +1,9 @@
 package br.com.gitflow.cicd;
 
+import br.com.gitflow.cicd.model.PipelineRun;
+import br.com.gitflow.cicd.model.PipelineStage;
+import br.com.gitflow.cicd.model.PipelineStatus;
+import br.com.gitflow.cicd.model.PipelineStep;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -300,5 +304,95 @@ public class JenkinsConnectorTest {
         assertTrue(chunk4.contains("Line 3"));
         assertTrue(chunk4.contains("Build finished: SUCCESS"));
         assertFalse(connector.hasMoreData());
+    }
+
+    @Test
+    public void testFetchPipelineRunWithWfApi() {
+        String wfApiResponse = "{\n" +
+                "  \"id\": \"42\",\n" +
+                "  \"name\": \"#42\",\n" +
+                "  \"status\": \"SUCCESS\",\n" +
+                "  \"durationMillis\": 45000,\n" +
+                "  \"stages\": [\n" +
+                "    {\n" +
+                "      \"id\": \"6\",\n" +
+                "      \"name\": \"Checkout\",\n" +
+                "      \"status\": \"SUCCESS\",\n" +
+                "      \"durationMillis\": 5000,\n" +
+                "      \"stageFlowNodes\": [\n" +
+                "        {\"id\": \"7\", \"name\": \"Git Checkout\", \"status\": \"SUCCESS\", \"durationMillis\": 5000}\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"10\",\n" +
+                "      \"name\": \"Build\",\n" +
+                "      \"status\": \"SUCCESS\",\n" +
+                "      \"durationMillis\": 25000,\n" +
+                "      \"stageFlowNodes\": [\n" +
+                "        {\"id\": \"11\", \"name\": \"mvn clean compile\", \"status\": \"SUCCESS\", \"durationMillis\": 20000},\n" +
+                "        {\"id\": \"12\", \"name\": \"mvn package\", \"status\": \"SUCCESS\", \"durationMillis\": 5000}\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        server.createContext("/job/test/lastBuild/wfapi/describe", exchange -> {
+            byte[] bytes = wfApiResponse.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        assertEquals("Jenkins", connector.getPlatformName());
+        assertTrue(connector.getBuildUrl().endsWith("/job/test/lastBuild"));
+
+        PipelineRun run = connector.fetchPipelineRun();
+        assertNotNull(run);
+        assertEquals("42", run.getId());
+        assertEquals("#42", run.getName());
+        assertEquals(PipelineStatus.SUCCESS, run.getStatus());
+        assertEquals(45000, run.getDurationMillis());
+        assertEquals("45s", run.getFormattedDuration());
+
+        assertEquals(2, run.getStages().size());
+
+        PipelineStage stage0 = run.getStages().get(0);
+        assertEquals("Checkout", stage0.getName());
+        assertEquals(PipelineStatus.SUCCESS, stage0.getStatus());
+        assertEquals(1, stage0.getSteps().size());
+        assertEquals("Git Checkout", stage0.getSteps().get(0).getName());
+        assertEquals(PipelineStatus.SUCCESS, stage0.getSteps().get(0).getStatus());
+
+        PipelineStage stage1 = run.getStages().get(1);
+        assertEquals("Build", stage1.getName());
+        assertEquals(2, stage1.getSteps().size());
+        assertEquals("mvn clean compile", stage1.getSteps().get(0).getName());
+        assertEquals("mvn package", stage1.getSteps().get(1).getName());
+    }
+
+    @Test
+    public void testFetchPipelineRunWithLogParsingFallback() {
+        // wfapi returns 404
+        server.createContext("/job/test/lastBuild/wfapi/describe", exchange -> {
+            exchange.sendResponseHeaders(404, 0);
+            exchange.close();
+        });
+
+        // api/json returns building info
+        server.createContext("/job/test/lastBuild/api/json", exchange -> {
+            String json = "{\"number\":99,\"displayName\":\"Build #99\",\"building\":true,\"duration\":15000}";
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        PipelineRun run = connector.fetchPipelineRun();
+        assertNotNull(run);
+        assertEquals("99", run.getId());
+        assertEquals(PipelineStatus.IN_PROGRESS, run.getStatus());
+        assertFalse(run.getStages().isEmpty());
     }
 }

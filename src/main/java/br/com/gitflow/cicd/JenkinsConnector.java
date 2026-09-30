@@ -1,7 +1,15 @@
 package br.com.gitflow.cicd;
 
+import br.com.gitflow.cicd.model.PipelineRun;
+import br.com.gitflow.cicd.model.PipelineStage;
+import br.com.gitflow.cicd.model.PipelineStatus;
+import br.com.gitflow.cicd.model.PipelineStep;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -10,10 +18,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class JenkinsConnector {
+public class JenkinsConnector implements CiConnector {
+    private static final Pattern STAGE_START_PATTERN = Pattern.compile("\\[Pipeline\\]\\s*\\{\\s*\\(([^\\)]+)\\)");
+    private static final Pattern STEP_PATTERN = Pattern.compile("\\[Pipeline\\]\\s*([a-zA-Z0-9_-]+)");
+
     private final String login;
     private final String token;
     private final String normalizedBase;
@@ -38,6 +51,12 @@ public class JenkinsConnector {
 
     private long lastDataReceivedTime = System.currentTimeMillis();
     private static final long INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+    // Real-time stages and steps extracted from log stream or wfapi
+    private final List<PipelineStage> fallbackStages = new CopyOnWriteArrayList<>();
+    private PipelineStage currentActiveStage = null;
+    private PipelineStep currentActiveStep = null;
+    private PipelineRun latestPipelineRun = null;
 
     public JenkinsConnector(String baseUrl, String login, String token) {
         String base = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
@@ -75,6 +94,22 @@ public class JenkinsConnector {
                 .build();
     }
 
+    @Override
+    public @NotNull String getPlatformName() {
+        return "Jenkins";
+    }
+
+    @Override
+    public @Nullable String getBuildUrl() {
+        String buildTarget = (targetBuildNumber != null && !targetBuildNumber.isEmpty()) ? targetBuildNumber : "lastBuild";
+        return normalizedBase + "/" + buildTarget;
+    }
+
+    @Override
+    public void stop() {
+        this.hasMoreData = false;
+    }
+
     public String getBuildTriggerUrl() {
         return buildTriggerUrl;
     }
@@ -91,6 +126,10 @@ public class JenkinsConnector {
         return crumbRequestField;
     }
 
+    public String getTargetBuildNumber() {
+        return targetBuildNumber;
+    }
+
     String getLogUrl() {
         String buildTarget = (targetBuildNumber != null && !targetBuildNumber.isEmpty()) ? targetBuildNumber : "lastBuild";
         if (useConsoleTextFallback) {
@@ -102,7 +141,12 @@ public class JenkinsConnector {
 
     String getApiUrl() {
         String buildTarget = (targetBuildNumber != null && !targetBuildNumber.isEmpty()) ? targetBuildNumber : "lastBuild";
-        return normalizedBase + "/" + buildTarget + "/api/json?tree=building,result";
+        return normalizedBase + "/" + buildTarget + "/api/json?tree=building,result,duration,timestamp,url,displayName,number";
+    }
+
+    String getWfApiUrl() {
+        String buildTarget = (targetBuildNumber != null && !targetBuildNumber.isEmpty()) ? targetBuildNumber : "lastBuild";
+        return normalizedBase + "/" + buildTarget + "/wfapi/describe";
     }
 
     /**
@@ -146,6 +190,7 @@ public class JenkinsConnector {
      * @return the HTTP response received from Jenkins
      * @throws Exception if network fails or Jenkins returns an error status code
      */
+    @Override
     public HttpResponse<String> triggerBuild() throws Exception {
         fetchCrumbIfNeeded();
 
@@ -205,22 +250,166 @@ public class JenkinsConnector {
      * Returns true while Jenkins signals monitoring should continue.
      * Becomes false after the build status API reports building = false, or on error/timeout.
      */
+    @Override
     public boolean hasMoreData() {
         return hasMoreData;
     }
 
     /**
-     * Fetches the next available chunk of output from Jenkins.
-     *
-     * <p>Initial phase: Queries /buildNumber to record the initial build number,
-     * and continues checking /buildNumber until the build number changes.</p>
-     *
-     * <p>Log phase: Once the build number changes, performs progressive requests to /logText/progressiveText
-     * (with fallback to /consoleText if progressiveText is not available) and checks build completion.</p>
-     *
-     * @return log output chunk (or empty string while waiting / no new data), or error string.
+     * Fetches the current pipeline execution state including stages and steps.
+     * Tries Jenkins Pipeline Stage View API (/wfapi/describe) first, and falls back to
+     * standard API + parsed log stages if wfapi is unavailable.
      */
-    public String fetchNextChunk() {
+    @Override
+    public @Nullable PipelineRun fetchPipelineRun() {
+        // Try wfapi/describe first
+        PipelineRun wfRun = fetchWfApiPipelineRun();
+        if (wfRun != null && !wfRun.getStages().isEmpty()) {
+            latestPipelineRun = wfRun;
+            return wfRun;
+        }
+
+        // Fallback to /api/json + log-parsed stages
+        PipelineRun apiRun = fetchBasicApiPipelineRun();
+        if (apiRun != null) {
+            if (!fallbackStages.isEmpty()) {
+                apiRun.setStages(new ArrayList<>(fallbackStages));
+            } else if (apiRun.getStatus().isRunning()) {
+                // Synthesize an initial stage if running and no stages parsed yet
+                PipelineStage initStage = new PipelineStage("stage-init", "Execution", PipelineStatus.IN_PROGRESS, 0);
+                initStage.addStep(new PipelineStep("step-init", "Running tasks", PipelineStatus.IN_PROGRESS, 0));
+                apiRun.addStage(initStage);
+            }
+            latestPipelineRun = apiRun;
+            return apiRun;
+        }
+
+        return latestPipelineRun;
+    }
+
+    private @Nullable PipelineRun fetchWfApiPipelineRun() {
+        try {
+            HttpRequest request = createRequestBuilder(getWfApiUrl()).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 && response.body() != null && !response.body().isEmpty()) {
+                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                String id = json.has("id") ? json.get("id").getAsString() : (targetBuildNumber != null ? targetBuildNumber : "last");
+                String name = json.has("name") ? json.get("name").getAsString() : ("Build #" + id);
+                String statusStr = json.has("status") ? json.get("status").getAsString() : "";
+                PipelineStatus status = PipelineStatus.fromJenkinsStatus(statusStr);
+
+                PipelineRun run = new PipelineRun(id, name, status);
+                run.setWebUrl(getBuildUrl());
+                if (json.has("durationMillis") && !json.get("durationMillis").isJsonNull()) {
+                    run.setDurationMillis(json.get("durationMillis").getAsLong());
+                }
+                if (json.has("startTimeMillis") && !json.get("startTimeMillis").isJsonNull()) {
+                    run.setStartTimeMillis(json.get("startTimeMillis").getAsLong());
+                }
+
+                if (json.has("stages") && json.get("stages").isJsonArray()) {
+                    JsonArray stagesArr = json.getAsJsonArray("stages");
+                    for (JsonElement stageElem : stagesArr) {
+                        if (!stageElem.isJsonObject()) continue;
+                        JsonObject stageObj = stageElem.getAsJsonObject();
+
+                        String stageId = stageObj.has("id") ? stageObj.get("id").getAsString() : UUID.randomUUID().toString();
+                        String stageName = stageObj.has("name") ? stageObj.get("name").getAsString() : "Stage";
+                        String stageStatusStr = stageObj.has("status") ? stageObj.get("status").getAsString() : "";
+                        PipelineStatus stageStatus = PipelineStatus.fromJenkinsStatus(stageStatusStr);
+                        long stageDuration = stageObj.has("durationMillis") && !stageObj.get("durationMillis").isJsonNull() ?
+                                stageObj.get("durationMillis").getAsLong() : 0;
+
+                        PipelineStage stage = new PipelineStage(stageId, stageName, stageStatus, stageDuration);
+                        if (stageObj.has("startTimeMillis") && !stageObj.get("startTimeMillis").isJsonNull()) {
+                            stage.setStartTimeMillis(stageObj.get("startTimeMillis").getAsLong());
+                        }
+
+                        // Parse steps (stageFlowNodes)
+                        if (stageObj.has("stageFlowNodes") && stageObj.get("stageFlowNodes").isJsonArray()) {
+                            JsonArray nodesArr = stageObj.getAsJsonArray("stageFlowNodes");
+                            for (JsonElement nodeElem : nodesArr) {
+                                if (!nodeElem.isJsonObject()) continue;
+                                JsonObject nodeObj = nodeElem.getAsJsonObject();
+                                String nodeId = nodeObj.has("id") ? nodeObj.get("id").getAsString() : UUID.randomUUID().toString();
+                                String nodeName = nodeObj.has("name") ? nodeObj.get("name").getAsString() : "Step";
+                                String nodeStatusStr = nodeObj.has("status") ? nodeObj.get("status").getAsString() : "";
+                                PipelineStatus nodeStatus = PipelineStatus.fromJenkinsStatus(nodeStatusStr);
+                                long nodeDuration = nodeObj.has("durationMillis") && !nodeObj.get("durationMillis").isJsonNull() ?
+                                        nodeObj.get("durationMillis").getAsLong() : 0;
+
+                                PipelineStep step = new PipelineStep(nodeId, nodeName, nodeStatus, nodeDuration);
+                                stage.addStep(step);
+                            }
+                        }
+
+                        // If no stageFlowNodes in wfapi, check if we have fallback steps from log
+                        if (stage.getSteps().isEmpty()) {
+                            for (PipelineStage fbStage : fallbackStages) {
+                                if (fbStage.getName().equalsIgnoreCase(stageName) && !fbStage.getSteps().isEmpty()) {
+                                    stage.setSteps(new ArrayList<>(fbStage.getSteps()));
+                                    break;
+                                }
+                            }
+                        }
+
+                        // If still empty, add default step based on stage name
+                        if (stage.getSteps().isEmpty()) {
+                            stage.addStep(new PipelineStep(stageId + "-step", stageName, stageStatus, stageDuration));
+                        }
+
+                        run.addStage(stage);
+                    }
+                }
+
+                return run;
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    private @Nullable PipelineRun fetchBasicApiPipelineRun() {
+        try {
+            HttpRequest request = createRequestBuilder(getApiUrl()).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 && response.body() != null) {
+                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                String id = json.has("number") ? json.get("number").getAsString() : (targetBuildNumber != null ? targetBuildNumber : "last");
+                String name = json.has("displayName") ? json.get("displayName").getAsString() : ("Build #" + id);
+
+                boolean isBuilding = json.has("building") && json.get("building").getAsBoolean();
+                PipelineStatus status;
+                if (isBuilding) {
+                    status = PipelineStatus.IN_PROGRESS;
+                } else if (json.has("result") && !json.get("result").isJsonNull()) {
+                    status = PipelineStatus.fromJenkinsStatus(json.get("result").getAsString());
+                } else {
+                    status = PipelineStatus.UNKNOWN;
+                }
+
+                PipelineRun run = new PipelineRun(id, name, status);
+                run.setWebUrl(getBuildUrl());
+                if (json.has("duration") && !json.get("duration").isJsonNull()) {
+                    run.setDurationMillis(json.get("duration").getAsLong());
+                }
+                if (json.has("timestamp") && !json.get("timestamp").isJsonNull()) {
+                    run.setStartTimeMillis(json.get("timestamp").getAsLong());
+                }
+                return run;
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * Fetches the next available chunk of output from Jenkins.
+     */
+    @Override
+    public @NotNull String fetchNextChunk() {
         if (!hasMoreData) {
             return "";
         }
@@ -267,6 +456,9 @@ public class JenkinsConnector {
             waitingForNewBuild = false;
             start = 0;
             useConsoleTextFallback = false;
+            fallbackStages.clear();
+            currentActiveStage = null;
+            currentActiveStep = null;
             lastDataReceivedTime = System.currentTimeMillis();
             String headerLog = "<font color='#FFFFFF'>New build detected: #" + currentBuildNumber + ". Fetching logs...</font><br>";
             String firstChunk = fetchProgressiveConsoleText();
@@ -325,6 +517,8 @@ public class JenkinsConnector {
 
         if (chunk != null && !chunk.isEmpty()) {
             lastDataReceivedTime = System.currentTimeMillis();
+            // Parse stages and steps from progressive logs in real time
+            parseStagesFromLogChunk(chunk);
         }
         String formattedChunk = (chunk != null && !chunk.isEmpty()) ? formatHtml(chunk) : "";
 
@@ -334,10 +528,81 @@ public class JenkinsConnector {
         if (!hasMoreData) {
             // Append final build status message if build finished
             String status = fetchBuildResultStatus();
+            finalizeStagesOnBuildFinished("SUCCESS".equalsIgnoreCase(status));
             formattedChunk = formattedChunk + "<br><font color='#FFFFFF'>Build finished: " + status + "</font><br>";
         }
 
         return formattedChunk;
+    }
+
+    private void parseStagesFromLogChunk(@NotNull String chunk) {
+        String[] lines = chunk.split("\\r?\\n");
+        for (String rawLine : lines) {
+            String line = rawLine.trim();
+            if (line.isEmpty()) continue;
+
+            // Check for stage start: [Pipeline] { (StageName)
+            Matcher stageMatcher = STAGE_START_PATTERN.matcher(line);
+            if (stageMatcher.find()) {
+                String stageName = stageMatcher.group(1).trim();
+                if (currentActiveStep != null && currentActiveStep.getStatus().isRunning()) {
+                    currentActiveStep.setStatus(PipelineStatus.SUCCESS);
+                }
+                if (currentActiveStage != null && currentActiveStage.getStatus().isRunning()) {
+                    currentActiveStage.setStatus(PipelineStatus.SUCCESS);
+                }
+                currentActiveStage = new PipelineStage("stage-" + (fallbackStages.size() + 1), stageName, PipelineStatus.IN_PROGRESS, 0);
+                fallbackStages.add(currentActiveStage);
+                currentActiveStep = null;
+                continue;
+            }
+
+            // Check for step: [Pipeline] stepName
+            if (line.startsWith("[Pipeline]")) {
+                if (line.contains("// stage") || line.equals("[Pipeline] }")) {
+                    if (currentActiveStep != null && currentActiveStep.getStatus().isRunning()) {
+                        currentActiveStep.setStatus(PipelineStatus.SUCCESS);
+                    }
+                    continue;
+                }
+
+                Matcher stepMatcher = STEP_PATTERN.matcher(line);
+                if (stepMatcher.find()) {
+                    String stepCmd = stepMatcher.group(1).trim();
+                    if (!stepCmd.equalsIgnoreCase("stage") && !stepCmd.equalsIgnoreCase("node")) {
+                        if (currentActiveStage == null) {
+                            currentActiveStage = new PipelineStage("stage-1", "Build", PipelineStatus.IN_PROGRESS, 0);
+                            fallbackStages.add(currentActiveStage);
+                        }
+
+                        if (currentActiveStep != null && currentActiveStep.getStatus().isRunning()) {
+                            currentActiveStep.setStatus(PipelineStatus.SUCCESS);
+                        }
+
+                        currentActiveStep = new PipelineStep(
+                                "step-" + (currentActiveStage.getSteps().size() + 1),
+                                stepCmd,
+                                PipelineStatus.IN_PROGRESS,
+                                0
+                        );
+                        currentActiveStage.addStep(currentActiveStep);
+                    }
+                }
+            }
+        }
+    }
+
+    private void finalizeStagesOnBuildFinished(boolean isSuccess) {
+        for (PipelineStage stage : fallbackStages) {
+            if (stage.getStatus().isRunning()) {
+                stage.setStatus(isSuccess ? PipelineStatus.SUCCESS : PipelineStatus.FAILED);
+            }
+            for (PipelineStep step : stage.getSteps()) {
+                if (step.getStatus().isRunning()) {
+                    step.setStatus(isSuccess ? PipelineStatus.SUCCESS : PipelineStatus.FAILED);
+                }
+            }
+        }
     }
 
     private void checkBuildFinishedViaApi() {
