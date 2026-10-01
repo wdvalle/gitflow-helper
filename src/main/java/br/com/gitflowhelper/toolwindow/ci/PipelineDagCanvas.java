@@ -4,7 +4,9 @@ import br.com.gitflow.cicd.model.PipelineRun;
 import br.com.gitflow.cicd.model.PipelineStage;
 import br.com.gitflow.cicd.model.PipelineStatus;
 import br.com.gitflow.cicd.model.PipelineStep;
+import br.com.gitflowhelper.dialog.StageDetailsDialog;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.ui.ComponentWithEmptyText;
@@ -14,12 +16,15 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
 /**
  * Custom 2D canvas displaying CI/CD Pipeline stages and steps as a connected DAG.
+ * Supports clicking finished stages to inspect step details in a modal dialog.
  */
 public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText, Disposable {
 
@@ -31,6 +36,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     private static final int START_X = 30;
     private static final int START_Y = 24;
 
+    private Project project;
     private PipelineRun pipelineRun;
     private int animationAngle = 0;
     private final Timer animationTimer;
@@ -48,6 +54,9 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     private int scrollCurrentStep;
     private int scrollTotalSteps;
 
+    // Hover tracking for clickable finished stages
+    private int hoveredStageIndex = -1;
+
     private final StatusText emptyText = new StatusText(this) {
         @Override
         protected boolean isStatusVisible() {
@@ -56,6 +65,11 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     };
 
     public PipelineDagCanvas() {
+        this(null);
+    }
+
+    public PipelineDagCanvas(@Nullable Project project) {
+        this.project = project;
         setBackground(new JBColor(new Color(248, 249, 250), new Color(30, 31, 34)));
         setOpaque(true);
 
@@ -68,12 +82,120 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
                 repaint();
             }
         });
+
+        // Mouse listeners for hover and click interaction on finished stages
+        MouseAdapter mouseHandler = new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                updateStageHover(e.getPoint());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (hoveredStageIndex != -1) {
+                    hoveredStageIndex = -1;
+                    setCursor(Cursor.getDefaultCursor());
+                    setToolTipText(null);
+                    repaint();
+                }
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    int idx = getStageIndexAt(e.getPoint());
+                    if (idx >= 0 && pipelineRun != null && idx < pipelineRun.getStages().size()) {
+                        PipelineStage stage = pipelineRun.getStages().get(idx);
+                        if (isStageFinished(stage)) {
+                            openStageDetailsDialog(stage);
+                        }
+                    }
+                }
+            }
+        };
+        addMouseListener(mouseHandler);
+        addMouseMotionListener(mouseHandler);
+    }
+
+    public void setProject(@Nullable Project project) {
+        this.project = project;
+    }
+
+    public @Nullable Project getProject() {
+        return project;
+    }
+
+    public static boolean isStageFinished(@Nullable PipelineStage stage) {
+        if (stage == null) return false;
+        PipelineStatus status = stage.getStatus();
+        return status == PipelineStatus.SUCCESS
+                || status == PipelineStatus.FAILED
+                || status == PipelineStatus.ABORTED
+                || status == PipelineStatus.SKIPPED
+                || status == PipelineStatus.PAUSED;
+    }
+
+    public Rectangle getStageBounds(int index, @NotNull PipelineStage stage) {
+        int x = START_X + (index * (STAGE_WIDTH + STAGE_GAP));
+        int y = START_Y;
+        int stepCount = Math.max(1, stage.getSteps().size());
+        int cardHeight = HEADER_HEIGHT + (stepCount * STEP_ROW_HEIGHT) + 10;
+        return new Rectangle(x, y, STAGE_WIDTH, cardHeight);
+    }
+
+    public int getStageIndexAt(@NotNull Point p) {
+        if (pipelineRun == null || pipelineRun.getStages().isEmpty() || loading) {
+            return -1;
+        }
+        List<PipelineStage> stages = pipelineRun.getStages();
+        for (int i = 0; i < stages.size(); i++) {
+            if (getStageBounds(i, stages.get(i)).contains(p)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int getHoveredStageIndex() {
+        return hoveredStageIndex;
+    }
+
+    public void openStageDetailsDialog(@NotNull PipelineStage stage) {
+        StageDetailsDialog dialog = project != null
+                ? new StageDetailsDialog(project, stage)
+                : new StageDetailsDialog(this, stage);
+        dialog.show();
+    }
+
+    public void updateStageHover(Point p) {
+        int idx = getStageIndexAt(p);
+        if (idx >= 0 && pipelineRun != null && idx < pipelineRun.getStages().size()) {
+            PipelineStage stage = pipelineRun.getStages().get(idx);
+            if (isStageFinished(stage)) {
+                if (hoveredStageIndex != idx) {
+                    hoveredStageIndex = idx;
+                    setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    setToolTipText("Click to view step details for stage \"" + stage.getName() + "\"");
+                    repaint();
+                }
+                return;
+            }
+        }
+        if (hoveredStageIndex != -1) {
+            hoveredStageIndex = -1;
+            setCursor(Cursor.getDefaultCursor());
+            setToolTipText(null);
+            repaint();
+        }
     }
 
     public void setLoading(boolean loading) {
         this.loading = loading;
         if (loading) {
             this.pipelineRun = null;
+            this.hoveredStageIndex = -1;
+            setCursor(Cursor.getDefaultCursor());
+            setToolTipText(null);
             if (!animationTimer.isRunning()) {
                 animationTimer.start();
             }
@@ -309,7 +431,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         for (int i = 0; i < stages.size(); i++) {
             PipelineStage stage = stages.get(i);
             int x = START_X + (i * (STAGE_WIDTH + STAGE_GAP));
-            drawStageCard(g2, stage, x, START_Y);
+            drawStageCard(g2, stage, x, START_Y, i);
         }
 
         g2.dispose();
@@ -380,10 +502,13 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         g2.fill(arrow);
     }
 
-    private void drawStageCard(Graphics2D g2, PipelineStage stage, int x, int y) {
+    private void drawStageCard(Graphics2D g2, PipelineStage stage, int x, int y, int index) {
         List<PipelineStep> steps = stage.getSteps();
         int stepCount = Math.max(1, steps.size());
         int cardHeight = HEADER_HEIGHT + (stepCount * STEP_ROW_HEIGHT) + 10;
+
+        boolean finished = isStageFinished(stage);
+        boolean isHovered = (hoveredStageIndex == index && finished);
 
         // Card outer border and background
         RoundRectangle2D.Double cardShape = new RoundRectangle2D.Double(x, y, STAGE_WIDTH, cardHeight, CORNER_RADIUS, CORNER_RADIUS);
@@ -392,10 +517,13 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         g2.setColor(cardBg);
         g2.fill(cardShape);
 
-        // Border highlighting based on stage status
+        // Border highlighting based on stage status and hover
         Color borderColor;
         float strokeWidth;
-        if (stage.getStatus() == PipelineStatus.IN_PROGRESS) {
+        if (isHovered) {
+            borderColor = new JBColor(new Color(25, 118, 210), new Color(100, 181, 246));
+            strokeWidth = 2.4f;
+        } else if (stage.getStatus() == PipelineStatus.IN_PROGRESS) {
             borderColor = new JBColor(new Color(33, 150, 243), new Color(41, 140, 230));
             strokeWidth = 2.0f;
         } else if (stage.getStatus() == PipelineStatus.SUCCESS) {
@@ -417,7 +545,12 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         Shape oldClip = g2.getClip();
         g2.clip(cardShape);
 
-        Color headerBg = new JBColor(new Color(245, 247, 250), new Color(50, 53, 56));
+        Color headerBg;
+        if (isHovered) {
+            headerBg = new JBColor(new Color(238, 244, 252), new Color(48, 56, 68));
+        } else {
+            headerBg = new JBColor(new Color(245, 247, 250), new Color(50, 53, 56));
+        }
         g2.setColor(headerBg);
         g2.fillRect(x, y, STAGE_WIDTH, HEADER_HEIGHT);
 
@@ -429,24 +562,37 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         // Stage Header Icon & Text
         drawStatusIndicator(g2, stage.getStatus(), x + 10, y + 11, 16);
 
-        g2.setColor(JBColor.foreground());
+        g2.setColor(isHovered ? new JBColor(new Color(25, 118, 210), new Color(100, 181, 246)) : JBColor.foreground());
         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 12f));
 
         String stageName = stage.getName();
         FontMetrics fm = g2.getFontMetrics();
         String durationText = stage.getFormattedDuration();
 
-        int maxNameWidth = STAGE_WIDTH - 40 - (durationText.isEmpty() ? 0 : fm.stringWidth(durationText) + 8);
-        String truncatedName = truncateText(stageName, fm, maxNameWidth);
-
-        g2.drawString(truncatedName, x + 32, y + 24);
+        // Right side: duration and clickable indicator if finished
+        int rightMargin = 10;
+        if (finished) {
+            // Draw small chevron or magnifying cue indicating clickable
+            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 10f));
+            g2.setColor(isHovered ? new JBColor(new Color(25, 118, 210), new Color(100, 181, 246)) : JBColor.GRAY);
+            g2.drawString("›", x + STAGE_WIDTH - 12, y + 23);
+            rightMargin = 18;
+        }
 
         if (!durationText.isEmpty()) {
             g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 10f));
-            g2.setColor(JBColor.GRAY);
+            g2.setColor(isHovered ? new JBColor(new Color(25, 118, 210), new Color(100, 181, 246)) : JBColor.GRAY);
             int durWidth = g2.getFontMetrics().stringWidth(durationText);
-            g2.drawString(durationText, x + STAGE_WIDTH - durWidth - 10, y + 23);
+            g2.drawString(durationText, x + STAGE_WIDTH - durWidth - rightMargin, y + 23);
+            rightMargin += durWidth + 6;
         }
+
+        int maxNameWidth = STAGE_WIDTH - 38 - rightMargin;
+        String truncatedName = truncateText(stageName, fm, maxNameWidth);
+
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 12f));
+        g2.setColor(isHovered ? new JBColor(new Color(25, 118, 210), new Color(100, 181, 246)) : JBColor.foreground());
+        g2.drawString(truncatedName, x + 32, y + 24);
 
         // Steps Stack ("um em cima do outro")
         int stepStartY = y + HEADER_HEIGHT + 6;

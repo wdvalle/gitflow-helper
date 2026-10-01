@@ -53,6 +53,7 @@ public class RepoCiDashboardPanel extends JPanel {
         super(new BorderLayout());
         this.project = project;
         this.repoPath = repoPath;
+        this.dagCanvas.setProject(project);
 
         // Top: Pipeline Header
         add(headerPanel, BorderLayout.NORTH);

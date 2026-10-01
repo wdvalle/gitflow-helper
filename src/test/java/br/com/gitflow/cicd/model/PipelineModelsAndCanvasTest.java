@@ -1,5 +1,8 @@
 package br.com.gitflow.cicd.model;
 
+import br.com.gitflowhelper.dialog.StageDetailsDialog;
+import com.intellij.openapi.ui.DialogWrapper;
+import java.util.List;
 import br.com.gitflowhelper.toolwindow.ci.PipelineDagCanvas;
 import br.com.gitflowhelper.toolwindow.ci.PipelineHeaderPanel;
 import br.com.gitflowhelper.toolwindow.ci.RepoCiDashboardPanel;
@@ -260,5 +263,165 @@ public class PipelineModelsAndCanvasTest {
         header.updatePipelineRun(run, "Jenkins");
         header.setSplitMode(true);
         assertNotNull(header);
+    }
+    @Test
+    public void testStageFinishedPredicates() {
+        PipelineStage stageSuccess = new PipelineStage("1", "Checkout", PipelineStatus.SUCCESS, 2000);
+        PipelineStage stageFailed = new PipelineStage("2", "Test", PipelineStatus.FAILED, 5000);
+        PipelineStage stageAborted = new PipelineStage("3", "Deploy", PipelineStatus.ABORTED, 1000);
+        PipelineStage stageSkipped = new PipelineStage("4", "Notify", PipelineStatus.SKIPPED, 0);
+        PipelineStage stagePaused = new PipelineStage("5", "Approval", PipelineStatus.PAUSED, 60000);
+        PipelineStage stageInProgress = new PipelineStage("6", "Build", PipelineStatus.IN_PROGRESS, 12000);
+        PipelineStage stageNotStarted = new PipelineStage("7", "Release", PipelineStatus.NOT_STARTED, 0);
+
+        assertTrue(PipelineDagCanvas.isStageFinished(stageSuccess));
+        assertTrue(PipelineDagCanvas.isStageFinished(stageFailed));
+        assertTrue(PipelineDagCanvas.isStageFinished(stageAborted));
+        assertTrue(PipelineDagCanvas.isStageFinished(stageSkipped));
+        assertTrue(PipelineDagCanvas.isStageFinished(stagePaused));
+
+        assertFalse(PipelineDagCanvas.isStageFinished(stageInProgress));
+        assertFalse(PipelineDagCanvas.isStageFinished(stageNotStarted));
+        assertFalse(PipelineDagCanvas.isStageFinished(null));
+    }
+
+    @Test
+    public void testStageHitTestingAndBounds() {
+        PipelineDagCanvas canvas = new PipelineDagCanvas();
+        try {
+            PipelineRun run = new PipelineRun("1", "#1", PipelineStatus.IN_PROGRESS);
+            PipelineStage s1 = new PipelineStage("s1", "Checkout", PipelineStatus.SUCCESS, 2000);
+            s1.addStep(new PipelineStep("st1", "git clone", PipelineStatus.SUCCESS, 2000));
+            run.addStage(s1);
+
+            PipelineStage s2 = new PipelineStage("s2", "Build", PipelineStatus.FAILED, 5000);
+            s2.addStep(new PipelineStep("st2", "compile", PipelineStatus.SUCCESS, 3000));
+            s2.addStep(new PipelineStep("st3", "test", PipelineStatus.FAILED, 2000));
+            run.addStage(s2);
+
+            canvas.updatePipelineRun(run);
+
+            Rectangle bounds0 = canvas.getStageBounds(0, s1);
+            Rectangle bounds1 = canvas.getStageBounds(1, s2);
+
+            assertTrue(bounds0.x < bounds1.x, "Stage 1 should be positioned after Stage 0 horizontally");
+            assertEquals(210, bounds0.width);
+            assertEquals(210, bounds1.width);
+
+            // Point inside stage 0
+            assertEquals(0, canvas.getStageIndexAt(new Point(bounds0.x + 10, bounds0.y + 10)));
+
+            // Point inside stage 1
+            assertEquals(1, canvas.getStageIndexAt(new Point(bounds1.x + 10, bounds1.y + 10)));
+
+            // Point outside any card (far to the right or top)
+            assertEquals(-1, canvas.getStageIndexAt(new Point(bounds1.x + bounds1.width + 100, 10)));
+            assertEquals(-1, canvas.getStageIndexAt(new Point(5, 5)));
+        } finally {
+            canvas.dispose();
+        }
+    }
+
+    @Test
+    public void testStageDetailsDialogAccordionAndExpandAll() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            PipelineStage stage = new PipelineStage("s1", "Build & Test", PipelineStatus.SUCCESS, 45000);
+            stage.setStartTimeMillis(System.currentTimeMillis() - 45000);
+            PipelineStep step1 = new PipelineStep("step-1", "Compile Code", PipelineStatus.SUCCESS, 15000);
+            PipelineStep step2 = new PipelineStep("step-2", "Run Unit Tests", PipelineStatus.SUCCESS, 20000);
+            PipelineStep step3 = new PipelineStep("step-3", "Package Artifact", PipelineStatus.SUCCESS, 10000);
+            stage.addStep(step1);
+            stage.addStep(step2);
+            stage.addStep(step3);
+
+            JFrame testFrame = new JFrame("Test Window");
+            JPanel dummyParent = new JPanel();
+            testFrame.add(dummyParent);
+            StageDetailsDialog dialog = new StageDetailsDialog(dummyParent, stage);
+
+            try {
+                List<StageDetailsDialog.StepCollapsiblePanel> panels = dialog.getStepPanels();
+                assertEquals(3, panels.size());
+
+                // 1. Initial State: all steps MUST be collapsed by default
+                for (StageDetailsDialog.StepCollapsiblePanel panel : panels) {
+                    assertFalse(panel.isExpanded(), "Step should be collapsed initially");
+                }
+
+                // 2. Expand step 1 individually
+                panels.get(0).setExpanded(true);
+                assertTrue(panels.get(0).isExpanded());
+                assertFalse(panels.get(1).isExpanded());
+                assertFalse(panels.get(2).isExpanded());
+
+                // 3. Expand all
+                dialog.setAllExpanded(true);
+                for (StageDetailsDialog.StepCollapsiblePanel panel : panels) {
+                    assertTrue(panel.isExpanded(), "Step should be expanded after expand all");
+                }
+
+                // 4. Collapse all
+                dialog.setAllExpanded(false);
+                for (StageDetailsDialog.StepCollapsiblePanel panel : panels) {
+                    assertFalse(panel.isExpanded(), "Step should be collapsed after collapse all");
+                }
+            } finally {
+                dialog.close(DialogWrapper.OK_EXIT_CODE);
+                testFrame.dispose();
+            }
+        });
+    }
+    @Test
+    public void testStageHoverInteraction() {
+        PipelineDagCanvas canvas = new PipelineDagCanvas();
+        try {
+            PipelineRun run = new PipelineRun("1", "#1", PipelineStatus.IN_PROGRESS);
+            // Finished stage (SUCCESS)
+            PipelineStage s0 = new PipelineStage("s0", "Checkout", PipelineStatus.SUCCESS, 2000);
+            s0.addStep(new PipelineStep("st0", "clone", PipelineStatus.SUCCESS, 2000));
+            run.addStage(s0);
+
+            // Active stage (IN_PROGRESS) - NOT finished
+            PipelineStage s1 = new PipelineStage("s1", "Build", PipelineStatus.IN_PROGRESS, 5000);
+            s1.addStep(new PipelineStep("st1", "mvn clean compile", PipelineStatus.IN_PROGRESS, 5000));
+            run.addStage(s1);
+
+            // Not started stage - NOT finished
+            PipelineStage s2 = new PipelineStage("s2", "Deploy", PipelineStatus.NOT_STARTED, 0);
+            run.addStage(s2);
+
+            canvas.updatePipelineRun(run);
+
+            Rectangle b0 = canvas.getStageBounds(0, s0);
+            Rectangle b1 = canvas.getStageBounds(1, s1);
+
+            // 1. Hover over finished stage s0 -> should become hovered with hand cursor & tooltip
+            canvas.updateStageHover(new Point(b0.x + 10, b0.y + 10));
+            assertEquals(0, canvas.getHoveredStageIndex());
+            assertEquals(Cursor.HAND_CURSOR, canvas.getCursor().getType());
+            assertNotNull(canvas.getToolTipText());
+            assertTrue(canvas.getToolTipText().contains("Checkout"));
+
+            // 2. Hover over unfinished stage s1 -> should NOT be hovered, cursor should reset to default
+            canvas.updateStageHover(new Point(b1.x + 10, b1.y + 10));
+            assertEquals(-1, canvas.getHoveredStageIndex(), "In-progress stage should not be hover-highlighted");
+            assertEquals(Cursor.DEFAULT_CURSOR, canvas.getCursor().getType());
+            assertNull(canvas.getToolTipText());
+
+            // 3. Hover over empty space outside cards -> clear hover
+            canvas.updateStageHover(new Point(5, 5));
+            assertEquals(-1, canvas.getHoveredStageIndex());
+            assertEquals(Cursor.DEFAULT_CURSOR, canvas.getCursor().getType());
+
+            // 4. Painting with hover on finished stage
+            canvas.updateStageHover(new Point(b0.x + 10, b0.y + 10));
+            BufferedImage img = new BufferedImage(800, 400, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = img.createGraphics();
+            canvas.setSize(800, 400);
+            assertDoesNotThrow(() -> canvas.paint(g2));
+            g2.dispose();
+        } finally {
+            canvas.dispose();
+        }
     }
 }
