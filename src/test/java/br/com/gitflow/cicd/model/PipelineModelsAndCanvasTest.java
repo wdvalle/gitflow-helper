@@ -81,7 +81,7 @@ public class PipelineModelsAndCanvasTest {
     }
 
     @Test
-    public void testPipelineDagCanvasPainting() {
+    public void testPipelineDagCanvasPaintingAndAutoScroll() {
         PipelineDagCanvas canvas = new PipelineDagCanvas();
         try {
             // 1. Paint empty canvas
@@ -90,7 +90,9 @@ public class PipelineModelsAndCanvasTest {
             canvas.setSize(800, 400);
             canvas.paint(g2);
 
-            // 2. Populate with stages and steps: Stage 1 (Success) -> Stage 2 (In Progress) -> Stage 3 (Not started)
+            assertEquals(-1, canvas.getActiveStageIndex());
+
+            // 2. Populate with stages: Stage 1 (Success) -> Stage 2 (In Progress) -> Stage 3 (Not started)
             PipelineRun run = new PipelineRun("50", "#50", PipelineStatus.IN_PROGRESS);
 
             PipelineStage stage1 = new PipelineStage("s1", "Checkout", PipelineStatus.SUCCESS, 4000);
@@ -109,9 +111,22 @@ public class PipelineModelsAndCanvasTest {
 
             canvas.updatePipelineRun(run);
 
+            // Active stage must be Stage 2 (index 1) which is IN_PROGRESS
+            assertEquals(1, canvas.getActiveStageIndex());
+
             // Verify canvas computed preferred size to fit stages
             assertTrue(canvas.getPreferredSize().width >= 700);
             assertTrue(canvas.getPreferredSize().height >= 200);
+
+            // Trigger scroll to active stage
+            canvas.scrollToActiveStage();
+
+            // When all stages finish, active index shifts to the final stage (index 2)
+            stage2.setStatus(PipelineStatus.SUCCESS);
+            stage3.setStatus(PipelineStatus.SUCCESS);
+            run.setStatus(PipelineStatus.SUCCESS);
+            canvas.updatePipelineRun(run);
+            assertEquals(2, canvas.getActiveStageIndex());
 
             // Paint canvas with populated DAG
             canvas.paint(g2);

@@ -30,7 +30,8 @@ public class ToggleCIAction extends AnAction {
             ciDataToolWindowPanel.stopMonitoring();
             isRunning = false;
         } else {
-            ciDataToolWindowPanel.startMonitoring();
+            String selectedPath = ciDataToolWindowPanel.getSelectedRepoPath();
+            ciDataToolWindowPanel.triggerBuildAndMonitor(selectedPath);
             isRunning = true;
         }
         ActivityTracker.getInstance().inc();

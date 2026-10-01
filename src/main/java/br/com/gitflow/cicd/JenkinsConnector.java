@@ -192,6 +192,18 @@ public class JenkinsConnector implements CiConnector {
      */
     @Override
     public HttpResponse<String> triggerBuild() throws Exception {
+        // Record the current build number as baseline before triggering so the newly started build is immediately detected
+        if (baselineBuildNumber == null) {
+            try {
+                HttpRequest bReq = createRequestBuilder(buildNumberUrl).GET().build();
+                HttpResponse<String> bRes = httpClient.send(bReq, HttpResponse.BodyHandlers.ofString());
+                if (bRes.statusCode() == 200 && bRes.body() != null) {
+                    baselineBuildNumber = bRes.body().trim();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
         fetchCrumbIfNeeded();
 
         HttpRequest.Builder builder = createRequestBuilder(buildTriggerUrl)

@@ -84,6 +84,62 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
 
         recomputeCanvasSize();
         repaint();
+
+        SwingUtilities.invokeLater(this::scrollToActiveStage);
+    }
+
+    /**
+     * Automatically scrolls the viewport horizontally to follow pipeline progression.
+     */
+    public void scrollToActiveStage() {
+        if (pipelineRun == null || pipelineRun.getStages().isEmpty()) {
+            return;
+        }
+
+        List<PipelineStage> stages = pipelineRun.getStages();
+        int activeIdx = -1;
+
+        // 1. Look for currently running stage
+        for (int i = 0; i < stages.size(); i++) {
+            if (stages.get(i).getStatus().isRunning()) {
+                activeIdx = i;
+                break;
+            }
+        }
+
+        // 2. If none is running, look for latest executed stage (not NOT_STARTED)
+        if (activeIdx < 0) {
+            for (int i = stages.size() - 1; i >= 0; i--) {
+                if (stages.get(i).getStatus() != PipelineStatus.NOT_STARTED) {
+                    activeIdx = i;
+                    break;
+                }
+            }
+        }
+
+        if (activeIdx < 0) {
+            activeIdx = 0;
+        }
+
+        int stageX = START_X + (activeIdx * (STAGE_WIDTH + STAGE_GAP));
+        int targetWidth = STAGE_WIDTH + STAGE_GAP + 60;
+        Rectangle visibleRect = new Rectangle(stageX, 0, targetWidth, Math.max(100, getHeight()));
+
+        scrollRectToVisible(visibleRect);
+    }
+
+    public int getActiveStageIndex() {
+        if (pipelineRun == null || pipelineRun.getStages().isEmpty()) {
+            return -1;
+        }
+        List<PipelineStage> stages = pipelineRun.getStages();
+        for (int i = 0; i < stages.size(); i++) {
+            if (stages.get(i).getStatus().isRunning()) return i;
+        }
+        for (int i = stages.size() - 1; i >= 0; i--) {
+            if (stages.get(i).getStatus() != PipelineStatus.NOT_STARTED) return i;
+        }
+        return 0;
     }
 
     private void recomputeCanvasSize() {

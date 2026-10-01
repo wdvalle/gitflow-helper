@@ -9,6 +9,7 @@ import br.com.gitflowhelper.settings.CiServerConfig;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.settings.RepoCiEntry;
 import br.com.gitflowhelper.toolwindow.ci.RepoCiDashboardPanel;
+import br.com.gitflowhelper.util.NotificationUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -321,7 +322,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         }
 
         dashboard.setCallbacks(
-                () -> startMonitoring(repoPath),
+                () -> triggerBuildAndMonitor(repoPath),
                 () -> stopMonitoring(repoPath),
                 () -> markTabWithNewContent(repoPath)
         );
@@ -360,7 +361,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     }
 
     // -----------------------------------------------------------------------
-    // Monitoring
+    // Trigger Build & Monitoring
     // -----------------------------------------------------------------------
 
     public static void startMonitoringForRepo(@NotNull Project project, @NotNull String repoPath) {
@@ -392,6 +393,77 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             }
         }
         return null;
+    }
+
+    public void triggerBuildAndMonitor() {
+        triggerBuildAndMonitor(resolveRepoPath());
+    }
+
+    /**
+     * Remotely triggers a build on the configured CI server and starts real-time monitoring.
+     * Equivalent to the "Run now" action in CI/CD settings.
+     */
+    public void triggerBuildAndMonitor(@Nullable String path) {
+        if (path == null) {
+            path = resolveRepoPath();
+        }
+        if (path == null) {
+            syncTabsWithSettings();
+            return;
+        }
+
+        CiServerConfig cfg = resolveConfigForRepo(path);
+        if (cfg == null || !cfg.isActive()) {
+            RepoCiDashboardPanel dashboard = getOrCreateTab(path);
+            dashboard.setSplitMode(true);
+            dashboard.appendPluginLog("CI/CD integration is disabled — configure a server URL first.");
+            NotificationUtil.showGitFlowWarningNotification(project, "CI/CD", "CI/CD integration is disabled. Configure a server URL first.");
+            return;
+        }
+
+        final String repoPath = path;
+        stopMonitoring(repoPath);
+
+        RepoCiDashboardPanel dashboard = getOrCreateTab(repoPath);
+        dashboard.clear();
+        dashboard.setPlatformName(cfg.getCiType());
+        dashboard.setSplitMode(true);
+        dashboard.appendPluginLog("Triggering build on " + cfg.getCiType() + "...");
+
+        if ("Jenkins".equals(cfg.getCiType())) {
+            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                try {
+                    String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(repoPath);
+                    JenkinsConnector jenkinsConnector = new JenkinsConnector(
+                            cfg.getCiUrl(),
+                            cfg.getCiLogin(),
+                            token != null ? token : ""
+                    );
+                    repoConnectors.put(repoPath, jenkinsConnector);
+
+                    jenkinsConnector.triggerBuild();
+
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        dashboard.appendPluginLog("Build triggered successfully on " + cfg.getCiType() + ". Monitoring execution...");
+                        NotificationUtil.showGitFlowSuccessNotification(project, "CI/CD", "Build triggered successfully on " + cfg.getCiType() + ".");
+                    });
+
+                    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                    repoExecutors.put(repoPath, executor);
+                    executor.scheduleWithFixedDelay(() -> checkBuildStatus(repoPath), 0, 2, TimeUnit.SECONDS);
+
+                } catch (Exception ex) {
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        dashboard.appendPluginLog("Failed to trigger build: " + ex.getMessage());
+                        NotificationUtil.showGitFlowErrorNotification(project, "CI/CD Error", "Failed to trigger build: " + ex.getMessage());
+                        stopMonitoring(repoPath);
+                    });
+                }
+            });
+        } else {
+            dashboard.appendPluginLog(cfg.getCiType() + " is not yet supported.");
+            stopMonitoring(repoPath);
+        }
     }
 
     public void startMonitoring() {
