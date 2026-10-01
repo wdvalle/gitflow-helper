@@ -536,9 +536,9 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
     private JComponent createCIContent(Project project, CIDataToolWindowPanel ciDataPanel) {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // ---- Action toolbar (stop / clear) ----
+        // ---- Action toolbar (start / stop / clear) ----
         DefaultActionGroup actionGroup = new DefaultActionGroup();
-        // actionGroup.add(new ToggleCIAction(ciDataPanel));
+        actionGroup.add(new StartCIAction(ciDataPanel));
         actionGroup.add(new StopCIAction(ciDataPanel));
         actionGroup.add(new ClearCIAction(ciDataPanel));
 

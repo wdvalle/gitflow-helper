@@ -179,9 +179,7 @@ public class PipelineModelsAndCanvasTest {
             emptyRun.addStage(stage1);
 
             canvas.updatePipelineRun(emptyRun);
-            assertFalse(canvas.isLoading(), "Loading must become false as soon as the first stage arrives\");\n" +
-            // Fix string literal
-            "");
+            assertFalse(canvas.isLoading(), "Loading must become false as soon as the first stage arrives");
         } finally {
             canvas.dispose();
         }
@@ -210,7 +208,7 @@ public class PipelineModelsAndCanvasTest {
                 canvas.setSplitMode(false);
                 canvas.updatePipelineRun(run);
                 canvas.scrollToActiveStage();
-                assertFalse(canvas.isSmoothScrolling(), "Should not auto-scroll when not in split mode");
+                assertFalse(canvas.isSmoothScrolling(), "Should not auto-scroll when not in split mode\");\n");
 
                 // 2. Split mode = true, but pipeline is completed: auto-scroll must NOT run
                 run.setStatus(PipelineStatus.SUCCESS);
@@ -284,6 +282,96 @@ public class PipelineModelsAndCanvasTest {
             header.updatePipelineRun(run, "Jenkins");
             header.setSplitMode(true);
             assertNotNull(header);
+        });
+    }
+
+    @Test
+    public void testStartAndStopButtonStatesAndToggleSplitIndicator() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            PipelineHeaderPanel header = new PipelineHeaderPanel();
+
+            // 1. Initially: not running
+            assertFalse(header.isRunning());
+            assertTrue(header.getStartButton().isEnabled(), "Start button must be enabled when pipeline is not running");
+            assertFalse(header.getStopButton().isEnabled(), "Stop button must be disabled when pipeline is not running");
+
+            // 2. Set running = true
+            header.setRunning(true);
+            assertTrue(header.isRunning());
+            assertFalse(header.getStartButton().isEnabled(), "Start button must be disabled when pipeline is running");
+            assertTrue(header.getStopButton().isEnabled(), "Stop button must be enabled when pipeline is running");
+
+            // 3. Mark aborted -> transitions to not running
+            header.markAborted();
+            assertFalse(header.isRunning());
+            assertTrue(header.getStartButton().isEnabled(), "Start button must be enabled after abort");
+            assertFalse(header.getStopButton().isEnabled(), "Stop button must be disabled after abort");
+
+            // 4. Update with terminal run -> transitions to not running
+            PipelineRun finishedRun = new PipelineRun("10", "#10", PipelineStatus.SUCCESS);
+            header.updatePipelineRun(finishedRun, "Jenkins");
+            assertFalse(header.isRunning());
+            assertTrue(header.getStartButton().isEnabled());
+            assertFalse(header.getStopButton().isEnabled());
+
+            // 5. Update with in-progress run -> transitions to running
+            PipelineRun runningRun = new PipelineRun("11", "#11", PipelineStatus.IN_PROGRESS);
+            header.updatePipelineRun(runningRun, "Jenkins");
+            assertTrue(header.isRunning());
+            assertFalse(header.getStartButton().isEnabled());
+            assertTrue(header.getStopButton().isEnabled());
+
+            // 6. Test toggle split button: marked / unmarked
+            header.setSplitMode(false);
+            assertFalse(header.isSplitMode());
+            assertFalse(header.getToggleSplitBtn().isSelected(), "Toggle button should be unselected (desmarcado) when split is false");
+
+            header.setSplitMode(true);
+            assertTrue(header.isSplitMode());
+            assertTrue(header.getToggleSplitBtn().isSelected(), "Toggle button should be selected (marcado) when split is true");
+
+            // Paint toggle button in both states
+            BufferedImage img = new BufferedImage(100, 30, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = img.createGraphics();
+            header.getToggleSplitBtn().setSize(30, 24);
+            header.getToggleSplitBtn().setSelected(true);
+            header.getToggleSplitBtn().paint(g2);
+            header.getToggleSplitBtn().setSelected(false);
+            header.getToggleSplitBtn().paint(g2);
+            g2.dispose();
+        });
+    }
+
+    @Test
+    public void testRepoCiDashboardPanelConsoleLogDoesNotForceSplitMode() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            RepoCiDashboardPanel panel = new RepoCiDashboardPanel(null, "/fake/path");
+            try {
+                // Ensure initial mode is hidden / single panel
+                panel.setSplitMode(false);
+                assertFalse(panel.isSplitMode());
+                assertFalse(panel.getHeaderPanel().getToggleSplitBtn().isSelected());
+
+                // Append console log content while hidden
+                panel.appendConsoleLog("Chunk 1: Building project...\n");
+                panel.appendPluginLog("Build step completed.");
+
+                // Must remain hidden (splitMode == false)
+                assertFalse(panel.isSplitMode(), "Incoming logs must NOT force splitMode to true when hidden");
+                assertFalse(panel.getHeaderPanel().getToggleSplitBtn().isSelected(), "Toggle button must remain unselected");
+
+                // Manually open split mode
+                panel.setSplitMode(true);
+                assertTrue(panel.isSplitMode());
+                assertTrue(panel.getHeaderPanel().getToggleSplitBtn().isSelected(), "Toggle button must be selected when split");
+
+                // Close it again
+                panel.setSplitMode(false);
+                assertFalse(panel.isSplitMode());
+                assertFalse(panel.getHeaderPanel().getToggleSplitBtn().isSelected());
+            } finally {
+                panel.dispose();
+            }
         });
     }
 

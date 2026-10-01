@@ -8,7 +8,6 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SideBorder;
-import com.intellij.ui.components.JBLabel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,13 +26,45 @@ public class PipelineHeaderPanel extends JPanel {
     private final StatusBadge statusBadge = new StatusBadge();
     private final JLabel branchLabel = new JLabel();
     private final JLabel durationLabel = new JLabel();
-    private final JButton toggleSplitBtn = new JButton(AllIcons.Actions.PreviewDetails);
+
+    private final JToggleButton toggleSplitBtn = new JToggleButton(AllIcons.Actions.PreviewDetails) {
+        {
+            setContentAreaFilled(false);
+            setOpaque(false);
+            setFocusPainted(false);
+            setMargin(new Insets(2, 4, 2, 4));
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            if (isSelected()) {
+                Color selBg = new JBColor(new Color(215, 232, 255), new Color(40, 65, 98));
+                Color selBorder = new JBColor(new Color(130, 175, 235), new Color(70, 110, 165));
+                g2.setColor(selBg);
+                g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
+                g2.setColor(selBorder);
+                g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 6, 6);
+            } else if (getModel().isRollover()) {
+                Color hoverBg = new JBColor(new Color(238, 240, 243), new Color(55, 58, 62));
+                g2.setColor(hoverBg);
+                g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
+            }
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    };
+    private final JButton openBrowserBtn = new JButton("Open in Browser", AllIcons.Ide.External_link_arrow);
+    private final JButton rerunBtn = new JButton(AllIcons.Actions.Execute);
+    private final JButton stopBtn = new JButton(AllIcons.Actions.Suspend);
 
     private String buildUrl = null;
     private Runnable onRerunTrigger;
     private Runnable onStopMonitoring;
     private Runnable onToggleSplit;
     private boolean isSplit = false;
+    private boolean isRunning = false;
 
     public PipelineHeaderPanel() {
         super(new BorderLayout());
@@ -72,8 +103,9 @@ public class PipelineHeaderPanel extends JPanel {
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         actionsPanel.setOpaque(false);
 
-        toggleSplitBtn.setToolTipText("Toggle single panel / split console view");
+        toggleSplitBtn.setToolTipText("Show console logs (hidden)");
         toggleSplitBtn.setFocusable(false);
+        toggleSplitBtn.setSelected(false);
         toggleSplitBtn.addActionListener(e -> {
             if (onToggleSplit != null) {
                 onToggleSplit.run();
@@ -81,7 +113,6 @@ public class PipelineHeaderPanel extends JPanel {
         });
         actionsPanel.add(toggleSplitBtn);
 
-        JButton openBrowserBtn = new JButton("Open in Browser", AllIcons.Ide.External_link_arrow);
         openBrowserBtn.setToolTipText("Open pipeline URL in default browser");
         openBrowserBtn.setFocusable(false);
         openBrowserBtn.addActionListener(e -> {
@@ -91,27 +122,30 @@ public class PipelineHeaderPanel extends JPanel {
         });
         actionsPanel.add(openBrowserBtn);
 
-        JButton rerunBtn = new JButton(AllIcons.Actions.Execute);
-        rerunBtn.setToolTipText("Trigger build again");
+        rerunBtn.setToolTipText("Start pipeline");
         rerunBtn.setFocusable(false);
         rerunBtn.addActionListener(e -> {
-            if (onRerunTrigger != null) {
+            if (!isRunning && onRerunTrigger != null) {
+                setRunning(true);
                 onRerunTrigger.run();
             }
         });
         actionsPanel.add(rerunBtn);
 
-        JButton stopBtn = new JButton(AllIcons.Actions.Suspend);
         stopBtn.setToolTipText("Stop pipeline execution");
         stopBtn.setFocusable(false);
         stopBtn.addActionListener(e -> {
-            if (onStopMonitoring != null) {
+            if (isRunning && onStopMonitoring != null) {
+                setRunning(false);
                 onStopMonitoring.run();
             }
         });
         actionsPanel.add(stopBtn);
 
         add(actionsPanel, BorderLayout.EAST);
+
+        // Initial state: pipeline is not running (start enabled, stop disabled)
+        setRunning(false);
     }
 
     public void setPlatformName(@NotNull String platformName) {
@@ -120,7 +154,37 @@ public class PipelineHeaderPanel extends JPanel {
 
     public void setSplitMode(boolean split) {
         this.isSplit = split;
-        toggleSplitBtn.setToolTipText(split ? "Switch to single panel (DAG only)" : "Switch to two panels (DAG + Console)");
+        toggleSplitBtn.setSelected(split);
+        toggleSplitBtn.setToolTipText(split ? "Hide console logs (panel open)" : "Show console logs (panel hidden)");
+        toggleSplitBtn.repaint();
+    }
+
+    public boolean isSplitMode() {
+        return isSplit;
+    }
+
+    public void setRunning(boolean running) {
+        this.isRunning = running;
+        rerunBtn.setEnabled(!running);
+        stopBtn.setEnabled(running);
+        rerunBtn.setToolTipText(!running ? "Start pipeline" : "Pipeline is currently running");
+        stopBtn.setToolTipText(running ? "Stop pipeline execution" : "No pipeline is currently running");
+    }
+
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public JButton getStartButton() {
+        return rerunBtn;
+    }
+
+    public JButton getStopButton() {
+        return stopBtn;
+    }
+
+    public JToggleButton getToggleSplitBtn() {
+        return toggleSplitBtn;
     }
 
     public void setCallbacks(@Nullable Runnable onRerun, @Nullable Runnable onStop) {
@@ -135,6 +199,7 @@ public class PipelineHeaderPanel extends JPanel {
 
     public void markAborted() {
         statusBadge.setStatus(PipelineStatus.ABORTED);
+        setRunning(false);
     }
 
     public void updatePipelineRun(@Nullable PipelineRun run, @Nullable String platformName) {
@@ -159,6 +224,11 @@ public class PipelineHeaderPanel extends JPanel {
         buildNumberLabel.setText(idText);
 
         statusBadge.setStatus(run.getStatus());
+        if (run.getStatus().isRunning()) {
+            setRunning(true);
+        } else if (run.getStatus().isTerminal()) {
+            setRunning(false);
+        }
 
         if (run.getBranch() != null && !run.getBranch().isEmpty()) {
             branchLabel.setText(run.getBranch());

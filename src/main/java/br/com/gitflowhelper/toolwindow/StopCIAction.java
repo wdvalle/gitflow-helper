@@ -27,11 +27,14 @@ public class StopCIAction extends AnAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        boolean active = ciDataToolWindowPanel.isMonitoringActive();
+        String selected = ciDataToolWindowPanel.getSelectedRepoPath();
+        boolean active = ciDataToolWindowPanel.isRunningForRepo(selected);
         e.getPresentation().setEnabled(active);
         e.getPresentation().setIcon(AllIcons.Actions.Suspend);
         e.getPresentation().setText("Stop CI/CD Execution");
-        e.getPresentation().setDescription("Stop pipeline execution on CI server and cease monitoring");
+        e.getPresentation().setDescription(active
+                ? "Stop pipeline execution on CI server and cease monitoring"
+                : "No pipeline is currently running");
     }
 
     @Override

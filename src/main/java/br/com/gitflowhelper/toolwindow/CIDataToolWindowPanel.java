@@ -10,6 +10,7 @@ import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.settings.RepoCiEntry;
 import br.com.gitflowhelper.toolwindow.ci.RepoCiDashboardPanel;
 import br.com.gitflowhelper.util.NotificationUtil;
+import com.intellij.ide.ActivityTracker;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -100,6 +101,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                             break;
                         }
                     }
+                    ActivityTracker.getInstance().inc();
                 }
             }
         });
@@ -269,6 +271,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             } else {
                 syncTabsWithSettings();
             }
+            ActivityTracker.getInstance().inc();
         }
     }
 
@@ -475,7 +478,9 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         dashboard.setSplitMode(true);
         dashboard.setIdle(false);
         dashboard.startLoading();
+        dashboard.setRunning(true);
         dashboard.appendPluginLog("Triggering build on " + cfg.getCiType() + "...");
+        ActivityTracker.getInstance().inc();
 
         if ("Jenkins".equals(cfg.getCiType())) {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
@@ -501,9 +506,12 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                     // Fast 500ms polling interval ensures the first stage is detected immediately when it starts
                     executor.scheduleWithFixedDelay(() -> checkBuildStatus(repoPath), 0, 500, TimeUnit.MILLISECONDS);
                     startingBuilds.remove(repoPath);
+                    ActivityTracker.getInstance().inc();
 
                 } catch (Exception ex) {
                     startingBuilds.remove(repoPath);
+                    dashboard.setRunning(false);
+                    ActivityTracker.getInstance().inc();
                     ApplicationManager.getApplication().invokeLater(() -> {
                         dashboard.appendPluginLog("Failed to trigger build: " + ex.getMessage());
                         NotificationUtil.showGitFlowErrorNotification(project, "CI/CD Error", "Failed to trigger build: " + ex.getMessage());
@@ -513,8 +521,10 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             });
         } else {
             startingBuilds.remove(repoPath);
+            dashboard.setRunning(false);
             dashboard.appendPluginLog(cfg.getCiType() + " is not yet supported.");
             stopMonitoring(repoPath, false);
+            ActivityTracker.getInstance().inc();
         }
     }
 
@@ -545,7 +555,9 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         dashboard.setSplitMode(true);
         dashboard.setIdle(false);
         dashboard.startLoading();
+        dashboard.setRunning(true);
         dashboard.appendPluginLog("Starting CI/CD monitoring...");
+        ActivityTracker.getInstance().inc();
 
         if ("Jenkins".equals(cfg.getCiType())) {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
@@ -564,12 +576,15 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                 // Fast 500ms polling interval ensures the first stage is detected immediately when it starts
                 executor.scheduleWithFixedDelay(() -> checkBuildStatus(repoPath), 0, 500, TimeUnit.MILLISECONDS);
                 startingBuilds.remove(repoPath);
+                ActivityTracker.getInstance().inc();
             });
         } else {
             startingBuilds.remove(repoPath);
             repoConnectors.remove(repoPath);
+            dashboard.setRunning(false);
             dashboard.appendPluginLog(cfg.getCiType() + " is not yet supported.");
             stopMonitoring(repoPath, false);
+            ActivityTracker.getInstance().inc();
         }
     }
 
@@ -632,6 +647,18 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         return false;
     }
 
+    /** Returns true if a pipeline build or monitoring is currently active for the specified repo. */
+    public boolean isRunningForRepo(@Nullable String repoPath) {
+        if (repoPath == null) {
+            return isMonitoringActive();
+        }
+        if (startingBuilds.contains(repoPath)) {
+            return true;
+        }
+        ScheduledExecutorService exec = repoExecutors.get(repoPath);
+        return exec != null && !exec.isShutdown();
+    }
+
     /** Registers a callback invoked on the EDT whenever monitoring stops. */
     public void setOnStopped(Runnable onStopped) {
         this.onStopped = onStopped;
@@ -677,7 +704,9 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             } else {
                 dashboard.stopLoading();
             }
+            dashboard.setRunning(false);
         }
+        ActivityTracker.getInstance().inc();
         if (onStopped != null) {
             ApplicationManager.getApplication().invokeLater(onStopped);
         }

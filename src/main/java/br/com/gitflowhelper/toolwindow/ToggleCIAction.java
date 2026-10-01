@@ -12,27 +12,24 @@ import org.jetbrains.annotations.NotNull;
 public class ToggleCIAction extends AnAction {
 
     private final CIDataToolWindowPanel ciDataToolWindowPanel;
-    private boolean isRunning = false;
 
     public ToggleCIAction(CIDataToolWindowPanel ciDataToolWindowPanel) {
         super("Start/Stop CI Execution", "Start or stop execution and monitoring of the CI server", AllIcons.Actions.Execute);
         this.ciDataToolWindowPanel = ciDataToolWindowPanel;
         // When monitoring stops automatically (build finished / error), reset state and refresh the toolbar button
         ciDataToolWindowPanel.setOnStopped(() -> {
-            isRunning = false;
             ActivityTracker.getInstance().inc();
         });
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        if (isRunning) {
+        String selectedPath = ciDataToolWindowPanel.getSelectedRepoPath();
+        boolean running = ciDataToolWindowPanel.isRunningForRepo(selectedPath);
+        if (running) {
             ciDataToolWindowPanel.stopMonitoring();
-            isRunning = false;
         } else {
-            String selectedPath = ciDataToolWindowPanel.getSelectedRepoPath();
             ciDataToolWindowPanel.triggerBuildAndMonitor(selectedPath);
-            isRunning = true;
         }
         ActivityTracker.getInstance().inc();
     }
@@ -53,9 +50,11 @@ public class ToggleCIAction extends AnAction {
             isActive = GitFlowSettingsService.getInstance(project).isIntegrateWithCI();
         }
 
+        boolean running = ciDataToolWindowPanel.isRunningForRepo(selectedPath);
+
         e.getPresentation().setEnabled(isActive);
 
-        if (isRunning) {
+        if (running) {
             e.getPresentation().setIcon(AllIcons.Actions.Suspend);
             e.getPresentation().setText("Stop Pipeline Execution");
         } else {

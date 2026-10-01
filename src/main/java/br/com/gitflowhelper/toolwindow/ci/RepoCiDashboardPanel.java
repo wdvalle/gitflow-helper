@@ -50,7 +50,7 @@ public class RepoCiDashboardPanel extends JPanel {
     private Runnable onStopMonitoring;
     private Runnable onNewContent;
 
-    public RepoCiDashboardPanel(@NotNull Project project, @NotNull String repoPath) {
+    public RepoCiDashboardPanel(@Nullable Project project, @NotNull String repoPath) {
         super(new BorderLayout());
         this.project = project;
         this.repoPath = repoPath;
@@ -128,6 +128,18 @@ public class RepoCiDashboardPanel extends JPanel {
 
     public boolean isIdle() {
         return dagCanvas.isIdle();
+    }
+
+    public boolean isRunning() {
+        return headerPanel.isRunning();
+    }
+
+    public void setRunning(boolean running) {
+        headerPanel.setRunning(running);
+    }
+
+    public PipelineHeaderPanel getHeaderPanel() {
+        return headerPanel;
     }
 
     private JComponent createConsoleToolbar() {
@@ -265,6 +277,7 @@ public class RepoCiDashboardPanel extends JPanel {
             dagCanvas.setIdle(false);
             dagCanvas.setLoading(true);
             headerPanel.updatePipelineRun(null, null);
+            headerPanel.setRunning(true);
         };
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();
@@ -276,6 +289,7 @@ public class RepoCiDashboardPanel extends JPanel {
     public void stopLoading() {
         Runnable r = () -> {
             dagCanvas.setLoading(false);
+            headerPanel.setRunning(false);
         };
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();
@@ -291,6 +305,7 @@ public class RepoCiDashboardPanel extends JPanel {
         Runnable r = () -> {
             dagCanvas.markAborted();
             headerPanel.markAborted();
+            headerPanel.setRunning(false);
             appendPluginLog("Pipeline execution stopped by user.");
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -322,12 +337,7 @@ public class RepoCiDashboardPanel extends JPanel {
     }
 
     public void appendConsoleLog(@NotNull String content, boolean isPluginLog) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            // When log content arrives during execution, automatically ensure two-panel split mode
-            if (!splitMode) {
-                setSplitMode(true);
-            }
-
+        Runnable r = () -> {
             String timestamp = dtf.format(LocalDateTime.now());
             String toAppend;
             if (isPluginLog) {
@@ -363,7 +373,15 @@ public class RepoCiDashboardPanel extends JPanel {
             if (onNewContent != null) {
                 onNewContent.run();
             }
-        });
+        };
+
+        if (ApplicationManager.getApplication() != null) {
+            ApplicationManager.getApplication().invokeLater(r);
+        } else if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
 
     public void clear() {
@@ -373,6 +391,7 @@ public class RepoCiDashboardPanel extends JPanel {
             dagCanvas.setIdle(false);
             dagCanvas.updatePipelineRun(null);
             headerPanel.updatePipelineRun(null, null);
+            headerPanel.setRunning(false);
         };
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();
