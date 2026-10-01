@@ -473,7 +473,7 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
                 }
             }
 
-            // 3. Any JLabel / ContentLabel whose text starts with title (e.g. "Flow" or "Flow •")
+            // 3. Any JLabel / ContentLabel whose text starts with title (e.g. "Flow" or "Flow \u2022")
             if (comp instanceof JLabel label) {
                 String text = label.getText();
                 if (text != null && text.trim().startsWith(title)) {
@@ -534,92 +534,6 @@ public class GitFlowToolWindowFactory implements ToolWindowFactory {
     // -----------------------------------------------------------------------
 
     private JComponent createCIContent(Project project, CIDataToolWindowPanel ciDataPanel) {
-        JPanel panel = new JPanel(new BorderLayout());
-
-        // ---- Action toolbar (start / stop / clear) ----
-        DefaultActionGroup actionGroup = new DefaultActionGroup();
-        actionGroup.add(new StartCIAction(ciDataPanel));
-        actionGroup.add(new StopCIAction(ciDataPanel));
-        actionGroup.add(new ClearCIAction(ciDataPanel));
-
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar(
-                "CIToolWindowToolbar", actionGroup, true);
-        toolbar.setTargetComponent(panel);
-
-        // ---- Repository selection combo ----
-        ComboBox<String> repoCombo = new ComboBox<>();
-        populateRepoCombo(repoCombo, project, ciDataPanel, null);
-
-        // Refresh combo when settings change (user edits config in ConfigDialog)
-        project.getMessageBus().connect(ciDataPanel).subscribe(
-                GitFlowSettingsListener.TOPIC,
-                new GitFlowSettingsListener() {
-                    @Override
-                    public void settingsChanged() {
-                        String previousPath = ciDataPanel.getSelectedRepoPath();
-                        populateRepoCombo(repoCombo, project, ciDataPanel, previousPath);
-                    }
-                });
-
-        repoCombo.addActionListener(e -> {
-            int idx = repoCombo.getSelectedIndex();
-            List<GitRepository> repos =
-                    GitRepositoryManager.getInstance(project).getRepositories();
-            if (idx >= 0 && idx < repos.size()) {
-                ciDataPanel.setSelectedRepoPath(repos.get(idx).getRoot().getPath());
-            }
-        });
-
-        // ---- North panel: toolbar (repo combo commented out) ----
-        JPanel northPanel = new JPanel(new BorderLayout(4, 0));
-        northPanel.add(toolbar.getComponent(), BorderLayout.WEST);
-
-        panel.add(northPanel, BorderLayout.NORTH);
-        panel.add(ciDataPanel, BorderLayout.CENTER);
-        return panel;
-    }
-
-    /**
-     * Fills the repo combo with the Git repositories that have a CI/CD configuration.
-     * Repositories without any config are also included (user may have just added one).
-     *
-     * @param previousPath repo path to re-select after refresh; {@code null} → select first.
-     */
-    private void populateRepoCombo(ComboBox<String> combo,
-                                   Project project,
-                                   CIDataToolWindowPanel ciDataPanel,
-                                   @org.jetbrains.annotations.Nullable String previousPath) {
-        combo.removeAllItems();
-
-        List<GitRepository> repos =
-                GitRepositoryManager.getInstance(project).getRepositories();
-
-        if (repos.isEmpty()) {
-            combo.addItem("(no repositories)");
-            ciDataPanel.setSelectedRepoPath(null);
-            return;
-        }
-
-        int restoreIdx = 0;
-        for (int i = 0; i < repos.size(); i++) {
-            GitRepository repo = repos.get(i);
-            String path = repo.getRoot().getPath();
-            String name = repo.getRoot().getName();
-
-            // Suffix "[CI]" when a URL has been configured, for quick visual feedback
-            GitFlowSettingsService svc = GitFlowSettingsService.getInstance(project);
-            RepoCiEntry entry = svc.getRepoCiEntry(path);
-            boolean hasCI = entry != null && entry.ciServer.isActive();
-            combo.addItem(hasCI ? name + " [CI]" : name);
-
-            if (path.equals(previousPath)) restoreIdx = i;
-        }
-
-        combo.setSelectedIndex(restoreIdx);
-
-        // Sync panel to the selected repo
-        if (restoreIdx < repos.size()) {
-            ciDataPanel.setSelectedRepoPath(repos.get(restoreIdx).getRoot().getPath());
-        }
+        return ciDataPanel;
     }
 }

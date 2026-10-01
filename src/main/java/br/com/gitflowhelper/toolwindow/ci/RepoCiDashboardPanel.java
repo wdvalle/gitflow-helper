@@ -49,6 +49,7 @@ public class RepoCiDashboardPanel extends JPanel {
     private Runnable onRerunTrigger;
     private Runnable onStopMonitoring;
     private Runnable onNewContent;
+    private Runnable onClear;
 
     public RepoCiDashboardPanel(@Nullable Project project, @NotNull String repoPath) {
         super(new BorderLayout());
@@ -84,7 +85,18 @@ public class RepoCiDashboardPanel extends JPanel {
                 () -> {
                     if (onStopMonitoring != null) onStopMonitoring.run();
                 },
-                () -> setSplitMode(!splitMode)
+                () -> setSplitMode(!splitMode),
+                () -> {
+                    if (onClear != null) {
+                        onClear.run();
+                    } else {
+                        if (onStopMonitoring != null) {
+                            onStopMonitoring.run();
+                        }
+                        clear();
+                        setSplitMode(false);
+                    }
+                }
         );
     }
 
@@ -263,9 +275,14 @@ public class RepoCiDashboardPanel extends JPanel {
     }
 
     public void setCallbacks(@Nullable Runnable onRerun, @Nullable Runnable onStop, @Nullable Runnable onContent) {
+        setCallbacks(onRerun, onStop, onContent, null);
+    }
+
+    public void setCallbacks(@Nullable Runnable onRerun, @Nullable Runnable onStop, @Nullable Runnable onContent, @Nullable Runnable onClear) {
         this.onRerunTrigger = onRerun;
         this.onStopMonitoring = onStop;
         this.onNewContent = onContent;
+        this.onClear = onClear;
     }
 
     public void setPlatformName(@NotNull String platformName) {

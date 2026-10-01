@@ -4,7 +4,6 @@ import br.com.gitflow.cicd.model.PipelineRun;
 import br.com.gitflow.cicd.model.PipelineStatus;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
-import com.intellij.openapi.actionSystem.*;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SideBorder;
@@ -27,12 +26,21 @@ public class PipelineHeaderPanel extends JPanel {
     private final JLabel branchLabel = new JLabel();
     private final JLabel durationLabel = new JLabel();
 
+    private final HeaderActionButton rerunBtn = new HeaderActionButton(AllIcons.Actions.Execute, "Start pipeline");
+    private final HeaderActionButton stopBtn = new HeaderActionButton(AllIcons.Actions.Suspend, "Stop pipeline execution");
+    private final HeaderActionButton clearBtn = new HeaderActionButton(AllIcons.Actions.GC, "Clear pipeline output");
+    private final HeaderActionButton openBrowserBtn = new HeaderActionButton(AllIcons.Ide.External_link_arrow, "Open pipeline URL in default browser");
+
     private final JToggleButton toggleSplitBtn = new JToggleButton(AllIcons.Actions.PreviewDetails) {
         {
             setContentAreaFilled(false);
             setOpaque(false);
             setFocusPainted(false);
+            setBorderPainted(false);
+            setFocusable(false);
             setMargin(new Insets(2, 4, 2, 4));
+            setPreferredSize(new Dimension(28, 24));
+            putClientProperty("JButton.buttonType", "toolBarButton");
         }
 
         @Override
@@ -46,6 +54,10 @@ public class PipelineHeaderPanel extends JPanel {
                 g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
                 g2.setColor(selBorder);
                 g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 6, 6);
+            } else if (getModel().isPressed()) {
+                Color pressedBg = new JBColor(new Color(220, 224, 230), new Color(68, 72, 78));
+                g2.setColor(pressedBg);
+                g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
             } else if (getModel().isRollover()) {
                 Color hoverBg = new JBColor(new Color(238, 240, 243), new Color(55, 58, 62));
                 g2.setColor(hoverBg);
@@ -55,13 +67,11 @@ public class PipelineHeaderPanel extends JPanel {
             super.paintComponent(g);
         }
     };
-    private final JButton openBrowserBtn = new JButton("Open in Browser", AllIcons.Ide.External_link_arrow);
-    private final JButton rerunBtn = new JButton(AllIcons.Actions.Execute);
-    private final JButton stopBtn = new JButton(AllIcons.Actions.Suspend);
 
     private String buildUrl = null;
     private Runnable onRerunTrigger;
     private Runnable onStopMonitoring;
+    private Runnable onClearTrigger;
     private Runnable onToggleSplit;
     private boolean isSplit = false;
     private boolean isRunning = false;
@@ -99,31 +109,10 @@ public class PipelineHeaderPanel extends JPanel {
 
         add(infoPanel, BorderLayout.WEST);
 
-        // Right section: Quick action buttons
+        // Right section: Quick action buttons (Start, Stop, Clear, Open Browser, Toggle Console)
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         actionsPanel.setOpaque(false);
 
-        toggleSplitBtn.setToolTipText("Show console logs (hidden)");
-        toggleSplitBtn.setFocusable(false);
-        toggleSplitBtn.setSelected(false);
-        toggleSplitBtn.addActionListener(e -> {
-            if (onToggleSplit != null) {
-                onToggleSplit.run();
-            }
-        });
-        actionsPanel.add(toggleSplitBtn);
-
-        openBrowserBtn.setToolTipText("Open pipeline URL in default browser");
-        openBrowserBtn.setFocusable(false);
-        openBrowserBtn.addActionListener(e -> {
-            if (buildUrl != null && !buildUrl.isEmpty()) {
-                BrowserUtil.browse(buildUrl);
-            }
-        });
-        actionsPanel.add(openBrowserBtn);
-
-        rerunBtn.setToolTipText("Start pipeline");
-        rerunBtn.setFocusable(false);
         rerunBtn.addActionListener(e -> {
             if (!isRunning && onRerunTrigger != null) {
                 setRunning(true);
@@ -132,8 +121,6 @@ public class PipelineHeaderPanel extends JPanel {
         });
         actionsPanel.add(rerunBtn);
 
-        stopBtn.setToolTipText("Stop pipeline execution");
-        stopBtn.setFocusable(false);
         stopBtn.addActionListener(e -> {
             if (isRunning && onStopMonitoring != null) {
                 setRunning(false);
@@ -141,6 +128,30 @@ public class PipelineHeaderPanel extends JPanel {
             }
         });
         actionsPanel.add(stopBtn);
+
+        clearBtn.addActionListener(e -> {
+            if (onClearTrigger != null) {
+                onClearTrigger.run();
+            }
+        });
+        actionsPanel.add(clearBtn);
+
+        openBrowserBtn.setEnabled(false);
+        openBrowserBtn.addActionListener(e -> {
+            if (buildUrl != null && !buildUrl.isEmpty()) {
+                BrowserUtil.browse(buildUrl);
+            }
+        });
+        actionsPanel.add(openBrowserBtn);
+
+        toggleSplitBtn.setToolTipText("Show console logs (hidden)");
+        toggleSplitBtn.setSelected(false);
+        toggleSplitBtn.addActionListener(e -> {
+            if (onToggleSplit != null) {
+                onToggleSplit.run();
+            }
+        });
+        actionsPanel.add(toggleSplitBtn);
 
         add(actionsPanel, BorderLayout.EAST);
 
@@ -183,18 +194,31 @@ public class PipelineHeaderPanel extends JPanel {
         return stopBtn;
     }
 
+    public JButton getClearButton() {
+        return clearBtn;
+    }
+
+    public JButton getOpenBrowserButton() {
+        return openBrowserBtn;
+    }
+
     public JToggleButton getToggleSplitBtn() {
         return toggleSplitBtn;
     }
 
     public void setCallbacks(@Nullable Runnable onRerun, @Nullable Runnable onStop) {
-        setCallbacks(onRerun, onStop, null);
+        setCallbacks(onRerun, onStop, null, null);
     }
 
     public void setCallbacks(@Nullable Runnable onRerun, @Nullable Runnable onStop, @Nullable Runnable onToggleSplit) {
+        setCallbacks(onRerun, onStop, onToggleSplit, null);
+    }
+
+    public void setCallbacks(@Nullable Runnable onRerun, @Nullable Runnable onStop, @Nullable Runnable onToggleSplit, @Nullable Runnable onClear) {
         this.onRerunTrigger = onRerun;
         this.onStopMonitoring = onStop;
         this.onToggleSplit = onToggleSplit;
+        this.onClearTrigger = onClear;
     }
 
     public void markAborted() {
@@ -213,10 +237,12 @@ public class PipelineHeaderPanel extends JPanel {
             branchLabel.setVisible(false);
             durationLabel.setVisible(false);
             buildUrl = null;
+            openBrowserBtn.setEnabled(false);
             return;
         }
 
         this.buildUrl = run.getWebUrl();
+        openBrowserBtn.setEnabled(buildUrl != null && !buildUrl.isEmpty());
 
         String idText = run.getName() != null && !run.getName().isEmpty()
                 ? run.getName()
@@ -243,6 +269,43 @@ public class PipelineHeaderPanel extends JPanel {
             durationLabel.setVisible(true);
         } else {
             durationLabel.setVisible(false);
+        }
+    }
+
+    /**
+     * Unified toolbar action button sharing identical sizing, insets, and antialiased hover/pressed highlights.
+     */
+    public static class HeaderActionButton extends JButton {
+        public HeaderActionButton(@NotNull Icon icon, @NotNull String tooltip) {
+            super(icon);
+            setToolTipText(tooltip);
+            setFocusable(false);
+            setContentAreaFilled(false);
+            setOpaque(false);
+            setFocusPainted(false);
+            setBorderPainted(false);
+            setMargin(new Insets(2, 4, 2, 4));
+            setPreferredSize(new Dimension(28, 24));
+            putClientProperty("JButton.buttonType", "toolBarButton");
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            if (isEnabled()) {
+                if (getModel().isPressed()) {
+                    Color pressedBg = new JBColor(new Color(220, 224, 230), new Color(68, 72, 78));
+                    g2.setColor(pressedBg);
+                    g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
+                } else if (getModel().isRollover()) {
+                    Color hoverBg = new JBColor(new Color(238, 240, 243), new Color(55, 58, 62));
+                    g2.setColor(hoverBg);
+                    g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
+                }
+            }
+            g2.dispose();
+            super.paintComponent(g);
         }
     }
 

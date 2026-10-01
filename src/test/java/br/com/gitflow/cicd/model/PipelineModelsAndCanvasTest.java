@@ -295,6 +295,23 @@ public class PipelineModelsAndCanvasTest {
             assertTrue(header.getStartButton().isEnabled(), "Start button must be enabled when pipeline is not running");
             assertFalse(header.getStopButton().isEnabled(), "Stop button must be disabled when pipeline is not running");
 
+            // Visual identity check: uniform size (28x24) for all action buttons
+            assertEquals(new Dimension(28, 24), header.getStartButton().getPreferredSize());
+            assertEquals(new Dimension(28, 24), header.getStopButton().getPreferredSize());
+            assertEquals(new Dimension(28, 24), header.getClearButton().getPreferredSize());
+            assertEquals(new Dimension(28, 24), header.getOpenBrowserButton().getPreferredSize());
+            assertEquals(new Dimension(28, 24), header.getToggleSplitBtn().getPreferredSize());
+
+            // Clear button check
+            assertNotNull(header.getClearButton());
+            assertTrue(header.getClearButton().isEnabled());
+            assertEquals("Clear pipeline output", header.getClearButton().getToolTipText());
+
+            boolean[] clearClicked = {false};
+            header.setCallbacks(null, null, null, () -> clearClicked[0] = true);
+            header.getClearButton().doClick();
+            assertTrue(clearClicked[0], "Clear button should trigger onClear callback");
+
             // 2. Set running = true
             header.setRunning(true);
             assertTrue(header.isRunning());
@@ -329,6 +346,15 @@ public class PipelineModelsAndCanvasTest {
             header.setSplitMode(true);
             assertTrue(header.isSplitMode());
             assertTrue(header.getToggleSplitBtn().isSelected(), "Toggle button should be selected (marcado) when split is true");
+
+            // Paint buttons to verify paintComponent execution
+            BufferedImage img2 = new BufferedImage(200, 30, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D gAction = img2.createGraphics();
+            header.getStartButton().paint(gAction);
+            header.getStopButton().paint(gAction);
+            header.getClearButton().paint(gAction);
+            header.getOpenBrowserButton().paint(gAction);
+            gAction.dispose();
 
             // Paint toggle button in both states
             BufferedImage img = new BufferedImage(100, 30, BufferedImage.TYPE_INT_ARGB);
