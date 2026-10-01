@@ -347,12 +347,10 @@ public class PipelineModelsAndCanvasTest {
         SwingUtilities.invokeAndWait(() -> {
             PipelineHeaderPanel header = new PipelineHeaderPanel();
 
-            // 1. Initially: not running and start button highlighted
+            // 1. Initially: not running
             assertFalse(header.isRunning());
             assertTrue(header.getStartButton().isEnabled(), "Start button must be enabled when pipeline is not running");
             assertFalse(header.getStopButton().isEnabled(), "Stop button must be disabled when pipeline is not running");
-            PipelineHeaderPanel.HeaderActionButton startBtn = (PipelineHeaderPanel.HeaderActionButton) header.getStartButton();
-            assertTrue(startBtn.isHighlighted(), "Start button must be highlighted when idle/ready to start");
 
             // Visual identity check: uniform size (28x24) for all action buttons
             assertEquals(new Dimension(28, 24), header.getStartButton().getPreferredSize());

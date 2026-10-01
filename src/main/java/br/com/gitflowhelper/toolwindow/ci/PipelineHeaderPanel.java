@@ -97,7 +97,6 @@ public class PipelineHeaderPanel extends JPanel {
         infoPanel.add(buildNumberLabel);
 
         infoPanel.add(statusBadge);
-        rerunBtn.setHighlighted(true);
 
         branchLabel.setIcon(AllIcons.Vcs.Branch);
         branchLabel.setFont(branchLabel.getFont().deriveFont(Font.PLAIN, 12f));
@@ -183,7 +182,6 @@ public class PipelineHeaderPanel extends JPanel {
     public void setRunning(boolean running) {
         this.isRunning = running;
         rerunBtn.setEnabled(!running);
-        rerunBtn.setHighlighted(!running);
         stopBtn.setEnabled(running);
         rerunBtn.setToolTipText(!running ? "Start pipeline" : "Pipeline is currently running");
         stopBtn.setToolTipText(running ? "Stop pipeline execution" : "No pipeline is currently running");
@@ -246,7 +244,6 @@ public class PipelineHeaderPanel extends JPanel {
             durationLabel.setVisible(false);
             buildUrl = null;
             openBrowserBtn.setEnabled(false);
-            rerunBtn.setHighlighted(true);
             return;
         }
 
@@ -261,7 +258,6 @@ public class PipelineHeaderPanel extends JPanel {
 
         statusBadge.setStatus(run.getStatus());
         statusBadge.setVisible(true);
-        rerunBtn.setHighlighted(!run.getStatus().isRunning());
         if (run.getStatus().isRunning()) {
             setRunning(true);
         } else if (run.getStatus().isTerminal()) {
@@ -288,8 +284,6 @@ public class PipelineHeaderPanel extends JPanel {
      * Unified toolbar action button sharing identical sizing, insets, and antialiased hover/pressed highlights.
      */
     public static class HeaderActionButton extends JButton {
-        private boolean highlighted = false;
-
         public HeaderActionButton(@NotNull Icon icon, @NotNull String tooltip) {
             super(icon);
             setToolTipText(tooltip);
@@ -301,15 +295,6 @@ public class PipelineHeaderPanel extends JPanel {
             setMargin(new Insets(2, 4, 2, 4));
             setPreferredSize(new Dimension(28, 24));
             putClientProperty("JButton.buttonType", "toolBarButton");
-        }
-
-        public void setHighlighted(boolean highlighted) {
-            this.highlighted = highlighted;
-            repaint();
-        }
-
-        public boolean isHighlighted() {
-            return highlighted;
         }
 
         @Override
@@ -325,14 +310,6 @@ public class PipelineHeaderPanel extends JPanel {
                     Color hoverBg = new JBColor(new Color(238, 240, 243), new Color(55, 58, 62));
                     g2.setColor(hoverBg);
                     g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
-                } else if (highlighted) {
-                    Color highlightBg = new JBColor(new Color(232, 245, 233), new Color(30, 52, 36));
-                    Color highlightBorder = new JBColor(new Color(165, 214, 167), new Color(56, 125, 60));
-                    g2.setColor(highlightBg);
-                    g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
-                    g2.setColor(highlightBorder);
-                    g2.setStroke(new BasicStroke(1.2f));
-                    g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 6, 6);
                 }
             }
             g2.dispose();
