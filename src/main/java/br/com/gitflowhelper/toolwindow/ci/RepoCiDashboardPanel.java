@@ -396,35 +396,35 @@ public class RepoCiDashboardPanel extends JPanel {
     }
 
     /**
-     * Clears console output and restores the DAG and header to idle mode displaying the stages
-     * and metadata of the last execution.
+     * Clears console output and restores the DAG and header to idle mode displaying only the stages,
+     * without any data from the last execution.
      */
     public void restoreIdlePipeline() {
         Runnable r = () -> {
             clearConsole();
             dagCanvas.setLoading(false);
-            dagCanvas.setIdle(true);
             headerPanel.setRunning(false);
-            if (lastRun != null) {
-                if (lastRun.getStatus().isRunning()) {
-                    lastRun.setStatus(PipelineStatus.ABORTED);
-                    for (PipelineStage stage : lastRun.getStages()) {
-                        if (stage.getStatus().isRunning()) {
-                            stage.setStatus(PipelineStatus.ABORTED);
-                        }
-                    }
-                }
-                dagCanvas.updatePipelineRun(lastRun);
+            if (lastRun != null && !lastRun.getStages().isEmpty()) {
+                PipelineRun idleRun = createIdleRun(lastRun);
+                dagCanvas.updatePipelineRun(idleRun);
                 dagCanvas.setIdle(true);
-                headerPanel.updatePipelineRun(lastRun, lastPlatformName != null ? lastPlatformName : headerPanel.getPlatformName());
+            } else {
+                dagCanvas.setIdle(true);
+                dagCanvas.updatePipelineRun(null);
             }
+            headerPanel.updatePipelineRun(null, lastPlatformName != null ? lastPlatformName : headerPanel.getPlatformName());
             setSplitMode(false);
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            ApplicationManager.getApplication().invokeLater(r);
+        runOnEdt(r);
+    }
+
+    public static @NotNull PipelineRun createIdleRun(@NotNull PipelineRun sourceRun) {
+        PipelineRun idleRun = new PipelineRun(null, "No Build", PipelineStatus.NOT_STARTED);
+        for (PipelineStage stage : sourceRun.getStages()) {
+            PipelineStage idleStage = new PipelineStage(stage.getId(), stage.getName(), PipelineStatus.NOT_STARTED, 0);
+            idleRun.addStage(idleStage);
         }
+        return idleRun;
     }
 
     public void clear() {

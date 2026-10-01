@@ -280,13 +280,20 @@ public class PipelineModelsAndCanvasTest {
             panel.setSplitMode(true);
             assertTrue(panel.isSplitMode());
 
-            // User triggers clear output -> restores idle pipeline of last execution, clears logs, resets split
+            // User triggers clear output -> restores idle pipeline showing only stages, without last execution data
             panel.restoreIdlePipeline();
             assertTrue(panel.getRawLogs().isEmpty());
             assertFalse(panel.isSplitMode());
             assertTrue(panel.isIdle());
             assertEquals(run, panel.getLastRun());
             assertFalse(panel.isRunning());
+            assertNotNull(panel.getDagCanvas().getPipelineRun());
+            assertEquals(1, panel.getDagCanvas().getPipelineRun().getStages().size());
+            PipelineStage restoredStage = panel.getDagCanvas().getPipelineRun().getStages().get(0);
+            assertEquals("Build", restoredStage.getName());
+            assertEquals(PipelineStatus.NOT_STARTED, restoredStage.getStatus(), "Idle stage status must be NOT_STARTED");
+            assertEquals(0, restoredStage.getDurationMillis(), "Idle stage duration must be 0");
+            assertTrue(restoredStage.getSteps().isEmpty(), "Idle stage must only show the stage itself, without steps");
         });
     }
 
@@ -464,10 +471,12 @@ public class PipelineModelsAndCanvasTest {
             assertEquals(0, canvas.getHoveredStageIndex());
             assertEquals(Cursor.HAND_CURSOR, canvas.getCursor().getType());
 
-            // Set idle = true: finished stage is NOT clickable
+            // Set idle = true: finished stage is NOT clickable and only stage header is sized
             canvas.setIdle(true);
             assertTrue(canvas.isIdle());
             assertFalse(canvas.isStageClickable(stageSuccess), "Idle diagram must NOT be clickable");
+            Rectangle idleBounds = canvas.getStageBounds(0, stageSuccess);
+            assertEquals(PipelineDagCanvas.HEADER_HEIGHT, idleBounds.height, "Idle stage card must only show stage header height");
 
             // Hover over finished stage in idle mode must not highlight or show hand cursor
             canvas.updateStageHover(new Point(bounds.x + 10, bounds.y + 10));
