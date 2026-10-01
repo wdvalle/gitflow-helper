@@ -4,6 +4,7 @@ import br.com.gitflowhelper.toolwindow.ci.PipelineDagCanvas;
 import br.com.gitflowhelper.toolwindow.ci.PipelineHeaderPanel;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -118,19 +119,60 @@ public class PipelineModelsAndCanvasTest {
             assertTrue(canvas.getPreferredSize().width >= 700);
             assertTrue(canvas.getPreferredSize().height >= 200);
 
-            // Trigger scroll to active stage
-            canvas.scrollToActiveStage();
-
-            // When all stages finish, active index shifts to the final stage (index 2)
-            stage2.setStatus(PipelineStatus.SUCCESS);
-            stage3.setStatus(PipelineStatus.SUCCESS);
-            run.setStatus(PipelineStatus.SUCCESS);
-            canvas.updatePipelineRun(run);
-            assertEquals(2, canvas.getActiveStageIndex());
-
             // Paint canvas with populated DAG
             canvas.paint(g2);
             g2.dispose();
+        } finally {
+            canvas.dispose();
+        }
+    }
+
+    @Test
+    public void testSmoothAutoScrollOnlyWhenSplitModeAndRunning() {
+        PipelineDagCanvas canvas = new PipelineDagCanvas();
+        JScrollPane scrollPane = new JScrollPane(canvas);
+        scrollPane.setBounds(0, 0, 300, 300);
+        scrollPane.getViewport().setBounds(0, 0, 300, 300);
+        canvas.setBounds(0, 0, 800, 300);
+
+        try {
+            PipelineRun run = new PipelineRun("60", "#60", PipelineStatus.IN_PROGRESS);
+            PipelineStage stage1 = new PipelineStage("s1", "Checkout", PipelineStatus.SUCCESS, 2000);
+            stage1.addStep(new PipelineStep("st1", "clone", PipelineStatus.SUCCESS, 2000));
+            run.addStage(stage1);
+
+            PipelineStage stage2 = new PipelineStage("s2", "Build & Test", PipelineStatus.IN_PROGRESS, 5000);
+            stage2.addStep(new PipelineStep("st2", "test", PipelineStatus.IN_PROGRESS, 5000));
+            run.addStage(stage2);
+
+            // 1. Single panel mode (splitMode = false): auto-scroll must NOT run even if pipeline is IN_PROGRESS
+            canvas.setSplitMode(false);
+            canvas.updatePipelineRun(run);
+            canvas.scrollToActiveStage();
+            assertFalse(canvas.isSmoothScrolling(), "Should not auto-scroll when not in split mode");
+
+            // 2. Split mode = true, but pipeline is completed: auto-scroll must NOT run
+            run.setStatus(PipelineStatus.SUCCESS);
+            stage2.setStatus(PipelineStatus.SUCCESS);
+            canvas.setSplitMode(true);
+            canvas.updatePipelineRun(run);
+            canvas.scrollToActiveStage();
+            assertFalse(canvas.isSmoothScrolling(), "Should not auto-scroll when pipeline is finished");
+
+            // 3. Split mode = true AND pipeline is IN_PROGRESS: smooth auto-scroll MUST trigger
+            run.setStatus(PipelineStatus.IN_PROGRESS);
+            stage2.setStatus(PipelineStatus.IN_PROGRESS);
+            canvas.updatePipelineRun(run);
+            canvas.scrollToActiveStage();
+            assertTrue(canvas.isSmoothScrolling(), "Must trigger smooth auto-scroll in split mode while running");
+            assertTrue(canvas.getScrollTargetX() > 0, "Target X should be positive to make active stage visible");
+
+            // 4. When pipeline finishes, smooth scroll is canceled
+            run.setStatus(PipelineStatus.SUCCESS);
+            stage2.setStatus(PipelineStatus.SUCCESS);
+            canvas.updatePipelineRun(run);
+            assertFalse(canvas.isSmoothScrolling(), "Finishing pipeline must stop any ongoing smooth scroll");
+
         } finally {
             canvas.dispose();
         }

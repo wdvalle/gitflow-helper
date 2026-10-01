@@ -2,7 +2,6 @@ package br.com.gitflowhelper.toolwindow.ci;
 
 import br.com.gitflow.cicd.model.PipelineRun;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBSplitter;
@@ -95,6 +94,7 @@ public class RepoCiDashboardPanel extends JPanel {
     public void setSplitMode(boolean split) {
         if (this.splitMode == split && centerPanel.getComponentCount() > 0) return;
         this.splitMode = split;
+        dagCanvas.setSplitMode(split);
 
         centerPanel.removeAll();
         if (split) {

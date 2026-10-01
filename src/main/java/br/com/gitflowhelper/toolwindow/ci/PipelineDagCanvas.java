@@ -35,6 +35,16 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     private int animationAngle = 0;
     private final Timer animationTimer;
 
+    // Split mode state (auto-scroll is active only when in split mode and pipeline is running)
+    private boolean splitMode = false;
+
+    // Smooth scroll animation
+    private Timer smoothScrollTimer;
+    private int scrollStartX;
+    private int scrollTargetX;
+    private int scrollCurrentStep;
+    private int scrollTotalSteps;
+
     private final StatusText emptyText = new StatusText(this) {
         @Override
         protected boolean isStatusVisible() {
@@ -57,16 +67,30 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         });
     }
 
-    private boolean hasRunningEntities() {
-        if (pipelineRun == null) return false;
-        if (pipelineRun.getStatus().isRunning()) return true;
+    public boolean isPipelineExecuting() {
+        return pipelineRun != null && pipelineRun.getStatus().isRunning();
+    }
+
+    public boolean hasRunningEntities() {
+        if (!isPipelineExecuting()) return false;
         for (PipelineStage stage : pipelineRun.getStages()) {
             if (stage.getStatus().isRunning()) return true;
             for (PipelineStep step : stage.getSteps()) {
                 if (step.getStatus().isRunning()) return true;
             }
         }
-        return false;
+        return true;
+    }
+
+    public void setSplitMode(boolean splitMode) {
+        this.splitMode = splitMode;
+        if (splitMode && isPipelineExecuting()) {
+            SwingUtilities.invokeLater(this::scrollToActiveStage);
+        }
+    }
+
+    public boolean isSplitMode() {
+        return splitMode;
     }
 
     public void updatePipelineRun(@Nullable PipelineRun run) {
@@ -80,52 +104,102 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
             if (animationTimer.isRunning()) {
                 animationTimer.stop();
             }
+            if (smoothScrollTimer != null && smoothScrollTimer.isRunning()) {
+                smoothScrollTimer.stop();
+            }
         }
 
         recomputeCanvasSize();
         repaint();
 
-        SwingUtilities.invokeLater(this::scrollToActiveStage);
+        if (splitMode && isPipelineExecuting()) {
+            SwingUtilities.invokeLater(this::scrollToActiveStage);
+        }
     }
 
     /**
-     * Automatically scrolls the viewport horizontally to follow pipeline progression.
+     * Automatically and smoothly scrolls the viewport horizontally to follow pipeline progression.
+     * Triggered exclusively when the dashboard is in split mode and the pipeline is actively running.
      */
     public void scrollToActiveStage() {
-        if (pipelineRun == null || pipelineRun.getStages().isEmpty()) {
+        if (!splitMode || !isPipelineExecuting() || pipelineRun == null || pipelineRun.getStages().isEmpty()) {
             return;
         }
 
-        List<PipelineStage> stages = pipelineRun.getStages();
-        int activeIdx = -1;
-
-        // 1. Look for currently running stage
-        for (int i = 0; i < stages.size(); i++) {
-            if (stages.get(i).getStatus().isRunning()) {
-                activeIdx = i;
-                break;
-            }
+        JViewport viewport = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
+        if (viewport == null || viewport.getWidth() <= 0) {
+            return;
         }
 
-        // 2. If none is running, look for latest executed stage (not NOT_STARTED)
+        int activeIdx = getActiveStageIndex();
         if (activeIdx < 0) {
-            for (int i = stages.size() - 1; i >= 0; i--) {
-                if (stages.get(i).getStatus() != PipelineStatus.NOT_STARTED) {
-                    activeIdx = i;
-                    break;
-                }
-            }
-        }
-
-        if (activeIdx < 0) {
-            activeIdx = 0;
+            return;
         }
 
         int stageX = START_X + (activeIdx * (STAGE_WIDTH + STAGE_GAP));
-        int targetWidth = STAGE_WIDTH + STAGE_GAP + 60;
-        Rectangle visibleRect = new Rectangle(stageX, 0, targetWidth, Math.max(100, getHeight()));
+        int viewportWidth = viewport.getWidth();
+        Point currentPos = viewport.getViewPosition();
+        int currentX = currentPos.x;
 
-        scrollRectToVisible(visibleRect);
+        int targetX;
+        // If the active card is to the right of the visible viewport, scroll so card and margin are visible
+        if (stageX + STAGE_WIDTH + 30 > currentX + viewportWidth) {
+            targetX = stageX + STAGE_WIDTH + 30 - viewportWidth;
+        } else if (stageX - 20 < currentX) {
+            // If the active card is to the left of the visible viewport
+            targetX = Math.max(0, stageX - 20);
+        } else {
+            // Already visible in viewport
+            return;
+        }
+
+        int contentWidth = Math.max(getWidth(), getPreferredSize().width);
+        int maxScroll = Math.max(0, contentWidth - viewportWidth);
+        targetX = Math.max(0, Math.min(targetX, maxScroll));
+
+        if (targetX == currentX) {
+            return;
+        }
+
+        startSmoothScroll(viewport, currentX, targetX, contentWidth);
+    }
+
+    private void startSmoothScroll(JViewport viewport, int fromX, int toX, int contentWidth) {
+        if (smoothScrollTimer != null && smoothScrollTimer.isRunning()) {
+            smoothScrollTimer.stop();
+        }
+
+        if (viewport.getViewSize().width < contentWidth) {
+            viewport.setViewSize(new Dimension(contentWidth, Math.max(viewport.getHeight(), getPreferredSize().height)));
+        }
+
+        // Smooth scroll over ~240ms (16 steps * 15ms) using cubic ease-out
+        scrollTotalSteps = 16;
+        scrollCurrentStep = 0;
+        scrollStartX = fromX;
+        scrollTargetX = toX;
+
+        smoothScrollTimer = new Timer(15, e -> {
+            scrollCurrentStep++;
+            if (scrollCurrentStep >= scrollTotalSteps) {
+                viewport.setViewPosition(new Point(scrollTargetX, viewport.getViewPosition().y));
+                smoothScrollTimer.stop();
+            } else {
+                double t = (double) scrollCurrentStep / scrollTotalSteps;
+                double easeOut = 1.0 - Math.pow(1.0 - t, 3);
+                int nextX = (int) Math.round(scrollStartX + (scrollTargetX - scrollStartX) * easeOut);
+                viewport.setViewPosition(new Point(nextX, viewport.getViewPosition().y));
+            }
+        });
+        smoothScrollTimer.start();
+    }
+
+    public boolean isSmoothScrolling() {
+        return smoothScrollTimer != null && smoothScrollTimer.isRunning();
+    }
+
+    public int getScrollTargetX() {
+        return scrollTargetX;
     }
 
     public int getActiveStageIndex() {
@@ -431,6 +505,9 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     public void dispose() {
         if (animationTimer.isRunning()) {
             animationTimer.stop();
+        }
+        if (smoothScrollTimer != null && smoothScrollTimer.isRunning()) {
+            smoothScrollTimer.stop();
         }
     }
 
