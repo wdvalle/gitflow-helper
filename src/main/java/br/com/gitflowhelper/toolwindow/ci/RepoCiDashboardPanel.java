@@ -2,6 +2,8 @@ package br.com.gitflowhelper.toolwindow.ci;
 
 import br.com.gitflow.cicd.StepLogProvider;
 import br.com.gitflow.cicd.model.PipelineRun;
+import br.com.gitflow.cicd.model.PipelineStage;
+import br.com.gitflow.cicd.model.PipelineStatus;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -45,6 +47,9 @@ public class RepoCiDashboardPanel extends JPanel {
     private boolean splitMode = false;
     private boolean autoScroll = true;
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    private final StringBuilder rawLogsBuffer = new StringBuilder();
+    private PipelineRun lastRun;
+    private String lastPlatformName;
 
     private Runnable onRerunTrigger;
     private Runnable onStopMonitoring;
@@ -93,8 +98,7 @@ public class RepoCiDashboardPanel extends JPanel {
                         if (onStopMonitoring != null) {
                             onStopMonitoring.run();
                         }
-                        clear();
-                        setSplitMode(false);
+                        restoreIdlePipeline();
                     }
                 }
         );
@@ -169,12 +173,6 @@ public class RepoCiDashboardPanel extends JPanel {
         bar.setOpaque(false);
         bar.add(left, BorderLayout.WEST);
 
-        JButton hideBtn = new JButton(AllIcons.Actions.ToggleVisibility);
-        hideBtn.setToolTipText("Switch to single panel (hide console)");
-        hideBtn.setPreferredSize(new Dimension(24, 24));
-        hideBtn.addActionListener(e -> setSplitMode(false));
-        toolbar.add(hideBtn);
-
         JButton scrollBtn = new JButton(AllIcons.Actions.MoveDown);
         scrollBtn.setToolTipText("Scroll to bottom");
         scrollBtn.setPreferredSize(new Dimension(24, 24));
@@ -188,10 +186,12 @@ public class RepoCiDashboardPanel extends JPanel {
         copyBtn.setToolTipText("Copy Console Output");
         copyBtn.setPreferredSize(new Dimension(24, 24));
         copyBtn.addActionListener(e -> {
-            String text = consolePane.getText();
-            String cleanText = extractCleanPlainText(text);
-            if (!cleanText.isEmpty()) {
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(cleanText), null);
+            String logText;
+            synchronized (rawLogsBuffer) {
+                logText = rawLogsBuffer.toString();
+            }
+            if (!logText.isEmpty()) {
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(logText), null);
             }
         });
         toolbar.add(copyBtn);
@@ -199,60 +199,57 @@ public class RepoCiDashboardPanel extends JPanel {
         JButton clearBtn = new JButton(AllIcons.Actions.GC);
         clearBtn.setToolTipText("Clear Console");
         clearBtn.setPreferredSize(new Dimension(24, 24));
-        clearBtn.addActionListener(e -> consolePane.setText(""));
+        clearBtn.addActionListener(e -> clearConsole());
         toolbar.add(clearBtn);
 
         bar.add(toolbar, BorderLayout.EAST);
         return bar;
     }
 
-    /**
-     * Converts HTML document content into clean, readable plain text with accurate newlines.
-     */
-    public static String extractCleanPlainText(@Nullable String html) {
-        if (html == null || html.trim().isEmpty()) {
+    public String getRawLogs() {
+        synchronized (rawLogsBuffer) {
+            return rawLogsBuffer.toString();
+        }
+    }
+
+    public @Nullable PipelineRun getLastRun() {
+        return lastRun;
+    }
+
+    private void runOnEdt(Runnable r) {
+        if (ApplicationManager.getApplication() != null) {
+            ApplicationManager.getApplication().invokeLater(r);
+        } else if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+    }
+
+    public void clearConsole() {
+        Runnable r = () -> {
+            synchronized (rawLogsBuffer) {
+                rawLogsBuffer.setLength(0);
+            }
+            consolePane.setText("");
+        };
+        runOnEdt(r);
+    }
+
+    private static String toPlainText(@Nullable String htmlChunk) {
+        if (htmlChunk == null || htmlChunk.isEmpty()) {
             return "";
         }
-
-        // Replace break tags and block elements with newline
-        String text = html.replaceAll("(?i)<br\\s*/?>", "\n");
-        text = text.replaceAll("(?i)</p>", "\n");
-        text = text.replaceAll("(?i)</div>", "\n");
-        text = text.replaceAll("(?i)</tr>", "\n");
-        text = text.replaceAll("(?i)</li>", "\n");
-
-        // Remove <head> section
-        text = text.replaceAll("(?is)<head>.*?</head>", "");
-
-        // Remove all other HTML tags
-        text = text.replaceAll("<[^>]+>", "");
-
-        // Unescape standard HTML entities
-        text = text.replace("&lt;", "<")
-                   .replace("&gt;", ">")
-                   .replace("&quot;", "\"")
-                   .replace("&#39;", "'")
-                   .replace("&apos;", "'")
-                   .replace("&nbsp;", " ")
-                   .replace("&amp;", "&");
-
-        // Normalize trailing whitespace per line and strip leading/trailing blank space
-        String[] lines = text.split("\\r?\\n");
-        StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        for (String rawLine : lines) {
-            String line = rawLine.stripTrailing();
-            if (line.isEmpty() && first) {
-                continue;
-            }
-            if (!first) {
-                sb.append("\n");
-            }
-            sb.append(line);
-            first = false;
-        }
-
-        return sb.toString().stripTrailing();
+        return htmlChunk
+                .replaceAll("(?i)<br\\s*/?>", "\n")
+                .replaceAll("<[^>]+>", "")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'")
+                .replace("&apos;", "'")
+                .replace("&nbsp;", " ")
+                .replace("&amp;", "&");
     }
 
     /**
@@ -291,16 +288,13 @@ public class RepoCiDashboardPanel extends JPanel {
 
     public void startLoading() {
         Runnable r = () -> {
+            clearConsole();
             dagCanvas.setIdle(false);
             dagCanvas.setLoading(true);
             headerPanel.updatePipelineRun(null, null);
             headerPanel.setRunning(true);
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            ApplicationManager.getApplication().invokeLater(r);
-        }
+        runOnEdt(r);
     }
 
     public void stopLoading() {
@@ -308,11 +302,7 @@ public class RepoCiDashboardPanel extends JPanel {
             dagCanvas.setLoading(false);
             headerPanel.setRunning(false);
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            ApplicationManager.getApplication().invokeLater(r);
-        }
+        runOnEdt(r);
     }
 
     /**
@@ -325,15 +315,17 @@ public class RepoCiDashboardPanel extends JPanel {
             headerPanel.setRunning(false);
             appendPluginLog("Pipeline execution stopped by user.");
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            ApplicationManager.getApplication().invokeLater(r);
-        }
+        runOnEdt(r);
     }
 
     public void updatePipelineRun(@Nullable PipelineRun run, @Nullable String platformName) {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        if (run != null) {
+            this.lastRun = run;
+            if (platformName != null) {
+                this.lastPlatformName = platformName;
+            }
+        }
+        Runnable r = () -> {
             headerPanel.updatePipelineRun(run, platformName);
             if (run != null && !run.getStages().isEmpty()) {
                 dagCanvas.setLoading(false);
@@ -342,7 +334,8 @@ public class RepoCiDashboardPanel extends JPanel {
             if (onNewContent != null) {
                 onNewContent.run();
             }
-        });
+        };
+        runOnEdt(r);
     }
 
     public void appendConsoleLog(@NotNull String content) {
@@ -359,8 +352,15 @@ public class RepoCiDashboardPanel extends JPanel {
             String toAppend;
             if (isPluginLog) {
                 toAppend = "<font color='#FFFFFF'>" + timestamp + ": " + content + "</font><br>";
+                synchronized (rawLogsBuffer) {
+                    rawLogsBuffer.append(timestamp).append(": ").append(content).append("\n");
+                }
             } else {
                 toAppend = content;
+                String plain = toPlainText(content);
+                synchronized (rawLogsBuffer) {
+                    rawLogsBuffer.append(plain);
+                }
             }
 
             try {
@@ -392,29 +392,43 @@ public class RepoCiDashboardPanel extends JPanel {
             }
         };
 
-        if (ApplicationManager.getApplication() != null) {
-            ApplicationManager.getApplication().invokeLater(r);
-        } else if (SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
-        }
+        runOnEdt(r);
     }
 
-    public void clear() {
+    /**
+     * Clears console output and restores the DAG and header to idle mode displaying the stages
+     * and metadata of the last execution.
+     */
+    public void restoreIdlePipeline() {
         Runnable r = () -> {
-            consolePane.setText("");
+            clearConsole();
             dagCanvas.setLoading(false);
-            dagCanvas.setIdle(false);
-            dagCanvas.updatePipelineRun(null);
-            headerPanel.updatePipelineRun(null, null);
+            dagCanvas.setIdle(true);
             headerPanel.setRunning(false);
+            if (lastRun != null) {
+                if (lastRun.getStatus().isRunning()) {
+                    lastRun.setStatus(PipelineStatus.ABORTED);
+                    for (PipelineStage stage : lastRun.getStages()) {
+                        if (stage.getStatus().isRunning()) {
+                            stage.setStatus(PipelineStatus.ABORTED);
+                        }
+                    }
+                }
+                dagCanvas.updatePipelineRun(lastRun);
+                dagCanvas.setIdle(true);
+                headerPanel.updatePipelineRun(lastRun, lastPlatformName != null ? lastPlatformName : headerPanel.getPlatformName());
+            }
+            setSplitMode(false);
         };
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();
         } else {
             ApplicationManager.getApplication().invokeLater(r);
         }
+    }
+
+    public void clear() {
+        restoreIdlePipeline();
     }
 
     public @NotNull PipelineDagCanvas getDagCanvas() {

@@ -163,6 +163,10 @@ public class PipelineHeaderPanel extends JPanel {
         platformLabel.setText(platformName);
     }
 
+    public String getPlatformName() {
+        return platformLabel.getText();
+    }
+
     public void setSplitMode(boolean split) {
         this.isSplit = split;
         toggleSplitBtn.setSelected(split);

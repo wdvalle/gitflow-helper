@@ -343,7 +343,11 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         dashboard.setCallbacks(
                 () -> triggerBuildAndMonitor(repoPath),
                 () -> stopMonitoring(repoPath),
-                () -> markTabWithNewContent(repoPath)
+                () -> markTabWithNewContent(repoPath),
+                () -> {
+                    stopMonitoring(repoPath, false);
+                    restoreIdlePipelineForRepo(repoPath);
+                }
         );
 
         String tabLabel = getRepoName(repoPath);
@@ -723,12 +727,22 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         }
     }
 
+    public void restoreIdlePipelineForRepo(String repoPath) {
+        RepoCiDashboardPanel dashboard = repoDashboards.get(repoPath);
+        if (dashboard != null) {
+            dashboard.restoreIdlePipeline();
+            if (dashboard.getLastRun() == null) {
+                CiServerConfig cfg = resolveConfigForRepo(repoPath);
+                loadInitialPipelineRunIfPossible(repoPath, cfg);
+            }
+        }
+    }
+
     public void clear() {
         ApplicationManager.getApplication().invokeLater(() -> {
             stopAllMonitoring(false);
-            for (RepoCiDashboardPanel dashboard : repoDashboards.values()) {
-                dashboard.clear();
-                dashboard.setSplitMode(false);
+            for (String repoPath : new ArrayList<>(repoDashboards.keySet())) {
+                restoreIdlePipelineForRepo(repoPath);
             }
             syncTabsWithSettings();
         });

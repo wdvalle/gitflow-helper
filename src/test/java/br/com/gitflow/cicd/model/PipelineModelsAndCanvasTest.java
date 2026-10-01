@@ -239,32 +239,55 @@ public class PipelineModelsAndCanvasTest {
     }
 
     @Test
-    public void testCleanPlainTextExtraction() {
-        String html = "<html><head><style>body { color: red; }</style></head><body>"
-                + "<font color='#FFFFFF'>2026/09/30 21:59:33: Starting build...</font><br>"
-                + "[Pipeline] { (Checkout)<br>"
-                + "[Pipeline] git clone https://github.com/myrepo.git &amp; checkout<br>"
-                + "[Pipeline] echo &quot;Hello &lt;World&gt;&quot;<br>"
-                + "[Pipeline] }<br>"
-                + "</body></html>";
+    public void testRawLogsInMemoryBufferAndConsoleClearing() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            RepoCiDashboardPanel panel = new RepoCiDashboardPanel(null, "/fake/repo");
 
-        String plainText = RepoCiDashboardPanel.extractCleanPlainText(html);
+            // 1. Initial state
+            assertTrue(panel.getRawLogs().isEmpty());
 
-        assertFalse(plainText.contains("<font"), "Tags like <font> must be stripped");
-        assertFalse(plainText.contains("<html>"), "<html> tags must be stripped");
-        assertFalse(plainText.contains("style"), "Styles in <head> must be removed");
-        assertFalse(plainText.contains("&amp;"), "Entities like &amp; must be unescaped");
-        assertTrue(plainText.contains("2026/09/30 21:59:33: Starting build..."));
-        assertTrue(plainText.contains("[Pipeline] { (Checkout)"));
-        assertTrue(plainText.contains("git clone https://github.com/myrepo.git & checkout"));
-        assertTrue(plainText.contains("echo \"Hello <World>\""));
+            // 2. Append plugin log and console log
+            panel.appendPluginLog("Build starting...");
+            panel.appendConsoleLog("<font color='#81C784'>[Pipeline] { (Checkout)</font><br>");
+            panel.appendConsoleLog("[Pipeline] echo \"Hello &lt;World&gt;\"<br>");
 
-        // Verify line breaks exist
-        String[] lines = plainText.split("\n");
-        assertEquals(5, lines.length, "Should split into exactly 5 lines with proper line breaks");
-        assertEquals("2026/09/30 21:59:33: Starting build...", lines[0]);
-        assertEquals("[Pipeline] { (Checkout)", lines[1]);
-        assertEquals("[Pipeline] }", lines[4]);
+            String logs = panel.getRawLogs();
+            assertTrue(logs.contains("Build starting..."));
+            assertTrue(logs.contains("[Pipeline] { (Checkout)"));
+            assertTrue(logs.contains("echo \"Hello <World>\""));
+            assertFalse(logs.contains("<font"));
+            assertFalse(logs.contains("<br>"));
+
+            // 3. Clear console manually
+            panel.clearConsole();
+            assertTrue(panel.getRawLogs().isEmpty());
+
+            // 4. Starting new execution clears logs
+            panel.appendConsoleLog("Old execution log\n");
+            assertFalse(panel.getRawLogs().isEmpty());
+            panel.startLoading();
+            assertTrue(panel.getRawLogs().isEmpty(), "startLoading() for new execution must clear the console logs");
+
+            // 5. Test restoreIdlePipeline with lastRun
+            PipelineRun run = new PipelineRun("42", "#42", PipelineStatus.SUCCESS);
+            PipelineStage stage1 = new PipelineStage("s1", "Build", PipelineStatus.SUCCESS, 1200);
+            run.addStage(stage1);
+
+            panel.updatePipelineRun(run, "Jenkins");
+            assertEquals(run, panel.getLastRun());
+
+            panel.appendConsoleLog("Build completed output\n");
+            panel.setSplitMode(true);
+            assertTrue(panel.isSplitMode());
+
+            // User triggers clear output -> restores idle pipeline of last execution, clears logs, resets split
+            panel.restoreIdlePipeline();
+            assertTrue(panel.getRawLogs().isEmpty());
+            assertFalse(panel.isSplitMode());
+            assertTrue(panel.isIdle());
+            assertEquals(run, panel.getLastRun());
+            assertFalse(panel.isRunning());
+        });
     }
 
     @Test
