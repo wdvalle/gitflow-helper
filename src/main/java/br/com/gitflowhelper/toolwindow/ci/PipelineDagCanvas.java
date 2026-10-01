@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.toolwindow.ci;
 
+import br.com.gitflow.cicd.StepLogProvider;
 import br.com.gitflow.cicd.model.PipelineRun;
 import br.com.gitflow.cicd.model.PipelineStage;
 import br.com.gitflow.cicd.model.PipelineStatus;
@@ -24,7 +25,8 @@ import java.util.List;
 
 /**
  * Custom 2D canvas displaying CI/CD Pipeline stages and steps as a connected DAG.
- * Supports clicking finished stages to inspect step details in a modal dialog.
+ * Supports clicking finished stages to inspect step details and logs in a modal dialog.
+ * Idle diagrams are not clickable.
  */
 public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText, Disposable {
 
@@ -44,6 +46,9 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     // Loading / initializing state (shows animated spinner before first stage arrives)
     private boolean loading = false;
 
+    // Idle state: when true, diagram represents idle state and stages are not clickable
+    private boolean idle = false;
+
     // Split mode state (auto-scroll is active only when in split mode and pipeline is running)
     private boolean splitMode = false;
 
@@ -56,6 +61,9 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
 
     // Hover tracking for clickable finished stages
     private int hoveredStageIndex = -1;
+
+    // Optional provider to fetch step logs on-demand
+    private StepLogProvider stepLogProvider;
 
     private final StatusText emptyText = new StatusText(this) {
         @Override
@@ -106,7 +114,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
                     int idx = getStageIndexAt(e.getPoint());
                     if (idx >= 0 && pipelineRun != null && idx < pipelineRun.getStages().size()) {
                         PipelineStage stage = pipelineRun.getStages().get(idx);
-                        if (isStageFinished(stage)) {
+                        if (isStageClickable(stage)) {
                             openStageDetailsDialog(stage);
                         }
                     }
@@ -125,6 +133,28 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         return project;
     }
 
+    public void setStepLogProvider(@Nullable StepLogProvider provider) {
+        this.stepLogProvider = provider;
+    }
+
+    public @Nullable StepLogProvider getStepLogProvider() {
+        return stepLogProvider;
+    }
+
+    public void setIdle(boolean idle) {
+        this.idle = idle;
+        if (idle && hoveredStageIndex != -1) {
+            hoveredStageIndex = -1;
+            setCursor(Cursor.getDefaultCursor());
+            setToolTipText(null);
+            repaint();
+        }
+    }
+
+    public boolean isIdle() {
+        return idle;
+    }
+
     public static boolean isStageFinished(@Nullable PipelineStage stage) {
         if (stage == null) return false;
         PipelineStatus status = stage.getStatus();
@@ -133,6 +163,17 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
                 || status == PipelineStatus.ABORTED
                 || status == PipelineStatus.SKIPPED
                 || status == PipelineStatus.PAUSED;
+    }
+
+    /**
+     * Determines whether a stage can be clicked by the user.
+     * Finished stages are clickable, but the idle diagram is not clickable.
+     */
+    public boolean isStageClickable(@Nullable PipelineStage stage) {
+        if (idle) {
+            return false;
+        }
+        return isStageFinished(stage);
     }
 
     public Rectangle getStageBounds(int index, @NotNull PipelineStage stage) {
@@ -162,8 +203,8 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
 
     public void openStageDetailsDialog(@NotNull PipelineStage stage) {
         StageDetailsDialog dialog = project != null
-                ? new StageDetailsDialog(project, stage)
-                : new StageDetailsDialog(this, stage);
+                ? new StageDetailsDialog(project, stage, stepLogProvider)
+                : new StageDetailsDialog(this, stage, stepLogProvider);
         dialog.show();
     }
 
@@ -171,7 +212,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         int idx = getStageIndexAt(p);
         if (idx >= 0 && pipelineRun != null && idx < pipelineRun.getStages().size()) {
             PipelineStage stage = pipelineRun.getStages().get(idx);
-            if (isStageFinished(stage)) {
+            if (isStageClickable(stage)) {
                 if (hoveredStageIndex != idx) {
                     hoveredStageIndex = idx;
                     setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -192,6 +233,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     public void setLoading(boolean loading) {
         this.loading = loading;
         if (loading) {
+            this.idle = false;
             this.pipelineRun = null;
             this.hoveredStageIndex = -1;
             setCursor(Cursor.getDefaultCursor());
@@ -244,6 +286,10 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
             this.pipelineRun = run;
         } else if (!loading) {
             this.pipelineRun = run;
+        }
+
+        if (run != null && run.getStatus().isRunning()) {
+            this.idle = false;
         }
 
         if (loading || hasRunningEntities()) {
@@ -507,8 +553,8 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         int stepCount = Math.max(1, steps.size());
         int cardHeight = HEADER_HEIGHT + (stepCount * STEP_ROW_HEIGHT) + 10;
 
-        boolean finished = isStageFinished(stage);
-        boolean isHovered = (hoveredStageIndex == index && finished);
+        boolean clickable = isStageClickable(stage);
+        boolean isHovered = (hoveredStageIndex == index && clickable);
 
         // Card outer border and background
         RoundRectangle2D.Double cardShape = new RoundRectangle2D.Double(x, y, STAGE_WIDTH, cardHeight, CORNER_RADIUS, CORNER_RADIUS);
@@ -569,13 +615,13 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         FontMetrics fm = g2.getFontMetrics();
         String durationText = stage.getFormattedDuration();
 
-        // Right side: duration and clickable indicator if finished
+        // Right side: duration and clickable indicator if finished and not idle
         int rightMargin = 10;
-        if (finished) {
-            // Draw small chevron or magnifying cue indicating clickable
+        if (clickable) {
+            // Draw small chevron cue indicating clickable
             g2.setFont(g2.getFont().deriveFont(Font.BOLD, 10f));
             g2.setColor(isHovered ? new JBColor(new Color(25, 118, 210), new Color(100, 181, 246)) : JBColor.GRAY);
-            g2.drawString("›", x + STAGE_WIDTH - 12, y + 23);
+            g2.drawString("\u203a", x + STAGE_WIDTH - 12, y + 23);
             rightMargin = 18;
         }
 

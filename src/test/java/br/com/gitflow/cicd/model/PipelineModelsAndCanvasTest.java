@@ -1,5 +1,6 @@
 package br.com.gitflow.cicd.model;
 
+import br.com.gitflow.cicd.StepLogProvider;
 import br.com.gitflowhelper.dialog.StageDetailsDialog;
 import com.intellij.openapi.ui.DialogWrapper;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.image.BufferedImage;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -83,6 +85,24 @@ public class PipelineModelsAndCanvasTest {
         assertEquals(PipelineStatus.IN_PROGRESS, run.getStatus());
         assertEquals(1, run.getStages().size());
         assertEquals("1m 10s", run.getFormattedDuration());
+    }
+
+    @Test
+    public void testPipelineStepLogs() {
+        PipelineStep step = new PipelineStep("step-1", "Compile Code", PipelineStatus.SUCCESS, 3500);
+        assertEquals("", step.getLog());
+
+        step.appendLog("[INFO] Scanning for projects...");
+        step.appendLog("[INFO] Compiling 24 source files to target/classes\n");
+        step.appendLog("[INFO] BUILD SUCCESS");
+
+        String log = step.getLog();
+        assertTrue(log.contains("[INFO] Scanning for projects..."));
+        assertTrue(log.contains("[INFO] Compiling 24 source files to target/classes"));
+        assertTrue(log.contains("[INFO] BUILD SUCCESS"));
+
+        step.setLog("Reset logs directly");
+        assertEquals("Reset logs directly", step.getLog());
     }
 
     @Test
@@ -170,54 +190,56 @@ public class PipelineModelsAndCanvasTest {
     }
 
     @Test
-    public void testSmoothAutoScrollOnlyWhenSplitModeAndRunning() {
-        PipelineDagCanvas canvas = new PipelineDagCanvas();
-        JScrollPane scrollPane = new JScrollPane(canvas);
-        scrollPane.setBounds(0, 0, 300, 300);
-        scrollPane.getViewport().setBounds(0, 0, 300, 300);
-        canvas.setBounds(0, 0, 800, 300);
+    public void testSmoothAutoScrollOnlyWhenSplitModeAndRunning() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            PipelineDagCanvas canvas = new PipelineDagCanvas();
+            JScrollPane scrollPane = new JScrollPane(canvas);
+            scrollPane.setBounds(0, 0, 300, 300);
+            scrollPane.getViewport().setBounds(0, 0, 300, 300);
+            canvas.setBounds(0, 0, 800, 300);
 
-        try {
-            PipelineRun run = new PipelineRun("60", "#60", PipelineStatus.IN_PROGRESS);
-            PipelineStage stage1 = new PipelineStage("s1", "Checkout", PipelineStatus.SUCCESS, 2000);
-            stage1.addStep(new PipelineStep("st1", "clone", PipelineStatus.SUCCESS, 2000));
-            run.addStage(stage1);
+            try {
+                PipelineRun run = new PipelineRun("60", "#60", PipelineStatus.IN_PROGRESS);
+                PipelineStage stage1 = new PipelineStage("s1", "Checkout", PipelineStatus.SUCCESS, 2000);
+                stage1.addStep(new PipelineStep("st1", "clone", PipelineStatus.SUCCESS, 2000));
+                run.addStage(stage1);
 
-            PipelineStage stage2 = new PipelineStage("s2", "Build & Test", PipelineStatus.IN_PROGRESS, 5000);
-            stage2.addStep(new PipelineStep("st2", "test", PipelineStatus.IN_PROGRESS, 5000));
-            run.addStage(stage2);
+                PipelineStage stage2 = new PipelineStage("s2", "Build & Test", PipelineStatus.IN_PROGRESS, 5000);
+                stage2.addStep(new PipelineStep("st2", "test", PipelineStatus.IN_PROGRESS, 5000));
+                run.addStage(stage2);
 
-            // 1. Single panel mode (splitMode = false): auto-scroll must NOT run even if pipeline is IN_PROGRESS
-            canvas.setSplitMode(false);
-            canvas.updatePipelineRun(run);
-            canvas.scrollToActiveStage();
-            assertFalse(canvas.isSmoothScrolling(), "Should not auto-scroll when not in split mode");
+                // 1. Single panel mode (splitMode = false): auto-scroll must NOT run even if pipeline is IN_PROGRESS
+                canvas.setSplitMode(false);
+                canvas.updatePipelineRun(run);
+                canvas.scrollToActiveStage();
+                assertFalse(canvas.isSmoothScrolling(), "Should not auto-scroll when not in split mode");
 
-            // 2. Split mode = true, but pipeline is completed: auto-scroll must NOT run
-            run.setStatus(PipelineStatus.SUCCESS);
-            stage2.setStatus(PipelineStatus.SUCCESS);
-            canvas.setSplitMode(true);
-            canvas.updatePipelineRun(run);
-            canvas.scrollToActiveStage();
-            assertFalse(canvas.isSmoothScrolling(), "Should not auto-scroll when pipeline is finished");
+                // 2. Split mode = true, but pipeline is completed: auto-scroll must NOT run
+                run.setStatus(PipelineStatus.SUCCESS);
+                stage2.setStatus(PipelineStatus.SUCCESS);
+                canvas.setSplitMode(true);
+                canvas.updatePipelineRun(run);
+                canvas.scrollToActiveStage();
+                assertFalse(canvas.isSmoothScrolling(), "Should not auto-scroll when pipeline is finished");
 
-            // 3. Split mode = true AND pipeline is IN_PROGRESS: smooth auto-scroll MUST trigger
-            run.setStatus(PipelineStatus.IN_PROGRESS);
-            stage2.setStatus(PipelineStatus.IN_PROGRESS);
-            canvas.updatePipelineRun(run);
-            canvas.scrollToActiveStage();
-            assertTrue(canvas.isSmoothScrolling(), "Must trigger smooth auto-scroll in split mode while running");
-            assertTrue(canvas.getScrollTargetX() > 0, "Target X should be positive to make active stage visible");
+                // 3. Split mode = true AND pipeline is IN_PROGRESS: smooth auto-scroll MUST trigger
+                run.setStatus(PipelineStatus.IN_PROGRESS);
+                stage2.setStatus(PipelineStatus.IN_PROGRESS);
+                canvas.updatePipelineRun(run);
+                canvas.scrollToActiveStage();
+                assertTrue(canvas.isSmoothScrolling(), "Must trigger smooth auto-scroll in split mode while running");
+                assertTrue(canvas.getScrollTargetX() > 0, "Target X should be positive to make active stage visible");
 
-            // 4. When pipeline finishes, smooth scroll is canceled
-            run.setStatus(PipelineStatus.SUCCESS);
-            stage2.setStatus(PipelineStatus.SUCCESS);
-            canvas.updatePipelineRun(run);
-            assertFalse(canvas.isSmoothScrolling(), "Finishing pipeline must stop any ongoing smooth scroll");
+                // 4. When pipeline finishes, smooth scroll is canceled
+                run.setStatus(PipelineStatus.SUCCESS);
+                stage2.setStatus(PipelineStatus.SUCCESS);
+                canvas.updatePipelineRun(run);
+                assertFalse(canvas.isSmoothScrolling(), "Finishing pipeline must stop any ongoing smooth scroll");
 
-        } finally {
-            canvas.dispose();
-        }
+            } finally {
+                canvas.dispose();
+            }
+        });
     }
 
     @Test
@@ -250,20 +272,23 @@ public class PipelineModelsAndCanvasTest {
     }
 
     @Test
-    public void testPipelineHeaderPanel() {
-        PipelineHeaderPanel header = new PipelineHeaderPanel();
-        header.setPlatformName("Jenkins");
-        header.setSplitMode(false);
+    public void testPipelineHeaderPanel() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            PipelineHeaderPanel header = new PipelineHeaderPanel();
+            header.setPlatformName("Jenkins");
+            header.setSplitMode(false);
 
-        PipelineRun run = new PipelineRun("12", "Build #12", PipelineStatus.SUCCESS);
-        run.setBranch("develop");
-        run.setDurationMillis(35000);
-        run.setWebUrl("http://localhost:8080/job/test/12");
+            PipelineRun run = new PipelineRun("12", "Build #12", PipelineStatus.SUCCESS);
+            run.setBranch("develop");
+            run.setDurationMillis(35000);
+            run.setWebUrl("http://localhost:8080/job/test/12");
 
-        header.updatePipelineRun(run, "Jenkins");
-        header.setSplitMode(true);
-        assertNotNull(header);
+            header.updatePipelineRun(run, "Jenkins");
+            header.setSplitMode(true);
+            assertNotNull(header);
+        });
     }
+
     @Test
     public void testStageFinishedPredicates() {
         PipelineStage stageSuccess = new PipelineStage("1", "Checkout", PipelineStatus.SUCCESS, 2000);
@@ -283,6 +308,51 @@ public class PipelineModelsAndCanvasTest {
         assertFalse(PipelineDagCanvas.isStageFinished(stageInProgress));
         assertFalse(PipelineDagCanvas.isStageFinished(stageNotStarted));
         assertFalse(PipelineDagCanvas.isStageFinished(null));
+    }
+
+    @Test
+    public void testIdleCanvasNotClickable() {
+        PipelineDagCanvas canvas = new PipelineDagCanvas();
+        try {
+            PipelineStage stageSuccess = new PipelineStage("1", "Checkout", PipelineStatus.SUCCESS, 2000);
+            stageSuccess.addStep(new PipelineStep("st1", "git clone", PipelineStatus.SUCCESS, 2000));
+            PipelineRun run = new PipelineRun("1", "#1", PipelineStatus.SUCCESS);
+            run.addStage(stageSuccess);
+            canvas.updatePipelineRun(run);
+
+            // Initially not idle: finished stage is clickable
+            assertFalse(canvas.isIdle());
+            assertTrue(canvas.isStageClickable(stageSuccess));
+
+            Rectangle bounds = canvas.getStageBounds(0, stageSuccess);
+            canvas.updateStageHover(new Point(bounds.x + 10, bounds.y + 10));
+            assertEquals(0, canvas.getHoveredStageIndex());
+            assertEquals(Cursor.HAND_CURSOR, canvas.getCursor().getType());
+
+            // Set idle = true: finished stage is NOT clickable
+            canvas.setIdle(true);
+            assertTrue(canvas.isIdle());
+            assertFalse(canvas.isStageClickable(stageSuccess), "Idle diagram must NOT be clickable");
+
+            // Hover over finished stage in idle mode must not highlight or show hand cursor
+            canvas.updateStageHover(new Point(bounds.x + 10, bounds.y + 10));
+            assertEquals(-1, canvas.getHoveredStageIndex(), "Idle stage should not have hover effect");
+            assertEquals(Cursor.DEFAULT_CURSOR, canvas.getCursor().getType(), "Idle stage should keep default cursor");
+
+            // Painting idle canvas should succeed without exceptions
+            BufferedImage img = new BufferedImage(600, 300, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = img.createGraphics();
+            canvas.paint(g2);
+            g2.dispose();
+
+            // When updated with a running pipeline, idle flag resets
+            PipelineRun runningRun = new PipelineRun("2", "#2", PipelineStatus.IN_PROGRESS);
+            runningRun.addStage(new PipelineStage("2", "Test", PipelineStatus.IN_PROGRESS, 1000));
+            canvas.updatePipelineRun(runningRun);
+            assertFalse(canvas.isIdle(), "Running pipeline should clear idle flag");
+        } finally {
+            canvas.dispose();
+        }
     }
 
     @Test
@@ -371,6 +441,83 @@ public class PipelineModelsAndCanvasTest {
             }
         });
     }
+
+    @Test
+    public void testStageDetailsDialogStepLogsAndProvider() throws Exception {
+        PipelineStage stage = new PipelineStage("stage-deploy", "Deploy Stage", PipelineStatus.SUCCESS, 10000);
+        PipelineStep step1 = new PipelineStep("step-build", "Build Image", PipelineStatus.SUCCESS, 5000);
+        step1.setLog("[docker] Building image gitflow-helper:latest\n[docker] Step 1/5 FROM openjdk:17\n[docker] Success");
+
+        PipelineStep step2 = new PipelineStep("step-push", "Push Image", PipelineStatus.SUCCESS, 5000);
+        // step2 has no pre-cached log, will use provider
+        stage.addStep(step1);
+        stage.addStep(step2);
+
+        StepLogProvider mockProvider = step -> {
+            if ("step-push".equals(step.getId())) {
+                return "[docker] Pushing image to registry...\n[docker] Pushed successfully";
+            }
+            return null;
+        };
+
+        final StageDetailsDialog[] dialogRef = new StageDetailsDialog[1];
+        final JFrame[] frameRef = new JFrame[1];
+        final StageDetailsDialog.StepCollapsiblePanel[] panelsRef = new StageDetailsDialog.StepCollapsiblePanel[2];
+
+        SwingUtilities.invokeAndWait(() -> {
+            JFrame frame = new JFrame();
+            JPanel panel = new JPanel();
+            frame.add(panel);
+            StageDetailsDialog dialog = new StageDetailsDialog(panel, stage, mockProvider);
+
+            dialogRef[0] = dialog;
+            frameRef[0] = frame;
+
+            List<StageDetailsDialog.StepCollapsiblePanel> panels = dialog.getStepPanels();
+            assertEquals(2, panels.size());
+            panelsRef[0] = panels.get(0);
+            panelsRef[1] = panels.get(1);
+
+            // Initial state: collapsed
+            assertFalse(panelsRef[0].isExpanded());
+            assertFalse(panelsRef[1].isExpanded());
+
+            // Expand step1: log loaded synchronously from step.getLog()
+            panelsRef[0].setExpanded(true);
+            assertTrue(panelsRef[0].getLogText().contains("Building image gitflow-helper:latest"));
+            assertTrue(panelsRef[0].getLogText().contains("[docker] Success"));
+
+            // Test copy log button for step1
+            panelsRef[0].getCopyButton().doClick();
+            try {
+                String clipboardContent = (String) Toolkit.getDefaultToolkit()
+                        .getSystemClipboard().getData(DataFlavor.stringFlavor);
+                assertEquals(panelsRef[0].getLogText(), clipboardContent);
+            } catch (Exception ignored) {
+                // Clipboard access may be restricted in headless or certain CI environments
+            }
+
+            // Expand step2: triggers async fetch via provider
+            panelsRef[1].setExpanded(true);
+        });
+
+        // Wait outside EDT so background thread & EDT invokeLater can complete
+        long deadline = System.currentTimeMillis() + 3000;
+        while (System.currentTimeMillis() < deadline && !panelsRef[1].getLogText().contains("Pushing image")) {
+            Thread.sleep(50);
+        }
+
+        SwingUtilities.invokeAndWait(() -> {
+            try {
+                assertTrue(panelsRef[1].getLogText().contains("Pushing image to registry..."));
+                assertTrue(panelsRef[1].getLogText().contains("Pushed successfully"));
+            } finally {
+                dialogRef[0].close(DialogWrapper.OK_EXIT_CODE);
+                frameRef[0].dispose();
+            }
+        });
+    }
+
     @Test
     public void testStageHoverInteraction() {
         PipelineDagCanvas canvas = new PipelineDagCanvas();

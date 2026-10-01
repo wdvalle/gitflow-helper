@@ -9,6 +9,7 @@ public class PipelineStep {
     private PipelineStatus status;
     private long durationMillis;
     private long startTimeMillis;
+    private final StringBuilder logBuilder = new StringBuilder();
 
     public PipelineStep(@NotNull String id, @NotNull String name, @NotNull PipelineStatus status, long durationMillis) {
         this.id = id;
@@ -47,6 +48,24 @@ public class PipelineStep {
 
     public void setStartTimeMillis(long startTimeMillis) {
         this.startTimeMillis = startTimeMillis;
+    }
+
+    public @NotNull String getLog() {
+        return logBuilder.toString();
+    }
+
+    public void setLog(@Nullable String log) {
+        logBuilder.setLength(0);
+        if (log != null) {
+            logBuilder.append(log);
+        }
+    }
+
+    public void appendLog(@NotNull String text) {
+        if (logBuilder.length() > 0) {
+            logBuilder.append("\n");
+        }
+        logBuilder.append(text);
     }
 
     public String getFormattedDuration() {

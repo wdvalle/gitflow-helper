@@ -1,9 +1,11 @@
 package br.com.gitflowhelper.dialog;
 
+import br.com.gitflow.cicd.StepLogProvider;
 import br.com.gitflow.cicd.model.PipelineStage;
 import br.com.gitflow.cicd.model.PipelineStatus;
 import br.com.gitflow.cicd.model.PipelineStep;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -27,22 +29,34 @@ import java.util.List;
 /**
  * Modal dialog displaying detailed execution information for a pipeline stage
  * and all its steps in a collapsible/expandable accordion view.
+ * When expanding each step, displays the pipeline console logs of that item.
  */
 public class StageDetailsDialog extends DialogWrapper {
 
     private final PipelineStage stage;
+    private final StepLogProvider logProvider;
     private final List<StepCollapsiblePanel> stepPanels = new ArrayList<>();
     private JPanel stepsContainer;
 
     public StageDetailsDialog(@Nullable Project project, @NotNull PipelineStage stage) {
+        this(project, stage, null);
+    }
+
+    public StageDetailsDialog(@Nullable Project project, @NotNull PipelineStage stage, @Nullable StepLogProvider logProvider) {
         super(project, true);
         this.stage = stage;
+        this.logProvider = logProvider;
         initDialog();
     }
 
     public StageDetailsDialog(@NotNull Component parent, @NotNull PipelineStage stage) {
+        this(parent, stage, null);
+    }
+
+    public StageDetailsDialog(@NotNull Component parent, @NotNull PipelineStage stage, @Nullable StepLogProvider logProvider) {
         super(parent, true);
         this.stage = stage;
+        this.logProvider = logProvider;
         initDialog();
     }
 
@@ -50,14 +64,14 @@ public class StageDetailsDialog extends DialogWrapper {
         setTitle("Stage Details \u2014 " + stage.getName());
         setResizable(true);
         init();
-        setSize(640, 520);
+        setSize(680, 540);
     }
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
         JPanel root = new JPanel(new BorderLayout(0, 12));
         root.setBorder(JBUI.Borders.empty(12, 14, 10, 14));
-        root.setPreferredSize(new Dimension(620, 480));
+        root.setPreferredSize(new Dimension(660, 500));
 
         // 1. Top Header Summary
         root.add(createStageSummaryHeader(), BorderLayout.NORTH);
@@ -82,7 +96,7 @@ public class StageDetailsDialog extends DialogWrapper {
         } else {
             for (int i = 0; i < steps.size(); i++) {
                 PipelineStep step = steps.get(i);
-                StepCollapsiblePanel panel = new StepCollapsiblePanel(step, i + 1, () -> {
+                StepCollapsiblePanel panel = new StepCollapsiblePanel(step, i + 1, logProvider, () -> {
                     stepsContainer.revalidate();
                     stepsContainer.repaint();
                 });
@@ -169,7 +183,7 @@ public class StageDetailsDialog extends DialogWrapper {
 
             JButton expandAllBtn = new JButton("Expand all", AllIcons.Actions.Expandall);
             expandAllBtn.putClientProperty("JButton.buttonType", "toolBarButton");
-            expandAllBtn.setToolTipText("Expand all step details");
+            expandAllBtn.setToolTipText("Expand all step details and logs");
             expandAllBtn.addActionListener(e -> setAllExpanded(true));
             actionsPanel.add(expandAllBtn);
 
@@ -234,28 +248,57 @@ public class StageDetailsDialog extends DialogWrapper {
         return badge;
     }
 
+    public static void copyTextToClipboard(@Nullable String text) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+        try {
+            if (ApplicationManager.getApplication() != null) {
+                CopyPasteManager.getInstance().setContents(new StringSelection(text));
+                return;
+            }
+        } catch (Throwable ignored) {
+        }
+        try {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
+        } catch (Throwable ignored) {
+        }
+    }
+
     @Override
     protected Action @NotNull [] createActions() {
         return new Action[]{getOKAction()};
     }
 
     // -----------------------------------------------------------------------
-    // Collapsible Step Panel Component
+    // Collapsible Step Panel Component with Logs
     // -----------------------------------------------------------------------
 
     public static class StepCollapsiblePanel extends JPanel {
         private final PipelineStep step;
         private final int index;
+        private final StepLogProvider logProvider;
         private boolean expanded = false;
         private final JLabel chevronLabel;
         private final JPanel headerPanel;
         private final JPanel contentPanel;
+        private final JTextArea logArea;
+        private final JButton copyLogBtn;
         private final Runnable onToggle;
+        private boolean logLoaded = false;
+
+        private static final Color CONSOLE_BG = new JBColor(new Color(0x28, 0x2A, 0x2E), new Color(0x1E, 0x1F, 0x22));
+        private static final Color CONSOLE_FG = new JBColor(new Color(0xD8, 0xD8, 0xD8), new Color(0xBC, 0xBE, 0xC4));
 
         public StepCollapsiblePanel(@NotNull PipelineStep step, int index, @Nullable Runnable onToggle) {
+            this(step, index, null, onToggle);
+        }
+
+        public StepCollapsiblePanel(@NotNull PipelineStep step, int index, @Nullable StepLogProvider logProvider, @Nullable Runnable onToggle) {
             super(new BorderLayout());
             this.step = step;
             this.index = index;
+            this.logProvider = logProvider;
             this.onToggle = onToggle;
             setOpaque(false);
             setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -335,7 +378,29 @@ public class StageDetailsDialog extends DialogWrapper {
 
             add(headerPanel, BorderLayout.NORTH);
 
-            // 2. Expandable Content Panel
+            // 2. Log Text Area & Copy Button
+            logArea = new JTextArea();
+            logArea.setEditable(false);
+            logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+            logArea.setTabSize(4);
+            logArea.setLineWrap(false);
+            logArea.setBackground(CONSOLE_BG);
+            logArea.setForeground(CONSOLE_FG);
+            logArea.setCaretColor(CONSOLE_FG);
+            logArea.setBorder(JBUI.Borders.empty(6, 8));
+
+            copyLogBtn = new JButton("Copy log", AllIcons.Actions.Copy);
+            copyLogBtn.putClientProperty("JButton.buttonType", "toolBarButton");
+            copyLogBtn.setFont(copyLogBtn.getFont().deriveFont(Font.PLAIN, 10f));
+            copyLogBtn.setToolTipText("Copy step log to clipboard");
+            copyLogBtn.addActionListener(e -> {
+                String text = logArea.getText();
+                if (!text.isEmpty()) {
+                    copyTextToClipboard(text);
+                }
+            });
+
+            // 3. Expandable Content Panel
             contentPanel = createContentPanel(borderColor);
             contentPanel.setVisible(false);
             add(contentPanel, BorderLayout.CENTER);
@@ -351,6 +416,7 @@ public class StageDetailsDialog extends DialogWrapper {
                     JBUI.Borders.empty(10, 14, 10, 14)
             ));
 
+            // Metadata rows
             content.add(createDetailRow("Step ID:", step.getId()));
             content.add(Box.createVerticalStrut(4));
             content.add(createDetailRow("Status:", step.getStatus().getDisplayName()));
@@ -367,22 +433,47 @@ public class StageDetailsDialog extends DialogWrapper {
                 content.add(Box.createVerticalStrut(6));
             }
 
-            // Quick action: copy step summary
-            JPanel copyPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-            copyPanel.setOpaque(false);
-            JButton copyBtn = new JButton("Copy info", AllIcons.Actions.Copy);
-            copyBtn.putClientProperty("JButton.buttonType", "toolBarButton");
-            copyBtn.setFont(copyBtn.getFont().deriveFont(Font.PLAIN, 10f));
-            copyBtn.setToolTipText("Copy step details to clipboard");
-            copyBtn.addActionListener(e -> {
+            content.add(Box.createVerticalStrut(4));
+
+            // Step Log Section Header + Action toolbar
+            JPanel logHeader = new JPanel(new BorderLayout());
+            logHeader.setOpaque(false);
+
+            JBLabel logSectionLabel = new JBLabel("Step Log Output:");
+            logSectionLabel.setFont(logSectionLabel.getFont().deriveFont(Font.BOLD, 11f));
+            logSectionLabel.setForeground(JBColor.foreground());
+            logHeader.add(logSectionLabel, BorderLayout.WEST);
+
+            JPanel logActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+            logActions.setOpaque(false);
+            logActions.add(copyLogBtn);
+
+            JButton copyInfoBtn = new JButton("Copy info", AllIcons.Actions.Copy);
+            copyInfoBtn.putClientProperty("JButton.buttonType", "toolBarButton");
+            copyInfoBtn.setFont(copyInfoBtn.getFont().deriveFont(Font.PLAIN, 10f));
+            copyInfoBtn.setToolTipText("Copy step details summary");
+            copyInfoBtn.addActionListener(e -> {
                 String text = "Step: " + step.getName() + "\n" +
                         "ID: " + step.getId() + "\n" +
                         "Status: " + step.getStatus().getDisplayName() + "\n" +
                         "Duration: " + step.getFormattedDuration() + " (" + step.getDurationMillis() + " ms)";
-                CopyPasteManager.getInstance().setContents(new StringSelection(text));
+                copyTextToClipboard(text);
             });
-            copyPanel.add(copyBtn);
-            content.add(copyPanel);
+            logActions.add(copyInfoBtn);
+
+            logHeader.add(logActions, BorderLayout.EAST);
+            content.add(logHeader);
+            content.add(Box.createVerticalStrut(6));
+
+            // Log Scroll Pane
+            JBScrollPane logScrollPane = new JBScrollPane(logArea);
+            logScrollPane.setPreferredSize(new Dimension(0, 140));
+            logScrollPane.setMinimumSize(new Dimension(0, 80));
+            logScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+            logScrollPane.setBorder(BorderFactory.createLineBorder(
+                    new JBColor(new Color(215, 218, 222), new Color(52, 54, 58)), 1, true
+            ));
+            content.add(logScrollPane);
 
             return content;
         }
@@ -390,6 +481,7 @@ public class StageDetailsDialog extends DialogWrapper {
         private JPanel createDetailRow(String label, String value) {
             JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
             row.setOpaque(false);
+            row.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             JBLabel lbl = new JBLabel(label);
             lbl.setFont(lbl.getFont().deriveFont(Font.BOLD, 11f));
@@ -403,9 +495,61 @@ public class StageDetailsDialog extends DialogWrapper {
             return row;
         }
 
+        private void loadLogContentIfNeeded() {
+            String stepLog = step.getLog();
+            if (!stepLog.trim().isEmpty()) {
+                logArea.setForeground(CONSOLE_FG);
+                logArea.setText(stepLog);
+                logArea.setCaretPosition(0);
+                logLoaded = true;
+                return;
+            }
+
+            if (logProvider != null && !logLoaded) {
+                logArea.setForeground(JBColor.GRAY);
+                logArea.setText("Loading step logs...");
+                Runnable fetchTask = () -> {
+                    try {
+                        String fetched = logProvider.getStepLog(step);
+                        SwingUtilities.invokeLater(() -> {
+                            if (fetched != null && !fetched.trim().isEmpty()) {
+                                step.setLog(fetched);
+                                logArea.setForeground(CONSOLE_FG);
+                                logArea.setText(fetched);
+                            } else {
+                                logArea.setForeground(JBColor.GRAY);
+                                logArea.setText("(No log output recorded for this step)");
+                            }
+                            logArea.setCaretPosition(0);
+                            logLoaded = true;
+                        });
+                    } catch (Throwable t) {
+                        SwingUtilities.invokeLater(() -> {
+                            logArea.setForeground(JBColor.RED);
+                            logArea.setText("Error loading log: " + t.getMessage());
+                            logLoaded = true;
+                        });
+                    }
+                };
+                if (ApplicationManager.getApplication() != null) {
+                    ApplicationManager.getApplication().executeOnPooledThread(fetchTask);
+                } else {
+                    new Thread(fetchTask, "StepLogFetcher-" + step.getId()).start();
+                }
+            } else if (!logLoaded) {
+                logArea.setForeground(JBColor.GRAY);
+                logArea.setText("(No log output recorded for this step)");
+                logArea.setCaretPosition(0);
+                logLoaded = true;
+            }
+        }
+
         public void setExpanded(boolean expanded) {
             this.expanded = expanded;
             chevronLabel.setIcon(expanded ? AllIcons.General.ArrowDown : AllIcons.General.ArrowRight);
+            if (expanded) {
+                loadLogContentIfNeeded();
+            }
             contentPanel.setVisible(expanded);
             if (onToggle != null) {
                 onToggle.run();
@@ -418,6 +562,18 @@ public class StageDetailsDialog extends DialogWrapper {
 
         public PipelineStep getStep() {
             return step;
+        }
+
+        public @NotNull String getLogText() {
+            return logArea.getText();
+        }
+
+        public @NotNull JTextArea getLogArea() {
+            return logArea;
+        }
+
+        public @NotNull JButton getCopyButton() {
+            return copyLogBtn;
         }
     }
 
@@ -445,7 +601,7 @@ public class StageDetailsDialog extends DialogWrapper {
 
                 g2.setColor(Color.WHITE);
                 g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2.drawLine(x + 3, y + (size / 2), x + (size / 2) - 1, y + size - 4);
+                g2.drawLine(x + 3, y + (size / 2), ixOr(x + (size / 2) - 1), y + size - 4);
                 g2.drawLine(x + (size / 2) - 1, y + size - 4, x + size - 3, y + 4);
 
             } else if (status == PipelineStatus.FAILED) {
@@ -479,6 +635,10 @@ public class StageDetailsDialog extends DialogWrapper {
             }
 
             g2.dispose();
+        }
+
+        private int ixOr(int val) {
+            return val;
         }
 
         @Override

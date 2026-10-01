@@ -195,6 +195,9 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                         }
                     }
                     dashboard.updatePipelineRun(run, connector.getPlatformName());
+                    // Idle diagram is not clickable
+                    dashboard.setIdle(true);
+                    dashboard.setStepLogProvider(step -> connector.fetchStepLog(step.getId()));
                 }
             } catch (Throwable ignored) {
             }
@@ -234,7 +237,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     // -----------------------------------------------------------------------
 
     /**
-     * Sets the repository wheels CI/CD server will be monitored.
+     * Sets the repository whose CI/CD server will be monitored.
      * Selects the tab if it already exists for the repo.
      *
      * @param repoPath absolute root path of the repository, or {@code null} to use the first.
@@ -445,6 +448,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         RepoCiDashboardPanel dashboard = getOrCreateTab(repoPath);
         dashboard.setPlatformName(cfg.getCiType());
         dashboard.setSplitMode(true);
+        dashboard.setIdle(false);
         dashboard.startLoading();
         dashboard.appendPluginLog("Triggering build on " + cfg.getCiType() + "...");
 
@@ -458,6 +462,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                             token != null ? token : ""
                     );
                     repoConnectors.put(repoPath, jenkinsConnector);
+                    dashboard.setStepLogProvider(step -> jenkinsConnector.fetchStepLog(step.getId()));
 
                     jenkinsConnector.triggerBuild();
 
@@ -507,6 +512,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         dashboard.setPlatformName(cfg.getCiType());
         // Switch to two-panel (split view) upon execution
         dashboard.setSplitMode(true);
+        dashboard.setIdle(false);
         dashboard.startLoading();
         dashboard.appendPluginLog("Starting CI/CD monitoring...");
 
@@ -520,6 +526,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                 );
                 jenkinsConnector.setBuildTriggered(true);
                 repoConnectors.put(path, jenkinsConnector);
+                dashboard.setStepLogProvider(step -> jenkinsConnector.fetchStepLog(step.getId()));
 
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                 repoExecutors.put(path, executor);

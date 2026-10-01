@@ -53,4 +53,15 @@ public interface CiConnector {
      * Stops monitoring or cancels the remote execution if supported.
      */
     void stop();
+
+    /**
+     * Fetches the console or pipeline execution log specifically for a given step/node ID.
+     *
+     * @param stepId the unique identifier of the step or flow node
+     * @return the raw or formatted log text of the step, or null if not available
+     */
+    @Nullable
+    default String fetchStepLog(@NotNull String stepId) {
+        return null;
+    }
 }

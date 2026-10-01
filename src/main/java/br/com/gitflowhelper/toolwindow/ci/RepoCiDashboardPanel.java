@@ -1,5 +1,6 @@
 package br.com.gitflowhelper.toolwindow.ci;
 
+import br.com.gitflow.cicd.StepLogProvider;
 import br.com.gitflow.cicd.model.PipelineRun;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
@@ -115,6 +116,18 @@ public class RepoCiDashboardPanel extends JPanel {
 
     public boolean isSplitMode() {
         return splitMode;
+    }
+
+    public void setStepLogProvider(@Nullable StepLogProvider provider) {
+        dagCanvas.setStepLogProvider(provider);
+    }
+
+    public void setIdle(boolean idle) {
+        dagCanvas.setIdle(idle);
+    }
+
+    public boolean isIdle() {
+        return dagCanvas.isIdle();
     }
 
     private JComponent createConsoleToolbar() {
@@ -249,6 +262,7 @@ public class RepoCiDashboardPanel extends JPanel {
 
     public void startLoading() {
         Runnable r = () -> {
+            dagCanvas.setIdle(false);
             dagCanvas.setLoading(true);
             headerPanel.updatePipelineRun(null, null);
         };
@@ -340,6 +354,7 @@ public class RepoCiDashboardPanel extends JPanel {
         Runnable r = () -> {
             consolePane.setText("");
             dagCanvas.setLoading(false);
+            dagCanvas.setIdle(false);
             dagCanvas.updatePipelineRun(null);
             headerPanel.updatePipelineRun(null, null);
         };

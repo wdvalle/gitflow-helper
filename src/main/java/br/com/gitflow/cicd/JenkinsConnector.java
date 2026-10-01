@@ -378,6 +378,18 @@ public class JenkinsConnector implements CiConnector {
                                         nodeObj.get("durationMillis").getAsLong() : 0;
 
                                 PipelineStep step = new PipelineStep(nodeId, nodeName, nodeStatus, nodeDuration);
+
+                                // Check if we already collected logs for this step in fallbackStages
+                                for (PipelineStage fbStage : fallbackStages) {
+                                    for (PipelineStep fbStep : fbStage.getSteps()) {
+                                        if ((fbStep.getId().equals(nodeId) || fbStep.getName().equalsIgnoreCase(nodeName)) && !fbStep.getLog().isEmpty()) {
+                                            step.setLog(fbStep.getLog());
+                                            break;
+                                        }
+                                    }
+                                    if (!step.getLog().isEmpty()) break;
+                                }
+
                                 stage.addStep(step);
                             }
                         }
@@ -440,6 +452,50 @@ public class JenkinsConnector implements CiConnector {
             }
         } catch (Exception ignored) {
         }
+        return null;
+    }
+
+    /**
+     * Fetches the console or pipeline execution log specifically for a given step/node ID.
+     */
+    @Override
+    public @Nullable String fetchStepLog(@NotNull String stepId) {
+        String buildTarget = (targetBuildNumber != null && !targetBuildNumber.isEmpty()) ? targetBuildNumber : "lastBuild";
+
+        // 1. Try wfapi/log
+        String wfLogUrl = normalizedBase + "/" + buildTarget + "/execution/node/" + stepId + "/wfapi/log";
+        try {
+            HttpRequest request = createRequestBuilder(wfLogUrl).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200 && response.body() != null && !response.body().isEmpty()) {
+                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                if (json.has("text") && !json.get("text").isJsonNull()) {
+                    return json.get("text").getAsString();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        // 2. Try progressiveText on the node
+        String progLogUrl = normalizedBase + "/" + buildTarget + "/execution/node/" + stepId + "/logText/progressiveText";
+        try {
+            HttpRequest req = createRequestBuilder(progLogUrl).GET().build();
+            HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() == 200 && res.body() != null && !res.body().isEmpty()) {
+                return res.body();
+            }
+        } catch (Exception ignored) {
+        }
+
+        // 3. Fallback: check if we already collected logs for this step in fallbackStages
+        for (PipelineStage stage : fallbackStages) {
+            for (PipelineStep step : stage.getSteps()) {
+                if (step.getId().equals(stepId) && !step.getLog().isEmpty()) {
+                    return step.getLog();
+                }
+            }
+        }
+
         return null;
     }
 
@@ -598,8 +654,11 @@ public class JenkinsConnector implements CiConnector {
             // Check for step: [Pipeline] stepName
             if (line.startsWith("[Pipeline]")) {
                 if (line.contains("// stage") || line.equals("[Pipeline] }")) {
-                    if (currentActiveStep != null && currentActiveStep.getStatus().isRunning()) {
-                        currentActiveStep.setStatus(PipelineStatus.SUCCESS);
+                    if (currentActiveStep != null) {
+                        currentActiveStep.appendLog(rawLine);
+                        if (currentActiveStep.getStatus().isRunning()) {
+                            currentActiveStep.setStatus(PipelineStatus.SUCCESS);
+                        }
                     }
                     continue;
                 }
@@ -623,8 +682,13 @@ public class JenkinsConnector implements CiConnector {
                                 PipelineStatus.IN_PROGRESS,
                                 0
                         );
+                        currentActiveStep.appendLog(rawLine);
                         currentActiveStage.addStep(currentActiveStep);
                     }
+                }
+            } else {
+                if (currentActiveStep != null) {
+                    currentActiveStep.appendLog(rawLine);
                 }
             }
         }
@@ -717,9 +781,9 @@ public class JenkinsConnector implements CiConnector {
             }
 
             if (color != null) {
-                sb.append("<font color='").append(color).append("'>")
-                  .append(escapedLine)
-                  .append("</font>");
+                sb.append("<font color='").append(color).append("'>");
+                sb.append(escapedLine);
+                sb.append("</font>");
             } else {
                 sb.append(escapedLine);
             }
