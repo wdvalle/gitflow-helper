@@ -422,6 +422,7 @@ public class JenkinsConnector implements CiConnector {
         // Try wfapi/describe first
         PipelineRun wfRun = fetchWfApiPipelineRun();
         if (wfRun != null && !wfRun.getStages().isEmpty()) {
+            updateBlueprintCache(wfRun.getStages());
             latestPipelineRun = wfRun;
             return wfRun;
         }
@@ -431,6 +432,7 @@ public class JenkinsConnector implements CiConnector {
         if (apiRun != null) {
             if (!fallbackStages.isEmpty()) {
                 apiRun.setStages(new ArrayList<>(fallbackStages));
+                updateBlueprintCache(fallbackStages);
             }
             latestPipelineRun = apiRun;
             return apiRun;
@@ -439,14 +441,52 @@ public class JenkinsConnector implements CiConnector {
         return latestPipelineRun;
     }
 
+    private final List<PipelineStage> blueprintStagesCache = new ArrayList<>();
+
+    private void updateBlueprintCache(@Nullable List<PipelineStage> stages) {
+        if (stages == null || stages.isEmpty()) return;
+        if (stages.size() >= blueprintStagesCache.size()) {
+            blueprintStagesCache.clear();
+            for (PipelineStage stage : stages) {
+                blueprintStagesCache.add(new PipelineStage(stage.getId(), stage.getName(), PipelineStatus.NOT_STARTED, 0));
+            }
+        }
+    }
+
+    @Override
+    public @NotNull List<PipelineStage> fetchBlueprintStages() {
+        if (blueprintStagesCache.isEmpty()) {
+            // 1. Try lastSuccessfulBuild to get the complete successful stage pipeline
+            PipelineRun successfulRun = fetchWfApiPipelineRunFrom("lastSuccessfulBuild");
+            if (successfulRun != null && !successfulRun.getStages().isEmpty()) {
+                updateBlueprintCache(successfulRun.getStages());
+            } else {
+                // 2. Try lastCompletedBuild
+                PipelineRun completedRun = fetchWfApiPipelineRunFrom("lastCompletedBuild");
+                if (completedRun != null && !completedRun.getStages().isEmpty()) {
+                    updateBlueprintCache(completedRun.getStages());
+                } else if (latestPipelineRun != null && !latestPipelineRun.getStages().isEmpty()) {
+                    updateBlueprintCache(latestPipelineRun.getStages());
+                }
+            }
+        }
+        return new ArrayList<>(blueprintStagesCache);
+    }
+
     private @Nullable PipelineRun fetchWfApiPipelineRun() {
+        String buildTarget = (targetBuildNumber != null && !targetBuildNumber.isEmpty()) ? targetBuildNumber : "lastBuild";
+        return fetchWfApiPipelineRunFrom(buildTarget);
+    }
+
+    private @Nullable PipelineRun fetchWfApiPipelineRunFrom(@NotNull String buildTarget) {
         try {
-            HttpRequest request = createRequestBuilder(getWfApiUrl()).GET().build();
+            String url = normalizedBase + "/" + buildTarget + "/wfapi/describe";
+            HttpRequest request = createRequestBuilder(url).GET().build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200 && response.body() != null && !response.body().isEmpty()) {
                 JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-                String id = json.has("id") ? json.get("id").getAsString() : (targetBuildNumber != null ? targetBuildNumber : "last");
+                String id = json.has("id") ? json.get("id").getAsString() : (targetBuildNumber != null ? targetBuildNumber : buildTarget);
                 String name = json.has("name") ? json.get("name").getAsString() : ("Build #" + id);
                 String statusStr = json.has("status") ? json.get("status").getAsString() : "";
                 PipelineStatus status = PipelineStatus.fromJenkinsStatus(statusStr);

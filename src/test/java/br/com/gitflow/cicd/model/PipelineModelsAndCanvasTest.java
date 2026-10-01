@@ -294,6 +294,33 @@ public class PipelineModelsAndCanvasTest {
             assertEquals(PipelineStatus.NOT_STARTED, restoredStage.getStatus(), "Idle stage status must be NOT_STARTED");
             assertEquals(0, restoredStage.getDurationMillis(), "Idle stage duration must be 0");
             assertTrue(restoredStage.getSteps().isEmpty(), "Idle stage must only show the stage itself, without steps");
+
+            // 6. Test complete diagram blueprint retention:
+            // Full 3-stage run registered
+            PipelineRun fullRun = new PipelineRun("43", "#43", PipelineStatus.SUCCESS);
+            fullRun.addStage(new PipelineStage("s1", "Checkout", PipelineStatus.SUCCESS, 1000));
+            fullRun.addStage(new PipelineStage("s2", "Build & Test", PipelineStatus.SUCCESS, 3000));
+            fullRun.addStage(new PipelineStage("s3", "Deploy", PipelineStatus.SUCCESS, 2000));
+            panel.updatePipelineRun(fullRun, "Jenkins");
+            assertEquals(3, panel.getBlueprintStages().size());
+
+            // Next run fails or is interrupted at stage 1 (only Checkout executed)
+            PipelineRun failedRun = new PipelineRun("44", "#44", PipelineStatus.FAILED);
+            failedRun.addStage(new PipelineStage("s1", "Checkout", PipelineStatus.FAILED, 500));
+            panel.updatePipelineRun(failedRun, "Jenkins");
+
+            // When restored to idle blueprint mode, the diagram MUST remain complete with all 3 stages
+            panel.restoreIdlePipeline();
+            assertNotNull(panel.getDagCanvas().getPipelineRun());
+            assertEquals(3, panel.getDagCanvas().getPipelineRun().getStages().size(), "Blueprint diagram must remain complete with all stages even if last run failed or was interrupted");
+            assertEquals("Checkout", panel.getDagCanvas().getPipelineRun().getStages().get(0).getName());
+            assertEquals("Build & Test", panel.getDagCanvas().getPipelineRun().getStages().get(1).getName());
+            assertEquals("Deploy", panel.getDagCanvas().getPipelineRun().getStages().get(2).getName());
+            for (PipelineStage s : panel.getDagCanvas().getPipelineRun().getStages()) {
+                assertEquals(PipelineStatus.NOT_STARTED, s.getStatus(), "All stages in idle blueprint must have NOT_STARTED status");
+                assertEquals(0, s.getDurationMillis(), "All stages in idle blueprint must have duration 0");
+                assertTrue(s.getSteps().isEmpty(), "All stages in idle blueprint must omit steps");
+            }
         });
     }
 
@@ -320,10 +347,12 @@ public class PipelineModelsAndCanvasTest {
         SwingUtilities.invokeAndWait(() -> {
             PipelineHeaderPanel header = new PipelineHeaderPanel();
 
-            // 1. Initially: not running
+            // 1. Initially: not running and start button highlighted
             assertFalse(header.isRunning());
             assertTrue(header.getStartButton().isEnabled(), "Start button must be enabled when pipeline is not running");
             assertFalse(header.getStopButton().isEnabled(), "Stop button must be disabled when pipeline is not running");
+            PipelineHeaderPanel.HeaderActionButton startBtn = (PipelineHeaderPanel.HeaderActionButton) header.getStartButton();
+            assertTrue(startBtn.isHighlighted(), "Start button must be highlighted when idle/ready to start");
 
             // Visual identity check: uniform size (28x24) for all action buttons
             assertEquals(new Dimension(28, 24), header.getStartButton().getPreferredSize());

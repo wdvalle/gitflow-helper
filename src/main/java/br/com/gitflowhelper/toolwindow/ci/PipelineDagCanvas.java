@@ -567,22 +567,29 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
 
     private void drawStageConnector(Graphics2D g2, PipelineStage fromStage, PipelineStage toStage, int x1, int y1, int x2, int y2) {
         Color lineColor;
+        float strokeWidth;
         if (idle) {
-            lineColor = new JBColor(new Color(190, 195, 200), new Color(75, 78, 82));
+            lineColor = new JBColor(new Color(195, 200, 206), new Color(75, 78, 84));
+            strokeWidth = 1.8f;
         } else if (fromStage.getStatus() == PipelineStatus.SUCCESS) {
             lineColor = new JBColor(new Color(46, 139, 87), new Color(98, 181, 67));
+            strokeWidth = 2.5f;
         } else if (fromStage.getStatus() == PipelineStatus.FAILED) {
             lineColor = new JBColor(new Color(210, 60, 60), new Color(230, 80, 80));
+            strokeWidth = 2.5f;
         } else if (fromStage.getStatus() == PipelineStatus.IN_PROGRESS) {
             lineColor = new JBColor(new Color(33, 150, 243), new Color(41, 140, 230));
+            strokeWidth = 2.5f;
         } else if (fromStage.getStatus() == PipelineStatus.ABORTED) {
             lineColor = new JBColor(new Color(170, 170, 170), new Color(110, 110, 110));
+            strokeWidth = 2.5f;
         } else {
             lineColor = new JBColor(new Color(190, 195, 200), new Color(75, 78, 82));
+            strokeWidth = 2.5f;
         }
 
         g2.setColor(lineColor);
-        g2.setStroke(new BasicStroke(2.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.setStroke(new BasicStroke(strokeWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.drawLine(x1, y1, x2 - 8, y2);
 
         // Arrow head pointing to x2
@@ -605,7 +612,9 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         // Card outer border and background
         RoundRectangle2D.Double cardShape = new RoundRectangle2D.Double(x, y, STAGE_WIDTH, cardHeight, CORNER_RADIUS, CORNER_RADIUS);
 
-        Color cardBg = new JBColor(new Color(255, 255, 255), new Color(43, 45, 48));
+        Color cardBg = idle
+                ? new JBColor(new Color(250, 251, 253), new Color(38, 40, 42))
+                : new JBColor(new Color(255, 255, 255), new Color(43, 45, 48));
         g2.setColor(cardBg);
         g2.fill(cardShape);
 
@@ -615,16 +624,19 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         if (isHovered) {
             borderColor = new JBColor(new Color(25, 118, 210), new Color(100, 181, 246));
             strokeWidth = 2.4f;
-        } else if (!idle && stage.getStatus() == PipelineStatus.IN_PROGRESS) {
+        } else if (idle) {
+            borderColor = new JBColor(new Color(205, 210, 216), new Color(70, 73, 78));
+            strokeWidth = 1.0f;
+        } else if (stage.getStatus() == PipelineStatus.IN_PROGRESS) {
             borderColor = new JBColor(new Color(33, 150, 243), new Color(41, 140, 230));
             strokeWidth = 2.0f;
-        } else if (!idle && stage.getStatus() == PipelineStatus.SUCCESS) {
+        } else if (stage.getStatus() == PipelineStatus.SUCCESS) {
             borderColor = new JBColor(new Color(76, 175, 80), new Color(60, 160, 70));
             strokeWidth = 1.5f;
-        } else if (!idle && stage.getStatus() == PipelineStatus.FAILED) {
+        } else if (stage.getStatus() == PipelineStatus.FAILED) {
             borderColor = new JBColor(new Color(244, 67, 54), new Color(220, 60, 50));
             strokeWidth = 2.0f;
-        } else if (!idle && stage.getStatus() == PipelineStatus.ABORTED) {
+        } else if (stage.getStatus() == PipelineStatus.ABORTED) {
             borderColor = new JBColor(new Color(158, 158, 158), new Color(110, 110, 110));
             strokeWidth = 1.5f;
         } else {
@@ -643,6 +655,8 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         Color headerBg;
         if (isHovered) {
             headerBg = new JBColor(new Color(238, 244, 252), new Color(48, 56, 68));
+        } else if (idle) {
+            headerBg = new JBColor(new Color(250, 251, 253), new Color(38, 40, 42));
         } else {
             headerBg = new JBColor(new Color(245, 247, 250), new Color(50, 53, 56));
         }

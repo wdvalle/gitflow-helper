@@ -3,6 +3,7 @@ package br.com.gitflowhelper.toolwindow;
 import br.com.gitflow.cicd.CiConnector;
 import br.com.gitflow.cicd.JenkinsConnector;
 import br.com.gitflow.cicd.model.PipelineRun;
+import br.com.gitflow.cicd.model.PipelineStage;
 import br.com.gitflowhelper.dialog.ConfigDialog;
 import br.com.gitflowhelper.events.GitFlowSettingsListener;
 import br.com.gitflowhelper.settings.CiServerConfig;
@@ -196,6 +197,11 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                         cfg.getCiLogin(),
                         token != null ? token : ""
                 );
+                List<PipelineStage> bpStages = connector.fetchBlueprintStages();
+                if (!bpStages.isEmpty()) {
+                    dashboard.updateBlueprintStages(bpStages);
+                }
+
                 PipelineRun run = connector.fetchPipelineRun();
                 if (run != null) {
                     if (repoExecutors.containsKey(repoPath) || startingBuilds.contains(repoPath) || dashboard.getDagCanvas().isLoading()) {
@@ -209,11 +215,10 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                             break;
                         }
                     }
-                    dashboard.updatePipelineRun(run, connector.getPlatformName());
-                    // Idle diagram is not clickable
-                    dashboard.setIdle(true);
+                    dashboard.setLastRun(run, connector.getPlatformName());
                     dashboard.setStepLogProvider(step -> connector.fetchStepLog(step.getId()));
                 }
+                dashboard.restoreIdlePipeline();
             } catch (Throwable ignored) {
             }
         });

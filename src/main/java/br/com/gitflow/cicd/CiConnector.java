@@ -62,6 +62,15 @@ public interface CiConnector {
     }
 
     /**
+     * Returns the complete blueprint stages for the pipeline (e.g. from last successful build or known pipeline definition),
+     * ensuring a complete diagram even when the latest build failed or was interrupted early.
+     */
+    default @NotNull java.util.List<br.com.gitflow.cicd.model.PipelineStage> fetchBlueprintStages() {
+        PipelineRun run = fetchPipelineRun();
+        return run != null ? run.getStages() : java.util.List.of();
+    }
+
+    /**
      * Fetches the console or pipeline execution log specifically for a given step/node ID.
      *
      * @param stepId the unique identifier of the step or flow node

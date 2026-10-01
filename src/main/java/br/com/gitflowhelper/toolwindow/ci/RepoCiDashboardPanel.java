@@ -24,6 +24,9 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Hybrid dashboard panel for a single repository CI/CD pipeline:
@@ -48,6 +51,7 @@ public class RepoCiDashboardPanel extends JPanel {
     private boolean autoScroll = true;
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     private final StringBuilder rawLogsBuffer = new StringBuilder();
+    private final List<PipelineStage> blueprintStages = new ArrayList<>();
     private PipelineRun lastRun;
     private String lastPlatformName;
 
@@ -318,12 +322,39 @@ public class RepoCiDashboardPanel extends JPanel {
         runOnEdt(r);
     }
 
+    public void updateBlueprintStages(@Nullable List<PipelineStage> stages) {
+        if (stages == null || stages.isEmpty()) return;
+        if (stages.size() >= blueprintStages.size()) {
+            blueprintStages.clear();
+            for (PipelineStage stage : stages) {
+                blueprintStages.add(new PipelineStage(stage.getId(), stage.getName(), PipelineStatus.NOT_STARTED, 0));
+            }
+        }
+    }
+
+    public @NotNull List<PipelineStage> getBlueprintStages() {
+        return new ArrayList<>(blueprintStages);
+    }
+
+    public void setBlueprintStages(@Nullable List<PipelineStage> stages) {
+        updateBlueprintStages(stages);
+    }
+
+    public void setLastRun(@Nullable PipelineRun run, @Nullable String platformName) {
+        this.lastRun = run;
+        this.lastPlatformName = platformName;
+        if (run != null) {
+            updateBlueprintStages(run.getStages());
+        }
+    }
+
     public void updatePipelineRun(@Nullable PipelineRun run, @Nullable String platformName) {
         if (run != null) {
             this.lastRun = run;
             if (platformName != null) {
                 this.lastPlatformName = platformName;
             }
+            updateBlueprintStages(run.getStages());
         }
         Runnable r = () -> {
             headerPanel.updatePipelineRun(run, platformName);
@@ -404,9 +435,17 @@ public class RepoCiDashboardPanel extends JPanel {
             clearConsole();
             dagCanvas.setLoading(false);
             headerPanel.setRunning(false);
-            if (lastRun != null && !lastRun.getStages().isEmpty()) {
-                PipelineRun idleRun = createIdleRun(lastRun);
-                dagCanvas.updatePipelineRun(idleRun);
+
+            List<PipelineStage> stagesToRestore = !blueprintStages.isEmpty()
+                    ? blueprintStages
+                    : (lastRun != null ? lastRun.getStages() : Collections.emptyList());
+
+            if (!stagesToRestore.isEmpty()) {
+                PipelineRun blueprintRun = new PipelineRun(null, "Blueprint", PipelineStatus.NOT_STARTED);
+                for (PipelineStage stage : stagesToRestore) {
+                    blueprintRun.addStage(new PipelineStage(stage.getId(), stage.getName(), PipelineStatus.NOT_STARTED, 0));
+                }
+                dagCanvas.updatePipelineRun(blueprintRun);
                 dagCanvas.setIdle(true);
             } else {
                 dagCanvas.setIdle(true);
