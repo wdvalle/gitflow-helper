@@ -373,6 +373,8 @@ public class JenkinsConnectorTest {
 
     @Test
     public void testFetchPipelineRunWithLogParsingFallback() {
+        AtomicInteger buildNumber = new AtomicInteger(98);
+
         // wfapi returns 404
         server.createContext("/job/test/lastBuild/wfapi/describe", exchange -> {
             exchange.sendResponseHeaders(404, 0);
@@ -388,11 +390,53 @@ public class JenkinsConnectorTest {
             exchange.close();
         });
 
+        server.createContext("/job/test/99/api/json", exchange -> {
+            String json = "{\"number\":99,\"displayName\":\"Build #99\",\"building\":true,\"duration\":15000}";
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        server.createContext("/job/test/lastBuild/buildNumber", exchange -> {
+            byte[] bytes = String.valueOf(buildNumber.get()).getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        server.createContext("/job/test/99/logText/progressiveText", exchange -> {
+            String chunk = "[Pipeline] { (Build)\n[Pipeline] sh mvn compile\n";
+            byte[] bytes = chunk.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("X-Text-Size", String.valueOf(bytes.length));
+            exchange.getResponseHeaders().add("X-More-Data", "true");
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
         JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
-        PipelineRun run = connector.fetchPipelineRun();
-        assertNotNull(run);
-        assertEquals("99", run.getId());
-        assertEquals(PipelineStatus.IN_PROGRESS, run.getStatus());
-        assertFalse(run.getStages().isEmpty());
+
+        // Step 1: initial baseline recording (#98)
+        connector.fetchNextChunk();
+
+        // Step 2: Before build #99 starts parsing logs or stages, stages must be empty (triggering UI spinner)
+        PipelineRun initialRun = connector.fetchPipelineRun();
+        assertNotNull(initialRun);
+        assertEquals("99", initialRun.getId());
+        assertEquals(PipelineStatus.IN_PROGRESS, initialRun.getStatus());
+        assertTrue(initialRun.getStages().isEmpty(), "Initially empty before first stage begins, allowing UI spinner to show");
+
+        // Step 3: Build #99 starts and logs arrive
+        buildNumber.set(99);
+        connector.fetchNextChunk();
+
+        // Step 4: Now stages are parsed in real time
+        PipelineRun runningRun = connector.fetchPipelineRun();
+        assertNotNull(runningRun);
+        assertFalse(runningRun.getStages().isEmpty(), "Stages must be populated once first stage is parsed from log");
+        assertEquals("Build", runningRun.getStages().get(0).getName());
+        assertEquals(1, runningRun.getStages().get(0).getSteps().size());
+        assertEquals("sh", runningRun.getStages().get(0).getSteps().get(0).getName());
     }
 }

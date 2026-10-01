@@ -2,6 +2,7 @@ package br.com.gitflow.cicd.model;
 
 import br.com.gitflowhelper.toolwindow.ci.PipelineDagCanvas;
 import br.com.gitflowhelper.toolwindow.ci.PipelineHeaderPanel;
+import br.com.gitflowhelper.toolwindow.ci.RepoCiDashboardPanel;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
@@ -128,6 +129,44 @@ public class PipelineModelsAndCanvasTest {
     }
 
     @Test
+    public void testLoadingSpinnerStateAndTransitionToDag() {
+        PipelineDagCanvas canvas = new PipelineDagCanvas();
+        try {
+            // 1. Initially not loading, no run
+            assertFalse(canvas.isLoading());
+
+            // 2. Set loading = true (initiating build / waiting for pipeline)
+            canvas.setLoading(true);
+            assertTrue(canvas.isLoading());
+
+            // Paint loading spinner without error
+            BufferedImage img = new BufferedImage(600, 300, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = img.createGraphics();
+            canvas.setSize(600, 300);
+            canvas.paint(g2);
+
+            // 3. Update with empty run: loading must remain true until stages arrive
+            PipelineRun emptyRun = new PipelineRun("1", "#1", PipelineStatus.IN_PROGRESS);
+            canvas.updatePipelineRun(emptyRun);
+            assertTrue(canvas.isLoading());
+
+            // 4. Update with actual stage: loading must automatically transition to false
+            PipelineStage stage1 = new PipelineStage("s1", "Checkout", PipelineStatus.IN_PROGRESS, 1000);
+            stage1.addStep(new PipelineStep("step1", "git clone", PipelineStatus.IN_PROGRESS, 1000));
+            emptyRun.addStage(stage1);
+
+            canvas.updatePipelineRun(emptyRun);
+            assertFalse(canvas.isLoading(), "Loading must become false as soon as the first stage arrives");
+
+            // Paint DAG
+            canvas.paint(g2);
+            g2.dispose();
+        } finally {
+            canvas.dispose();
+        }
+    }
+
+    @Test
     public void testSmoothAutoScrollOnlyWhenSplitModeAndRunning() {
         PipelineDagCanvas canvas = new PipelineDagCanvas();
         JScrollPane scrollPane = new JScrollPane(canvas);
@@ -176,6 +215,35 @@ public class PipelineModelsAndCanvasTest {
         } finally {
             canvas.dispose();
         }
+    }
+
+    @Test
+    public void testCleanPlainTextExtraction() {
+        String html = "<html><head><style>body { color: red; }</style></head><body>"
+                + "<font color='#FFFFFF'>2026/09/30 21:59:33: Starting build...</font><br>"
+                + "[Pipeline] { (Checkout)<br>"
+                + "[Pipeline] git clone https://github.com/myrepo.git &amp; checkout<br>"
+                + "[Pipeline] echo &quot;Hello &lt;World&gt;&quot;<br>"
+                + "[Pipeline] }<br>"
+                + "</body></html>";
+
+        String plainText = RepoCiDashboardPanel.extractCleanPlainText(html);
+
+        assertFalse(plainText.contains("<font"), "Tags like <font> must be stripped");
+        assertFalse(plainText.contains("<html>"), "<html> tags must be stripped");
+        assertFalse(plainText.contains("style"), "Styles in <head> must be removed");
+        assertFalse(plainText.contains("&amp;"), "Entities like &amp; must be unescaped");
+        assertTrue(plainText.contains("2026/09/30 21:59:33: Starting build..."));
+        assertTrue(plainText.contains("[Pipeline] { (Checkout)"));
+        assertTrue(plainText.contains("git clone https://github.com/myrepo.git & checkout"));
+        assertTrue(plainText.contains("echo \"Hello <World>\""));
+
+        // Verify line breaks exist
+        String[] lines = plainText.split("\n");
+        assertEquals(5, lines.length, "Should split into exactly 5 lines with proper line breaks");
+        assertEquals("2026/09/30 21:59:33: Starting build...", lines[0]);
+        assertEquals("[Pipeline] { (Checkout)", lines[1]);
+        assertEquals("[Pipeline] }", lines[4]);
     }
 
     @Test

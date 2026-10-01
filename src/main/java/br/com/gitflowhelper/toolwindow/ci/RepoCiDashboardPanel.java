@@ -138,13 +138,11 @@ public class RepoCiDashboardPanel extends JPanel {
         toolbar.add(hideBtn);
 
         JButton scrollBtn = new JButton(AllIcons.Actions.MoveDown);
-        scrollBtn.setToolTipText("Auto-scroll to bottom");
+        scrollBtn.setToolTipText("Scroll to bottom");
         scrollBtn.setPreferredSize(new Dimension(24, 24));
         scrollBtn.addActionListener(e -> {
-            autoScroll = !autoScroll;
-            if (autoScroll) {
-                consolePane.setCaretPosition(consolePane.getDocument().getLength());
-            }
+            autoScroll = true;
+            scrollToBottom();
         });
         toolbar.add(scrollBtn);
 
@@ -153,8 +151,9 @@ public class RepoCiDashboardPanel extends JPanel {
         copyBtn.setPreferredSize(new Dimension(24, 24));
         copyBtn.addActionListener(e -> {
             String text = consolePane.getText();
-            if (text != null) {
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
+            String cleanText = extractCleanPlainText(text);
+            if (!cleanText.isEmpty()) {
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(cleanText), null);
             }
         });
         toolbar.add(copyBtn);
@@ -169,6 +168,74 @@ public class RepoCiDashboardPanel extends JPanel {
         return bar;
     }
 
+    /**
+     * Converts HTML document content into clean, readable plain text with accurate newlines.
+     */
+    public static String extractCleanPlainText(@Nullable String html) {
+        if (html == null || html.trim().isEmpty()) {
+            return "";
+        }
+
+        // Replace break tags and block elements with newline
+        String text = html.replaceAll("(?i)<br\\s*/?>", "\n");
+        text = text.replaceAll("(?i)</p>", "\n");
+        text = text.replaceAll("(?i)</div>", "\n");
+        text = text.replaceAll("(?i)</tr>", "\n");
+        text = text.replaceAll("(?i)</li>", "\n");
+
+        // Remove <head> section
+        text = text.replaceAll("(?is)<head>.*?</head>", "");
+
+        // Remove all other HTML tags
+        text = text.replaceAll("<[^>]+>", "");
+
+        // Unescape standard HTML entities
+        text = text.replace("&lt;", "<")
+                   .replace("&gt;", ">")
+                   .replace("&quot;", "\"")
+                   .replace("&#39;", "'")
+                   .replace("&apos;", "'")
+                   .replace("&nbsp;", " ")
+                   .replace("&amp;", "&");
+
+        // Normalize trailing whitespace per line and strip leading/trailing blank space
+        String[] lines = text.split("\r?\n");
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (String rawLine : lines) {
+            String line = rawLine.stripTrailing();
+            if (line.isEmpty() && first) {
+                continue;
+            }
+            if (!first) {
+                sb.append("\n");
+            }
+            sb.append(line);
+            first = false;
+        }
+
+        return sb.toString().stripTrailing();
+    }
+
+    /**
+     * Scrolls the console scroll pane directly to the bottom.
+     */
+    public void scrollToBottom() {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                int len = consolePane.getDocument().getLength();
+                if (len > 0) {
+                    consolePane.setCaretPosition(len);
+                }
+            } catch (Exception ignored) {
+            }
+            JScrollBar vertical = consoleScrollPane.getVerticalScrollBar();
+            if (vertical != null) {
+                vertical.setValue(vertical.getMaximum());
+            }
+        });
+    }
+
     public void setCallbacks(@Nullable Runnable onRerun, @Nullable Runnable onStop, @Nullable Runnable onContent) {
         this.onRerunTrigger = onRerun;
         this.onStopMonitoring = onStop;
@@ -179,9 +246,26 @@ public class RepoCiDashboardPanel extends JPanel {
         headerPanel.setPlatformName(platformName);
     }
 
+    public void startLoading() {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            dagCanvas.setLoading(true);
+            dagCanvas.updatePipelineRun(null);
+            headerPanel.updatePipelineRun(null, null);
+        });
+    }
+
+    public void stopLoading() {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            dagCanvas.setLoading(false);
+        });
+    }
+
     public void updatePipelineRun(@Nullable PipelineRun run, @Nullable String platformName) {
         ApplicationManager.getApplication().invokeLater(() -> {
             headerPanel.updatePipelineRun(run, platformName);
+            if (run != null && !run.getStages().isEmpty()) {
+                dagCanvas.setLoading(false);
+            }
             dagCanvas.updatePipelineRun(run);
             if (onNewContent != null) {
                 onNewContent.run();
@@ -233,7 +317,7 @@ public class RepoCiDashboardPanel extends JPanel {
             }
 
             if (autoScroll) {
-                consolePane.setCaretPosition(consolePane.getDocument().getLength());
+                scrollToBottom();
             }
 
             if (onNewContent != null) {
@@ -245,6 +329,7 @@ public class RepoCiDashboardPanel extends JPanel {
     public void clear() {
         ApplicationManager.getApplication().invokeLater(() -> {
             consolePane.setText("");
+            dagCanvas.setLoading(false);
             dagCanvas.updatePipelineRun(null);
             headerPanel.updatePipelineRun(null, null);
         });

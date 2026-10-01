@@ -89,7 +89,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                 if (selectedIndex >= 0) {
                     Component selectedComp = tabbedPane.getComponentAt(selectedIndex);
                     String title = tabbedPane.getTitleAt(selectedIndex);
-                    if (title != null && title.endsWith(" •")) {
+                    if (title != null && title.endsWith(" \u2022")) {
                         tabbedPane.setTitleAt(selectedIndex, title.substring(0, title.length() - 2));
                     }
                     for (Map.Entry<String, Component> entry : repoTabComponents.entrySet()) {
@@ -350,8 +350,8 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
             int idx = tabbedPane.indexOfComponent(comp);
             if (idx >= 0 && tabbedPane.getSelectedIndex() != idx) {
                 String currentTitle = tabbedPane.getTitleAt(idx);
-                if (currentTitle != null && !currentTitle.endsWith(" •")) {
-                    tabbedPane.setTitleAt(idx, currentTitle + " •");
+                if (currentTitle != null && !currentTitle.endsWith(" \u2022")) {
+                    tabbedPane.setTitleAt(idx, currentTitle + " \u2022");
                 }
             }
         }
@@ -416,7 +416,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         if (cfg == null || !cfg.isActive()) {
             RepoCiDashboardPanel dashboard = getOrCreateTab(path);
             dashboard.setSplitMode(true);
-            dashboard.appendPluginLog("CI/CD integration is disabled — configure a server URL first.");
+            dashboard.appendPluginLog("CI/CD integration is disabled \u2014 configure a server URL first.");
             NotificationUtil.showGitFlowWarningNotification(project, "CI/CD", "CI/CD integration is disabled. Configure a server URL first.");
             return;
         }
@@ -428,6 +428,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         dashboard.clear();
         dashboard.setPlatformName(cfg.getCiType());
         dashboard.setSplitMode(true);
+        dashboard.startLoading();
         dashboard.appendPluginLog("Triggering build on " + cfg.getCiType() + "...");
 
         if ("Jenkins".equals(cfg.getCiType())) {
@@ -479,7 +480,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         if (cfg == null || !cfg.isActive()) {
             RepoCiDashboardPanel dashboard = getOrCreateTab(path);
             dashboard.setSplitMode(true);
-            dashboard.appendPluginLog("CI/CD integration is disabled — configure a server URL first.");
+            dashboard.appendPluginLog("CI/CD integration is disabled \u2014 configure a server URL first.");
             return;
         }
 
@@ -490,6 +491,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         dashboard.setPlatformName(cfg.getCiType());
         // Switch to two-panel (split view) upon execution
         dashboard.setSplitMode(true);
+        dashboard.startLoading();
         dashboard.appendPluginLog("Starting CI/CD monitoring...");
 
         if ("Jenkins".equals(cfg.getCiType())) {
@@ -601,6 +603,10 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         if (connector != null) {
             connector.stop();
         }
+        RepoCiDashboardPanel dashboard = repoDashboards.get(repoPath);
+        if (dashboard != null) {
+            dashboard.stopLoading();
+        }
         if (onStopped != null) {
             ApplicationManager.getApplication().invokeLater(onStopped);
         }
@@ -616,6 +622,11 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         for (CiConnector connector : repoConnectors.values()) {
             if (connector != null) {
                 connector.stop();
+            }
+        }
+        for (RepoCiDashboardPanel dashboard : repoDashboards.values()) {
+            if (dashboard != null) {
+                dashboard.stopLoading();
             }
         }
         repoExecutors.clear();

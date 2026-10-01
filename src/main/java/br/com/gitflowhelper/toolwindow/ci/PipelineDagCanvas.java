@@ -35,6 +35,9 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     private int animationAngle = 0;
     private final Timer animationTimer;
 
+    // Loading / initializing state (shows animated spinner before first stage arrives)
+    private boolean loading = false;
+
     // Split mode state (auto-scroll is active only when in split mode and pipeline is running)
     private boolean splitMode = false;
 
@@ -48,7 +51,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     private final StatusText emptyText = new StatusText(this) {
         @Override
         protected boolean isStatusVisible() {
-            return pipelineRun == null || pipelineRun.getStages().isEmpty();
+            return !loading && (pipelineRun == null || pipelineRun.getStages().isEmpty());
         }
     };
 
@@ -61,10 +64,28 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
 
         animationTimer = new Timer(70, e -> {
             animationAngle = (animationAngle + 20) % 360;
-            if (hasRunningEntities()) {
+            if (loading || hasRunningEntities()) {
                 repaint();
             }
         });
+    }
+
+    public void setLoading(boolean loading) {
+        this.loading = loading;
+        if (loading) {
+            if (!animationTimer.isRunning()) {
+                animationTimer.start();
+            }
+        } else {
+            if (!hasRunningEntities() && animationTimer.isRunning()) {
+                animationTimer.stop();
+            }
+        }
+        repaint();
+    }
+
+    public boolean isLoading() {
+        return loading;
     }
 
     public boolean isPipelineExecuting() {
@@ -84,7 +105,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
 
     public void setSplitMode(boolean splitMode) {
         this.splitMode = splitMode;
-        if (splitMode && isPipelineExecuting()) {
+        if (splitMode && isPipelineExecuting() && !loading) {
             SwingUtilities.invokeLater(this::scrollToActiveStage);
         }
     }
@@ -96,7 +117,11 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     public void updatePipelineRun(@Nullable PipelineRun run) {
         this.pipelineRun = run;
 
-        if (hasRunningEntities()) {
+        if (run != null && !run.getStages().isEmpty()) {
+            this.loading = false;
+        }
+
+        if (loading || hasRunningEntities()) {
             if (!animationTimer.isRunning()) {
                 animationTimer.start();
             }
@@ -112,7 +137,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         recomputeCanvasSize();
         repaint();
 
-        if (splitMode && isPipelineExecuting()) {
+        if (splitMode && isPipelineExecuting() && !loading) {
             SwingUtilities.invokeLater(this::scrollToActiveStage);
         }
     }
@@ -122,7 +147,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
      * Triggered exclusively when the dashboard is in split mode and the pipeline is actively running.
      */
     public void scrollToActiveStage() {
-        if (!splitMode || !isPipelineExecuting() || pipelineRun == null || pipelineRun.getStages().isEmpty()) {
+        if (!splitMode || loading || !isPipelineExecuting() || pipelineRun == null || pipelineRun.getStages().isEmpty()) {
             return;
         }
 
@@ -249,6 +274,11 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        if (loading && (pipelineRun == null || pipelineRun.getStages().isEmpty())) {
+            drawLoadingSpinner((Graphics2D) g);
+            return;
+        }
+
         if (pipelineRun == null || pipelineRun.getStages().isEmpty()) {
             emptyText.paint(this, g);
             return;
@@ -278,6 +308,44 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
             int x = START_X + (i * (STAGE_WIDTH + STAGE_GAP));
             drawStageCard(g2, stage, x, START_Y);
         }
+
+        g2.dispose();
+    }
+
+    private void drawLoadingSpinner(Graphics2D g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        int cx = getWidth() / 2;
+        int cy = Math.max(70, getHeight() / 2 - 25);
+
+        int spinnerSize = 44;
+        int sx = cx - (spinnerSize / 2);
+        int sy = cy - (spinnerSize / 2);
+
+        // Background track ring
+        g2.setColor(new JBColor(new Color(220, 226, 235), new Color(50, 54, 60)));
+        g2.setStroke(new BasicStroke(3.5f));
+        g2.drawOval(sx, sy, spinnerSize, spinnerSize);
+
+        // Animated rotating spinner arc
+        g2.setColor(new JBColor(new Color(33, 150, 243), new Color(64, 169, 255)));
+        g2.setStroke(new BasicStroke(3.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.drawArc(sx, sy, spinnerSize, spinnerSize, animationAngle, 110);
+
+        // Title and description
+        g2.setColor(JBColor.foreground());
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 13f));
+        String title = "Starting pipeline...";
+        FontMetrics fm = g2.getFontMetrics();
+        g2.drawString(title, cx - (fm.stringWidth(title) / 2), cy + (spinnerSize / 2) + 30);
+
+        g2.setColor(JBColor.GRAY);
+        g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 11f));
+        String desc = "Waiting for the first stage to initialize...";
+        FontMetrics fmDesc = g2.getFontMetrics();
+        g2.drawString(desc, cx - (fmDesc.stringWidth(desc) / 2), cy + (spinnerSize / 2) + 50);
 
         g2.dispose();
     }

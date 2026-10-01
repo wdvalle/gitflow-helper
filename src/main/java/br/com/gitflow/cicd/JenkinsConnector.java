@@ -286,11 +286,6 @@ public class JenkinsConnector implements CiConnector {
         if (apiRun != null) {
             if (!fallbackStages.isEmpty()) {
                 apiRun.setStages(new ArrayList<>(fallbackStages));
-            } else if (apiRun.getStatus().isRunning()) {
-                // Synthesize an initial stage if running and no stages parsed yet
-                PipelineStage initStage = new PipelineStage("stage-init", "Execution", PipelineStatus.IN_PROGRESS, 0);
-                initStage.addStep(new PipelineStep("step-init", "Running tasks", PipelineStatus.IN_PROGRESS, 0));
-                apiRun.addStage(initStage);
             }
             latestPipelineRun = apiRun;
             return apiRun;
