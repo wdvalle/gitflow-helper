@@ -260,7 +260,7 @@ public class ConfigDialog extends DialogWrapper {
         GitRepository repo = repositories.get(repoIndex);
         String repoName = repo.getRoot().getName();
         String branchPart = repo.getCurrentBranch() != null
-                ? "⎇ " + repo.getCurrentBranch().getName()
+                ? "\u2387 " + repo.getCurrentBranch().getName()
                 : "(No current branch)";
 
         boolean isConfigured = workingConfigs != null
@@ -470,16 +470,6 @@ public class ConfigDialog extends DialogWrapper {
             return;
         }
 
-        String login = ciLoginField.getText().trim();
-        String token = new String(ciTokenField.getPassword()).trim();
-        if (token.isEmpty() && currentIndex >= 0 && workingTokens != null && workingTokens[currentIndex] != null) {
-            token = workingTokens[currentIndex];
-        }
-
-        final String finalUrl = url;
-        final String finalLogin = login;
-        final String finalToken = token;
-
         String repoPath = (currentIndex >= 0 && repositories != null && currentIndex < repositories.size())
                 ? repositories.get(currentIndex).getRoot().getPath()
                 : null;
@@ -495,24 +485,10 @@ public class ConfigDialog extends DialogWrapper {
         applyChanges();
         close(OK_EXIT_CODE);
 
-        // Start build log monitoring
+        // Start build execution and log monitoring via CIDataToolWindowPanel
         if (project != null && targetRepoPath != null) {
-            CIDataToolWindowPanel.startMonitoringForRepo(project, targetRepoPath);
+            CIDataToolWindowPanel.triggerBuildAndMonitorForRepo(project, targetRepoPath);
         }
-
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            try {
-                JenkinsConnector connector = new JenkinsConnector(finalUrl, finalLogin, finalToken);
-                connector.triggerBuild();
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    NotificationUtil.showGitFlowSuccessNotification(project, "CI/CD", "Build triggered successfully on Jenkins.");
-                });
-            } catch (Exception ex) {
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    NotificationUtil.showGitFlowErrorNotification(project, "CI/CD Error", "Failed to trigger build: " + ex.getMessage());
-                });
-            }
-        });
     }
 
     private void applyChanges() {

@@ -234,7 +234,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     // -----------------------------------------------------------------------
 
     /**
-     * Sets the repository whose CI/CD server will be monitored.
+     * Sets the repository wheels CI/CD server will be monitored.
      * Selects the tab if it already exists for the repo.
      *
      * @param repoPath absolute root path of the repository, or {@code null} to use the first.
@@ -382,6 +382,24 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         });
     }
 
+    public static void triggerBuildAndMonitorForRepo(@NotNull Project project, @NotNull String repoPath) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            com.intellij.openapi.wm.ToolWindow toolWindow =
+                    com.intellij.openapi.wm.ToolWindowManager.getInstance(project).getToolWindow("GitFlow");
+            if (toolWindow != null) {
+                toolWindow.show();
+                com.intellij.ui.content.Content content = toolWindow.getContentManager().findContent("CI/CD");
+                if (content != null) {
+                    toolWindow.getContentManager().setSelectedContent(content);
+                    CIDataToolWindowPanel panel = findCIDataPanel(content.getComponent());
+                    if (panel != null) {
+                        panel.triggerBuildAndMonitor(repoPath);
+                    }
+                }
+            }
+        });
+    }
+
     private static CIDataToolWindowPanel findCIDataPanel(Component comp) {
         if (comp instanceof CIDataToolWindowPanel) {
             return (CIDataToolWindowPanel) comp;
@@ -425,7 +443,6 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         stopMonitoring(repoPath);
 
         RepoCiDashboardPanel dashboard = getOrCreateTab(repoPath);
-        dashboard.clear();
         dashboard.setPlatformName(cfg.getCiType());
         dashboard.setSplitMode(true);
         dashboard.startLoading();
@@ -487,7 +504,6 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         stopMonitoring(path);
 
         RepoCiDashboardPanel dashboard = getOrCreateTab(path);
-        dashboard.clear();
         dashboard.setPlatformName(cfg.getCiType());
         // Switch to two-panel (split view) upon execution
         dashboard.setSplitMode(true);
@@ -502,6 +518,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                         cfg.getCiLogin(),
                         token != null ? token : ""
                 );
+                jenkinsConnector.setBuildTriggered(true);
                 repoConnectors.put(path, jenkinsConnector);
 
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -527,6 +544,12 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         RepoCiDashboardPanel dashboard = repoDashboards.get(repoPath);
 
         if (connector != null && dashboard != null) {
+            // Fetch progressive logs first (and parse real-time stages/steps)
+            String chunk = connector.fetchNextChunk();
+            if (!chunk.isEmpty()) {
+                dashboard.appendConsoleLog(chunk);
+            }
+
             // Update pipeline run state (stages, steps, status, duration)
             PipelineRun run = connector.fetchPipelineRun();
             if (run != null) {
@@ -539,12 +562,6 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                     }
                 }
                 dashboard.updatePipelineRun(run, connector.getPlatformName());
-            }
-
-            // Fetch progressive logs
-            String chunk = connector.fetchNextChunk();
-            if (!chunk.isEmpty()) {
-                dashboard.appendConsoleLog(chunk);
             }
 
             // Stop when connector signals no more data (build finished or error)

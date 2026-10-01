@@ -73,6 +73,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     public void setLoading(boolean loading) {
         this.loading = loading;
         if (loading) {
+            this.pipelineRun = null;
             if (!animationTimer.isRunning()) {
                 animationTimer.start();
             }
@@ -81,6 +82,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
                 animationTimer.stop();
             }
         }
+        recomputeCanvasSize();
         repaint();
     }
 
@@ -115,10 +117,11 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     }
 
     public void updatePipelineRun(@Nullable PipelineRun run) {
-        this.pipelineRun = run;
-
         if (run != null && !run.getStages().isEmpty()) {
             this.loading = false;
+            this.pipelineRun = run;
+        } else if (!loading) {
+            this.pipelineRun = run;
         }
 
         if (loading || hasRunningEntities()) {
@@ -274,7 +277,7 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (loading && (pipelineRun == null || pipelineRun.getStages().isEmpty())) {
+        if (loading) {
             drawLoadingSpinner((Graphics2D) g);
             return;
         }
@@ -317,8 +320,10 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        int cx = getWidth() / 2;
-        int cy = Math.max(70, getHeight() / 2 - 25);
+        int width = getWidth() > 0 ? getWidth() : 500;
+        int height = getHeight() > 0 ? getHeight() : 300;
+        int cx = width / 2;
+        int cy = Math.max(70, height / 2 - 25);
 
         int spinnerSize = 44;
         int sx = cx - (spinnerSize / 2);

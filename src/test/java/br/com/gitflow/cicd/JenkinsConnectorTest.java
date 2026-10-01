@@ -85,6 +85,7 @@ public class JenkinsConnectorTest {
         assertEquals("test-crumb-value-999", crumbHeaderReceived.get());
         assertNotNull(cookieHeaderReceived.get());
         assertTrue(cookieHeaderReceived.get().contains("JSESSIONID=dummy-session-12345"));
+        assertTrue(connector.isBuildTriggered());
     }
 
     @Test
@@ -104,6 +105,7 @@ public class JenkinsConnectorTest {
 
         assertNotNull(response);
         assertEquals(201, response.statusCode());
+        assertTrue(connector.isBuildTriggered());
     }
 
     @Test
@@ -129,6 +131,7 @@ public class JenkinsConnectorTest {
 
         assertNotNull(response);
         assertEquals(201, response.statusCode());
+        assertTrue(connector.isBuildTriggered());
     }
 
     @Test
@@ -147,6 +150,39 @@ public class JenkinsConnectorTest {
         JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "wrong", "cred");
         Exception ex = assertThrows(IllegalStateException.class, connector::triggerBuild);
         assertTrue(ex.getMessage().contains("401"));
+    }
+
+    @Test
+    public void testFetchPipelineRunReturnsEmptyPendingRunWhenBuildTriggered() {
+        // Mock /lastBuild/wfapi/describe returning completed stages of a PREVIOUS build
+        String oldWfApiResponse = "{\n" +
+                "  \"id\": \"40\",\n" +
+                "  \"name\": \"#40\",\n" +
+                "  \"status\": \"SUCCESS\",\n" +
+                "  \"stages\": [{\"id\":\"1\",\"name\":\"Old Stage\",\"status\":\"SUCCESS\",\"stageFlowNodes\":[]}]\n" +
+                "}";
+
+        server.createContext("/job/test/lastBuild/wfapi/describe", exchange -> {
+            byte[] bytes = oldWfApiResponse.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+
+        // 1. Without buildTriggered (idle mode), returns old build
+        PipelineRun idleRun = connector.fetchPipelineRun();
+        assertNotNull(idleRun);
+        assertEquals("40", idleRun.getId());
+        assertEquals(1, idleRun.getStages().size());
+
+        // 2. With buildTriggered = true, MUST return pending run with EMPTY stages so UI spinner is displayed!
+        connector.setBuildTriggered(true);
+        PipelineRun pendingRun = connector.fetchPipelineRun();
+        assertNotNull(pendingRun);
+        assertTrue(pendingRun.getStages().isEmpty(), "Pending run must have empty stages so the loading spinner stays active!");
+        assertEquals(PipelineStatus.IN_PROGRESS, pendingRun.getStatus());
     }
 
     @Test

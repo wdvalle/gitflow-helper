@@ -41,6 +41,7 @@ public class JenkinsConnector implements CiConnector {
     private String baselineBuildNumber = null;
     private String targetBuildNumber = null;
     private boolean waitingForNewBuild = true;
+    private boolean buildTriggered = false;
     private boolean useConsoleTextFallback = false;
 
     // Tracks the byte offset for progressive log text requests
@@ -108,6 +109,22 @@ public class JenkinsConnector implements CiConnector {
     @Override
     public void stop() {
         this.hasMoreData = false;
+    }
+
+    public void setBuildTriggered(boolean buildTriggered) {
+        this.buildTriggered = buildTriggered;
+        if (buildTriggered) {
+            this.waitingForNewBuild = true;
+            this.targetBuildNumber = null;
+            this.latestPipelineRun = null;
+            this.fallbackStages.clear();
+            this.currentActiveStage = null;
+            this.currentActiveStep = null;
+        }
+    }
+
+    public boolean isBuildTriggered() {
+        return buildTriggered;
     }
 
     public String getBuildTriggerUrl() {
@@ -192,6 +209,8 @@ public class JenkinsConnector implements CiConnector {
      */
     @Override
     public HttpResponse<String> triggerBuild() throws Exception {
+        setBuildTriggered(true);
+
         // Record the current build number as baseline before triggering so the newly started build is immediately detected
         if (baselineBuildNumber == null) {
             try {
@@ -274,6 +293,18 @@ public class JenkinsConnector implements CiConnector {
      */
     @Override
     public @Nullable PipelineRun fetchPipelineRun() {
+        // If a new build was triggered or we are waiting for a new build to start,
+        // do NOT return the previous build's completed stages from /lastBuild!
+        if (buildTriggered && (waitingForNewBuild || targetBuildNumber == null)) {
+            PipelineRun pendingRun = new PipelineRun(
+                    targetBuildNumber != null ? targetBuildNumber : "queued",
+                    "Starting build...",
+                    PipelineStatus.IN_PROGRESS
+            );
+            pendingRun.setWebUrl(getBuildUrl());
+            return pendingRun;
+        }
+
         // Try wfapi/describe first
         PipelineRun wfRun = fetchWfApiPipelineRun();
         if (wfRun != null && !wfRun.getStages().isEmpty()) {

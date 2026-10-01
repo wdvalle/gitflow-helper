@@ -199,7 +199,7 @@ public class RepoCiDashboardPanel extends JPanel {
                    .replace("&amp;", "&");
 
         // Normalize trailing whitespace per line and strip leading/trailing blank space
-        String[] lines = text.split("\r?\n");
+        String[] lines = text.split("\\r?\\n");
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (String rawLine : lines) {
@@ -247,17 +247,26 @@ public class RepoCiDashboardPanel extends JPanel {
     }
 
     public void startLoading() {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        Runnable r = () -> {
             dagCanvas.setLoading(true);
-            dagCanvas.updatePipelineRun(null);
             headerPanel.updatePipelineRun(null, null);
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            ApplicationManager.getApplication().invokeLater(r);
+        }
     }
 
     public void stopLoading() {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        Runnable r = () -> {
             dagCanvas.setLoading(false);
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            ApplicationManager.getApplication().invokeLater(r);
+        }
     }
 
     public void updatePipelineRun(@Nullable PipelineRun run, @Nullable String platformName) {
@@ -327,12 +336,17 @@ public class RepoCiDashboardPanel extends JPanel {
     }
 
     public void clear() {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        Runnable r = () -> {
             consolePane.setText("");
             dagCanvas.setLoading(false);
             dagCanvas.updatePipelineRun(null);
             headerPanel.updatePipelineRun(null, null);
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            ApplicationManager.getApplication().invokeLater(r);
+        }
     }
 
     public @NotNull PipelineDagCanvas getDagCanvas() {
