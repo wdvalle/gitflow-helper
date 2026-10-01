@@ -424,6 +424,11 @@ public class PipelineModelsAndCanvasTest {
                 assertFalse(panels.get(1).isExpanded());
                 assertFalse(panels.get(2).isExpanded());
 
+                // Verify logArea does NOT have a JScrollPane parent (scroll-less, full width)
+                assertFalse(panels.get(0).getLogArea().getParent() instanceof JViewport,
+                        "Log area must be directly in the panel without scrollpane");
+                assertTrue(panels.get(0).getLogArea().getLineWrap(), "Log area should have line wrap enabled");
+
                 // 3. Expand all
                 dialog.setAllExpanded(true);
                 for (StageDetailsDialog.StepCollapsiblePanel panel : panels) {

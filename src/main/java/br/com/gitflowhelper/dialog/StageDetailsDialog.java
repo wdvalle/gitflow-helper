@@ -383,11 +383,15 @@ public class StageDetailsDialog extends DialogWrapper {
             logArea.setEditable(false);
             logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
             logArea.setTabSize(4);
-            logArea.setLineWrap(false);
+            logArea.setLineWrap(true);
+            logArea.setWrapStyleWord(true);
             logArea.setBackground(CONSOLE_BG);
             logArea.setForeground(CONSOLE_FG);
             logArea.setCaretColor(CONSOLE_FG);
-            logArea.setBorder(JBUI.Borders.empty(6, 8));
+            logArea.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new JBColor(new Color(215, 218, 222), new Color(52, 54, 58)), 1, true),
+                    JBUI.Borders.empty(8, 10)
+            ));
 
             copyLogBtn = new JButton("Copy log", AllIcons.Actions.Copy);
             copyLogBtn.putClientProperty("JButton.buttonType", "toolBarButton");
@@ -407,46 +411,33 @@ public class StageDetailsDialog extends DialogWrapper {
         }
 
         private JPanel createContentPanel(Color borderColor) {
-            JPanel content = new JPanel();
-            content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+            JPanel content = new JPanel(new BorderLayout(0, 8));
             content.setOpaque(true);
             content.setBackground(new JBColor(new Color(253, 254, 255), new Color(34, 36, 38)));
             content.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 1, 1, 1, borderColor),
-                    JBUI.Borders.empty(10, 14, 10, 14)
+                    JBUI.Borders.empty(8, 12, 10, 12)
             ));
 
-            // Metadata rows
-            content.add(createDetailRow("Step ID:", step.getId()));
-            content.add(Box.createVerticalStrut(4));
-            content.add(createDetailRow("Status:", step.getStatus().getDisplayName()));
-            content.add(Box.createVerticalStrut(4));
+            // Single top line: step-id, status, duration + 2 buttons aligned to right
+            JPanel topRow = new JPanel(new BorderLayout(10, 0));
+            topRow.setOpaque(false);
 
+            JPanel metaLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 0));
+            metaLeft.setOpaque(false);
+
+            metaLeft.add(createInlineField("Step ID:", step.getId()));
+            metaLeft.add(createInlineField("Status:", step.getStatus().getDisplayName()));
             String dur = step.getFormattedDuration();
             String durDetail = dur.isEmpty() ? "0 ms" : dur + " (" + step.getDurationMillis() + " ms)";
-            content.add(createDetailRow("Duration:", durDetail));
-            content.add(Box.createVerticalStrut(4));
+            metaLeft.add(createInlineField("Duration:", durDetail));
 
-            if (step.getStartTimeMillis() > 0) {
-                String dateStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(step.getStartTimeMillis()));
-                content.add(createDetailRow("Start Time:", dateStr));
-                content.add(Box.createVerticalStrut(6));
-            }
+            topRow.add(metaLeft, BorderLayout.WEST);
 
-            content.add(Box.createVerticalStrut(4));
-
-            // Step Log Section Header + Action toolbar
-            JPanel logHeader = new JPanel(new BorderLayout());
-            logHeader.setOpaque(false);
-
-            JBLabel logSectionLabel = new JBLabel("Step Log Output:");
-            logSectionLabel.setFont(logSectionLabel.getFont().deriveFont(Font.BOLD, 11f));
-            logSectionLabel.setForeground(JBColor.foreground());
-            logHeader.add(logSectionLabel, BorderLayout.WEST);
-
-            JPanel logActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
-            logActions.setOpaque(false);
-            logActions.add(copyLogBtn);
+            // Right: copyLogBtn and copyInfoBtn
+            JPanel buttonsRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+            buttonsRight.setOpaque(false);
+            buttonsRight.add(copyLogBtn);
 
             JButton copyInfoBtn = new JButton("Copy info", AllIcons.Actions.Copy);
             copyInfoBtn.putClientProperty("JButton.buttonType", "toolBarButton");
@@ -459,40 +450,29 @@ public class StageDetailsDialog extends DialogWrapper {
                         "Duration: " + step.getFormattedDuration() + " (" + step.getDurationMillis() + " ms)";
                 copyTextToClipboard(text);
             });
-            logActions.add(copyInfoBtn);
+            buttonsRight.add(copyInfoBtn);
 
-            logHeader.add(logActions, BorderLayout.EAST);
-            content.add(logHeader);
-            content.add(Box.createVerticalStrut(6));
+            topRow.add(buttonsRight, BorderLayout.EAST);
+            content.add(topRow, BorderLayout.NORTH);
 
-            // Log Scroll Pane
-            JBScrollPane logScrollPane = new JBScrollPane(logArea);
-            logScrollPane.setPreferredSize(new Dimension(0, 140));
-            logScrollPane.setMinimumSize(new Dimension(0, 80));
-            logScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
-            logScrollPane.setBorder(BorderFactory.createLineBorder(
-                    new JBColor(new Color(215, 218, 222), new Color(52, 54, 58)), 1, true
-            ));
-            content.add(logScrollPane);
+            // Directly add logArea without scroll, occupying full width from left to right
+            content.add(logArea, BorderLayout.CENTER);
 
             return content;
         }
 
-        private JPanel createDetailRow(String label, String value) {
-            JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-            row.setOpaque(false);
-            row.setAlignmentX(Component.LEFT_ALIGNMENT);
-
+        private JPanel createInlineField(String label, String value) {
+            JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+            p.setOpaque(false);
             JBLabel lbl = new JBLabel(label);
             lbl.setFont(lbl.getFont().deriveFont(Font.BOLD, 11f));
             lbl.setForeground(JBColor.GRAY);
-            row.add(lbl);
+            p.add(lbl);
 
             JBLabel val = new JBLabel(value);
             val.setFont(val.getFont().deriveFont(Font.PLAIN, 11f));
-            row.add(val);
-
-            return row;
+            p.add(val);
+            return p;
         }
 
         private void loadLogContentIfNeeded() {
@@ -502,12 +482,18 @@ public class StageDetailsDialog extends DialogWrapper {
                 logArea.setText(stepLog);
                 logArea.setCaretPosition(0);
                 logLoaded = true;
+                if (onToggle != null) {
+                    onToggle.run();
+                }
                 return;
             }
 
             if (logProvider != null && !logLoaded) {
                 logArea.setForeground(JBColor.GRAY);
                 logArea.setText("Loading step logs...");
+                if (onToggle != null) {
+                    onToggle.run();
+                }
                 Runnable fetchTask = () -> {
                     try {
                         String fetched = logProvider.getStepLog(step);
@@ -522,12 +508,18 @@ public class StageDetailsDialog extends DialogWrapper {
                             }
                             logArea.setCaretPosition(0);
                             logLoaded = true;
+                            if (onToggle != null) {
+                                onToggle.run();
+                            }
                         });
                     } catch (Throwable t) {
                         SwingUtilities.invokeLater(() -> {
                             logArea.setForeground(JBColor.RED);
                             logArea.setText("Error loading log: " + t.getMessage());
                             logLoaded = true;
+                            if (onToggle != null) {
+                                onToggle.run();
+                            }
                         });
                     }
                 };
@@ -541,6 +533,9 @@ public class StageDetailsDialog extends DialogWrapper {
                 logArea.setText("(No log output recorded for this step)");
                 logArea.setCaretPosition(0);
                 logLoaded = true;
+                if (onToggle != null) {
+                    onToggle.run();
+                }
             }
         }
 
