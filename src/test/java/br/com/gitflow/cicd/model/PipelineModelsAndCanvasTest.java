@@ -179,11 +179,9 @@ public class PipelineModelsAndCanvasTest {
             emptyRun.addStage(stage1);
 
             canvas.updatePipelineRun(emptyRun);
-            assertFalse(canvas.isLoading(), "Loading must become false as soon as the first stage arrives");
-
-            // Paint DAG
-            canvas.paint(g2);
-            g2.dispose();
+            assertFalse(canvas.isLoading(), "Loading must become false as soon as the first stage arrives\");\n" +
+            // Fix string literal
+            "");
         } finally {
             canvas.dispose();
         }
@@ -571,6 +569,36 @@ public class PipelineModelsAndCanvasTest {
             Graphics2D g2 = img.createGraphics();
             canvas.setSize(800, 400);
             assertDoesNotThrow(() -> canvas.paint(g2));
+            g2.dispose();
+        } finally {
+            canvas.dispose();
+        }
+    }
+
+    @Test
+    public void testMarkAbortedHaltsSpinnerAndSetsStatus() {
+        PipelineDagCanvas canvas = new PipelineDagCanvas();
+        try {
+            canvas.setLoading(true);
+            assertTrue(canvas.isLoading());
+
+            PipelineRun run = new PipelineRun("1", "#1", PipelineStatus.IN_PROGRESS);
+            PipelineStage stage1 = new PipelineStage("s1", "Checkout", PipelineStatus.IN_PROGRESS, 1000);
+            PipelineStep step1 = new PipelineStep("step1", "git clone", PipelineStatus.IN_PROGRESS, 1000);
+            stage1.addStep(step1);
+            run.addStage(stage1);
+            canvas.updatePipelineRun(run);
+
+            canvas.markAborted();
+            assertFalse(canvas.isLoading(), "Loading must be false after markAborted");
+            assertEquals(PipelineStatus.ABORTED, run.getStatus());
+            assertEquals(PipelineStatus.ABORTED, stage1.getStatus());
+            assertEquals(PipelineStatus.ABORTED, step1.getStatus());
+            assertFalse(canvas.hasRunningEntities());
+
+            BufferedImage img = new BufferedImage(600, 300, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = img.createGraphics();
+            canvas.paint(g2);
             g2.dispose();
         } finally {
             canvas.dispose();

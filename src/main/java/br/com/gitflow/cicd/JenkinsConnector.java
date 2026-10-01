@@ -19,12 +19,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class JenkinsConnector implements CiConnector {
-    private static final Pattern STAGE_START_PATTERN = Pattern.compile("\\[Pipeline\\]\\s*\\{\\s*\\(([^\\)]+)\\)");
+    private static final Pattern STAGE_START_PATTERN = Pattern.compile(
+            "\\[Pipeline\\]\\s*(?:\\{\\s*\\([\"']?([^\"'\\)]+)[\"']?\\)|stage:?\\s*\\(?[\"']?([^\"'\\)\r\n]+)[\"']?\\)?)|Entering stage\\s+[\"']?([^\"'\\r\\n]+)[\"']?"
+    );
     private static final Pattern STEP_PATTERN = Pattern.compile("\\[Pipeline\\]\\s*([a-zA-Z0-9_-]+)");
 
     private final String login;
@@ -40,6 +43,7 @@ public class JenkinsConnector implements CiConnector {
 
     private String baselineBuildNumber = null;
     private String targetBuildNumber = null;
+    private String lastQueueItemUrl = null;
     private boolean waitingForNewBuild = true;
     private boolean buildTriggered = false;
     private boolean useConsoleTextFallback = false;
@@ -109,6 +113,102 @@ public class JenkinsConnector implements CiConnector {
     @Override
     public void stop() {
         this.hasMoreData = false;
+        CompletableFuture.runAsync(this::stopRemoteBuild);
+    }
+
+    /**
+     * Sends abort signal to Jenkins to cancel or stop the running build or queued item.
+     */
+    public void stopRemoteBuild() {
+        String buildTarget = (targetBuildNumber != null && !targetBuildNumber.isEmpty()) ? targetBuildNumber : "lastBuild";
+        stopRemoteBuild(buildTarget);
+    }
+
+    /**
+     * Sends abort signal for a specific build target (e.g. build number or "lastBuild").
+     */
+    public void stopRemoteBuild(@NotNull String buildTarget) {
+        this.hasMoreData = false;
+        try {
+            fetchCrumbIfNeeded();
+
+            // Cancel any queued item in Jenkins queue
+            cancelQueuedItemIfAny();
+
+            // Stop the target or lastBuild
+            String stopUrl = normalizedBase + "/" + buildTarget + "/stop";
+            HttpRequest.Builder stopBuilder = createRequestBuilder(stopUrl)
+                    .POST(HttpRequest.BodyPublishers.noBody());
+            addCrumbHeader(stopBuilder);
+            HttpResponse<String> stopRes = httpClient.send(stopBuilder.build(), HttpResponse.BodyHandlers.ofString());
+
+            if (stopRes.statusCode() == 403) {
+                this.crumb = null;
+                this.crumbRequestField = null;
+                fetchCrumbIfNeeded();
+                HttpRequest.Builder retryBuilder = createRequestBuilder(stopUrl)
+                        .POST(HttpRequest.BodyPublishers.noBody());
+                addCrumbHeader(retryBuilder);
+                stopRes = httpClient.send(retryBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            }
+
+            if (stopRes.statusCode() == 404 || stopRes.statusCode() == 405) {
+                String termUrl = normalizedBase + "/" + buildTarget + "/term";
+                HttpRequest.Builder termBuilder = createRequestBuilder(termUrl)
+                        .POST(HttpRequest.BodyPublishers.noBody());
+                addCrumbHeader(termBuilder);
+                httpClient.send(termBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void cancelQueuedItemIfAny() {
+        // If we captured queue item location URL from triggerBuild
+        if (lastQueueItemUrl != null && !lastQueueItemUrl.isEmpty()) {
+            try {
+                int itemIdx = lastQueueItemUrl.indexOf("/queue/item/");
+                if (itemIdx != -1) {
+                    String base = lastQueueItemUrl.substring(0, itemIdx);
+                    String idStr = lastQueueItemUrl.substring(itemIdx + "/queue/item/".length()).replace("/", "");
+                    String qCancelUrl = base + "/queue/cancelItem?id=" + idStr;
+                    HttpRequest.Builder cancelBuilder = createRequestBuilder(qCancelUrl)
+                            .POST(HttpRequest.BodyPublishers.noBody());
+                    addCrumbHeader(cancelBuilder);
+                    httpClient.send(cancelBuilder.build(), HttpResponse.BodyHandlers.ofString());
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        // Query job queue state via API
+        try {
+            String jobQueueUrl = normalizedBase + "/api/json?tree=inQueue,queueItem[id]";
+            HttpRequest req = createRequestBuilder(jobQueueUrl).GET().build();
+            HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() == 200 && res.body() != null) {
+                JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
+                if (json.has("inQueue") && json.get("inQueue").getAsBoolean() && json.has("queueItem")) {
+                    JsonElement qElem = json.get("queueItem");
+                    if (qElem.isJsonObject()) {
+                        JsonObject item = qElem.getAsJsonObject();
+                        if (item.has("id")) {
+                            long qId = item.get("id").getAsLong();
+                            int rootEnd = normalizedBase.length();
+                            int jobIdx = normalizedBase.indexOf("/job/");
+                            if (jobIdx != -1) rootEnd = jobIdx;
+                            String jenkinsRoot = normalizedBase.substring(0, rootEnd);
+                            String cancelUrl = jenkinsRoot + "/queue/cancelItem?id=" + qId;
+                            HttpRequest.Builder cancelBuilder = createRequestBuilder(cancelUrl)
+                                    .POST(HttpRequest.BodyPublishers.noBody());
+                            addCrumbHeader(cancelBuilder);
+                            httpClient.send(cancelBuilder.build(), HttpResponse.BodyHandlers.ofString());
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     public void setBuildTriggered(boolean buildTriggered) {
@@ -234,6 +334,12 @@ public class JenkinsConnector implements CiConnector {
 
         int statusCode = response.statusCode();
 
+        // Capture queue location URL if Jenkins returned it
+        Optional<String> location = response.headers().firstValue("Location");
+        if (location.isPresent()) {
+            this.lastQueueItemUrl = location.get();
+        }
+
         // If 403 received, the crumb might be required, expired or changed: refetch once and retry
         if (statusCode == 403) {
             this.crumb = null;
@@ -245,6 +351,10 @@ public class JenkinsConnector implements CiConnector {
                 addCrumbHeader(retryBuilder);
                 response = httpClient.send(retryBuilder.build(), HttpResponse.BodyHandlers.ofString());
                 statusCode = response.statusCode();
+                Optional<String> retryLocation = response.headers().firstValue("Location");
+                if (retryLocation.isPresent()) {
+                    this.lastQueueItemUrl = retryLocation.get();
+                }
             }
         }
 
@@ -265,6 +375,10 @@ public class JenkinsConnector implements CiConnector {
             HttpRequest paramRequest = paramBuilder.build();
             HttpResponse<String> paramResponse = httpClient.send(paramRequest, HttpResponse.BodyHandlers.ofString());
             if (paramResponse.statusCode() >= 200 && paramResponse.statusCode() < 400) {
+                Optional<String> paramLoc = paramResponse.headers().firstValue("Location");
+                if (paramLoc.isPresent()) {
+                    this.lastQueueItemUrl = paramLoc.get();
+                }
                 return paramResponse;
             }
         }
@@ -540,6 +654,21 @@ public class JenkinsConnector implements CiConnector {
             // First execution: record baseline build number
             baselineBuildNumber = currentBuildNumber;
             lastDataReceivedTime = System.currentTimeMillis();
+
+            // Check if current build is already building right now
+            if (checkIfCurrentBuildIsBuilding(currentBuildNumber)) {
+                targetBuildNumber = currentBuildNumber;
+                waitingForNewBuild = false;
+                start = 0;
+                useConsoleTextFallback = false;
+                fallbackStages.clear();
+                currentActiveStage = null;
+                currentActiveStep = null;
+                String headerLog = "<font color='#FFFFFF'>Build in progress detected: #" + currentBuildNumber + ". Fetching logs...</font><br>";
+                String firstChunk = fetchProgressiveConsoleText();
+                return headerLog + firstChunk;
+            }
+
             return "<font color='#FFFFFF'>Initial build number recorded: #" + baselineBuildNumber + ". Waiting for new build to start...</font><br>";
         }
 
@@ -559,8 +688,47 @@ public class JenkinsConnector implements CiConnector {
             return headerLog + firstChunk;
         }
 
+        // Also check if current baseline build is actively building
+        if (checkIfCurrentBuildIsBuilding(currentBuildNumber)) {
+            targetBuildNumber = currentBuildNumber;
+            waitingForNewBuild = false;
+            start = 0;
+            useConsoleTextFallback = false;
+            fallbackStages.clear();
+            currentActiveStage = null;
+            currentActiveStep = null;
+            lastDataReceivedTime = System.currentTimeMillis();
+            String headerLog = "<font color='#FFFFFF'>Active build detected: #" + currentBuildNumber + ". Fetching logs...</font><br>";
+            String firstChunk = fetchProgressiveConsoleText();
+            return headerLog + firstChunk;
+        }
+
         // Build number has not changed yet
         return "";
+    }
+
+    private boolean checkIfCurrentBuildIsBuilding(String buildNum) {
+        if (buildNum == null || buildNum.isEmpty()) return false;
+        try {
+            String checkUrl = normalizedBase + "/" + buildNum + "/api/json?tree=building,timestamp";
+            HttpRequest req = createRequestBuilder(checkUrl).GET().build();
+            HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() == 200 && res.body() != null) {
+                JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
+                if (json.has("building") && json.get("building").getAsBoolean()) {
+                    if (json.has("timestamp")) {
+                        long ts = json.get("timestamp").getAsLong();
+                        if (System.currentTimeMillis() - ts < 10 * 60 * 1000) {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
     }
 
     private String fetchProgressiveConsoleText() throws Exception {
@@ -635,20 +803,25 @@ public class JenkinsConnector implements CiConnector {
             String line = rawLine.trim();
             if (line.isEmpty()) continue;
 
-            // Check for stage start: [Pipeline] { (StageName)
+            // Check for stage start: [Pipeline] { (StageName) or [Pipeline] stage: StageName
             Matcher stageMatcher = STAGE_START_PATTERN.matcher(line);
             if (stageMatcher.find()) {
-                String stageName = stageMatcher.group(1).trim();
-                if (currentActiveStep != null && currentActiveStep.getStatus().isRunning()) {
-                    currentActiveStep.setStatus(PipelineStatus.SUCCESS);
+                String stageName = stageMatcher.group(1);
+                if (stageName == null) stageName = stageMatcher.group(2);
+                if (stageName == null) stageName = stageMatcher.group(3);
+                if (stageName != null) {
+                    stageName = stageName.trim();
+                    if (currentActiveStep != null && currentActiveStep.getStatus().isRunning()) {
+                        currentActiveStep.setStatus(PipelineStatus.SUCCESS);
+                    }
+                    if (currentActiveStage != null && currentActiveStage.getStatus().isRunning()) {
+                        currentActiveStage.setStatus(PipelineStatus.SUCCESS);
+                    }
+                    currentActiveStage = new PipelineStage("stage-" + (fallbackStages.size() + 1), stageName, PipelineStatus.IN_PROGRESS, 0);
+                    fallbackStages.add(currentActiveStage);
+                    currentActiveStep = null;
+                    continue;
                 }
-                if (currentActiveStage != null && currentActiveStage.getStatus().isRunning()) {
-                    currentActiveStage.setStatus(PipelineStatus.SUCCESS);
-                }
-                currentActiveStage = new PipelineStage("stage-" + (fallbackStages.size() + 1), stageName, PipelineStatus.IN_PROGRESS, 0);
-                fallbackStages.add(currentActiveStage);
-                currentActiveStep = null;
-                continue;
             }
 
             // Check for step: [Pipeline] stepName
@@ -666,9 +839,11 @@ public class JenkinsConnector implements CiConnector {
                 Matcher stepMatcher = STEP_PATTERN.matcher(line);
                 if (stepMatcher.find()) {
                     String stepCmd = stepMatcher.group(1).trim();
-                    if (!stepCmd.equalsIgnoreCase("stage") && !stepCmd.equalsIgnoreCase("node")) {
+                    if (!stepCmd.equalsIgnoreCase("stage")) {
                         if (currentActiveStage == null) {
-                            currentActiveStage = new PipelineStage("stage-1", "Build", PipelineStatus.IN_PROGRESS, 0);
+                            String initialStageName = (stepCmd.equalsIgnoreCase("checkout") || stepCmd.equalsIgnoreCase("git"))
+                                    ? "Checkout" : (stepCmd.equalsIgnoreCase("node") ? "Prepare" : "Build");
+                            currentActiveStage = new PipelineStage("stage-1", initialStageName, PipelineStatus.IN_PROGRESS, 0);
                             fallbackStages.add(currentActiveStage);
                         }
 

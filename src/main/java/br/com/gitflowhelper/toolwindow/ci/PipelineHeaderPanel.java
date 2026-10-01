@@ -102,7 +102,7 @@ public class PipelineHeaderPanel extends JPanel {
         actionsPanel.add(rerunBtn);
 
         JButton stopBtn = new JButton(AllIcons.Actions.Suspend);
-        stopBtn.setToolTipText("Stop CI monitoring");
+        stopBtn.setToolTipText("Stop pipeline execution");
         stopBtn.setFocusable(false);
         stopBtn.addActionListener(e -> {
             if (onStopMonitoring != null) {
@@ -131,6 +131,10 @@ public class PipelineHeaderPanel extends JPanel {
         this.onRerunTrigger = onRerun;
         this.onStopMonitoring = onStop;
         this.onToggleSplit = onToggleSplit;
+    }
+
+    public void markAborted() {
+        statusBadge.setStatus(PipelineStatus.ABORTED);
     }
 
     public void updatePipelineRun(@Nullable PipelineRun run, @Nullable String platformName) {
@@ -165,7 +169,7 @@ public class PipelineHeaderPanel extends JPanel {
 
         String dur = run.getFormattedDuration();
         if (!dur.isEmpty()) {
-            durationLabel.setText("⏱ " + dur);
+            durationLabel.setText("\u23f1 " + dur);
             durationLabel.setVisible(true);
         } else {
             durationLabel.setVisible(false);
@@ -206,6 +210,10 @@ public class PipelineHeaderPanel extends JPanel {
                 case FAILED:
                     bg = new JBColor(new Color(253, 235, 235), new Color(60, 28, 28));
                     fg = new JBColor(new Color(210, 45, 45), new Color(245, 95, 95));
+                    break;
+                case ABORTED:
+                    bg = new JBColor(new Color(245, 235, 235), new Color(55, 40, 40));
+                    fg = new JBColor(new Color(180, 80, 80), new Color(220, 120, 120));
                     break;
                 case IN_PROGRESS:
                     bg = new JBColor(new Color(230, 244, 255), new Color(25, 45, 68));

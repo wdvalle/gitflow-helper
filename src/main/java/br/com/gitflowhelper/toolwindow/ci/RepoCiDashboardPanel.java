@@ -284,6 +284,22 @@ public class RepoCiDashboardPanel extends JPanel {
         }
     }
 
+    /**
+     * Stops loading and marks pipeline execution as ABORTED on canvas and header badge.
+     */
+    public void markExecutionStopped() {
+        Runnable r = () -> {
+            dagCanvas.markAborted();
+            headerPanel.markAborted();
+            appendPluginLog("Pipeline execution stopped by user.");
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            ApplicationManager.getApplication().invokeLater(r);
+        }
+    }
+
     public void updatePipelineRun(@Nullable PipelineRun run, @Nullable String platformName) {
         ApplicationManager.getApplication().invokeLater(() -> {
             headerPanel.updatePipelineRun(run, platformName);

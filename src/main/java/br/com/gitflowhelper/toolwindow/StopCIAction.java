@@ -12,7 +12,7 @@ public class StopCIAction extends AnAction {
     private final CIDataToolWindowPanel ciDataToolWindowPanel;
 
     public StopCIAction(CIDataToolWindowPanel ciDataToolWindowPanel) {
-        super("Stop CI Monitoring", "Stop monitoring the CI server", AllIcons.Actions.Suspend);
+        super("Stop CI/CD Execution", "Stop pipeline execution on CI server and cease monitoring", AllIcons.Actions.Suspend);
         this.ciDataToolWindowPanel = ciDataToolWindowPanel;
         ciDataToolWindowPanel.setOnStopped(() -> {
             ActivityTracker.getInstance().inc();
@@ -30,7 +30,8 @@ public class StopCIAction extends AnAction {
         boolean active = ciDataToolWindowPanel.isMonitoringActive();
         e.getPresentation().setEnabled(active);
         e.getPresentation().setIcon(AllIcons.Actions.Suspend);
-        e.getPresentation().setText("Stop CI Monitoring");
+        e.getPresentation().setText("Stop CI/CD Execution");
+        e.getPresentation().setDescription("Stop pipeline execution on CI server and cease monitoring");
     }
 
     @Override

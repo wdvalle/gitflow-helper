@@ -475,4 +475,53 @@ public class JenkinsConnectorTest {
         assertEquals(1, runningRun.getStages().get(0).getSteps().size());
         assertEquals("sh", runningRun.getStages().get(0).getSteps().get(0).getName());
     }
+
+    @Test
+    public void testStopRemoteBuildSendsStopAndCancelsQueue() throws Exception {
+        AtomicReference<String> stopPathCalled = new AtomicReference<>();
+
+        server.createContext("/crumbIssuer/api/json", exchange -> {
+            String responseBody = "{\"crumb\":\"stop-crumb\",\"crumbRequestField\":\"Jenkins-Crumb\"}";
+            exchange.sendResponseHeaders(200, responseBody.getBytes(StandardCharsets.UTF_8).length);
+            exchange.getResponseBody().write(responseBody.getBytes(StandardCharsets.UTF_8));
+            exchange.close();
+        });
+
+        server.createContext("/job/test/55/stop", exchange -> {
+            stopPathCalled.set(exchange.getRequestURI().getPath());
+            exchange.sendResponseHeaders(200, 0);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        connector.stopRemoteBuild("55");
+
+        assertEquals("/job/test/55/stop", stopPathCalled.get());
+    }
+
+    @Test
+    public void testStopRemoteBuildFallsBackToTermWhenStopFails() throws Exception {
+        AtomicReference<String> termPathCalled = new AtomicReference<>();
+
+        server.createContext("/crumbIssuer/api/json", exchange -> {
+            exchange.sendResponseHeaders(404, 0);
+            exchange.close();
+        });
+
+        server.createContext("/job/test/55/stop", exchange -> {
+            exchange.sendResponseHeaders(405, 0);
+            exchange.close();
+        });
+
+        server.createContext("/job/test/55/term", exchange -> {
+            termPathCalled.set(exchange.getRequestURI().getPath());
+            exchange.sendResponseHeaders(200, 0);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        connector.stopRemoteBuild("55");
+
+        assertEquals("/job/test/55/term", termPathCalled.get());
+    }
 }

@@ -238,6 +238,9 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
             this.hoveredStageIndex = -1;
             setCursor(Cursor.getDefaultCursor());
             setToolTipText(null);
+            emptyText.clear();
+            emptyText.setText("No CI/CD pipeline running");
+            emptyText.appendSecondaryText("Run a build or finish a feature branch to monitor pipeline execution.", SimpleTextAttributes.GRAYED_ATTRIBUTES, null);
             if (!animationTimer.isRunning()) {
                 animationTimer.start();
             }
@@ -252,6 +255,40 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
 
     public boolean isLoading() {
         return loading;
+    }
+
+    /**
+     * Halts all active executions and timers, marks in-progress stages/steps as ABORTED,
+     * and ensures no loading spinner remains on screen.
+     */
+    public void markAborted() {
+        this.loading = false;
+        if (pipelineRun != null) {
+            if (pipelineRun.getStatus().isRunning()) {
+                pipelineRun.setStatus(PipelineStatus.ABORTED);
+            }
+            for (PipelineStage stage : pipelineRun.getStages()) {
+                if (stage.getStatus().isRunning()) {
+                    stage.setStatus(PipelineStatus.ABORTED);
+                }
+                for (PipelineStep step : stage.getSteps()) {
+                    if (step.getStatus().isRunning()) {
+                        step.setStatus(PipelineStatus.ABORTED);
+                    }
+                }
+            }
+        }
+        if (animationTimer.isRunning()) {
+            animationTimer.stop();
+        }
+        if (smoothScrollTimer != null && smoothScrollTimer.isRunning()) {
+            smoothScrollTimer.stop();
+        }
+        emptyText.clear();
+        emptyText.setText("Pipeline execution stopped");
+        emptyText.appendSecondaryText("Execution was stopped. Run a build to start again.", SimpleTextAttributes.GRAYED_ATTRIBUTES, null);
+        recomputeCanvasSize();
+        repaint();
     }
 
     public boolean isPipelineExecuting() {
@@ -531,6 +568,8 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
             lineColor = new JBColor(new Color(210, 60, 60), new Color(230, 80, 80));
         } else if (fromStage.getStatus() == PipelineStatus.IN_PROGRESS) {
             lineColor = new JBColor(new Color(33, 150, 243), new Color(41, 140, 230));
+        } else if (fromStage.getStatus() == PipelineStatus.ABORTED) {
+            lineColor = new JBColor(new Color(170, 170, 170), new Color(110, 110, 110));
         } else {
             lineColor = new JBColor(new Color(190, 195, 200), new Color(75, 78, 82));
         }
@@ -578,6 +617,9 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
         } else if (stage.getStatus() == PipelineStatus.FAILED) {
             borderColor = new JBColor(new Color(244, 67, 54), new Color(220, 60, 50));
             strokeWidth = 2.0f;
+        } else if (stage.getStatus() == PipelineStatus.ABORTED) {
+            borderColor = new JBColor(new Color(158, 158, 158), new Color(110, 110, 110));
+            strokeWidth = 1.5f;
         } else {
             borderColor = new JBColor(new Color(218, 220, 224), new Color(65, 68, 72));
             strokeWidth = 1.0f;
@@ -661,6 +703,8 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
             stepBg = new JBColor(new Color(253, 237, 237), new Color(60, 33, 33));
         } else if (step.getStatus() == PipelineStatus.IN_PROGRESS) {
             stepBg = new JBColor(new Color(230, 244, 255), new Color(25, 45, 65));
+        } else if (step.getStatus() == PipelineStatus.ABORTED) {
+            stepBg = new JBColor(new Color(245, 245, 245), new Color(45, 45, 47));
         } else {
             stepBg = new JBColor(new Color(248, 249, 250, 180), new Color(36, 38, 40, 180));
         }
@@ -681,6 +725,8 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
             g2.setColor(new JBColor(new Color(35, 120, 40), new Color(130, 200, 120)));
         } else if (step.getStatus() == PipelineStatus.IN_PROGRESS) {
             g2.setColor(new JBColor(new Color(15, 105, 180), new Color(100, 180, 255)));
+        } else if (step.getStatus() == PipelineStatus.ABORTED) {
+            g2.setColor(JBColor.GRAY);
         } else {
             g2.setColor(JBColor.GRAY);
         }
@@ -732,6 +778,16 @@ public class PipelineDagCanvas extends JPanel implements ComponentWithEmptyText,
             g2.setColor(new JBColor(new Color(33, 150, 243), new Color(64, 169, 255)));
             g2.setStroke(new BasicStroke(2.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.drawArc(ix, iy, size, size, animationAngle, 100);
+
+        } else if (status == PipelineStatus.ABORTED) {
+            // Gray circle with horizontal dash
+            g2.setColor(new JBColor(new Color(170, 170, 170), new Color(120, 120, 120)));
+            g2.fillOval(ix, iy, size, size);
+
+            g2.setColor(Color.WHITE);
+            g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            int pad = 4;
+            g2.drawLine(ix + pad, iy + (size / 2), ix + size - pad, iy + (size / 2));
 
         } else if (status == PipelineStatus.PAUSED || status == PipelineStatus.SKIPPED) {
             // Yellow/orange pause or dash

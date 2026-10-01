@@ -55,6 +55,13 @@ public interface CiConnector {
     void stop();
 
     /**
+     * Sends an abort signal to the remote CI server to cancel the running job.
+     */
+    default void abortPipeline() {
+        stop();
+    }
+
+    /**
      * Fetches the console or pipeline execution log specifically for a given step/node ID.
      *
      * @param stepId the unique identifier of the step or flow node
