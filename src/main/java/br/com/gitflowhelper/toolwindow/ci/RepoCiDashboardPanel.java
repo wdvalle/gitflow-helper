@@ -240,13 +240,34 @@ public class RepoCiDashboardPanel extends JPanel {
         runOnEdt(r);
     }
 
-    private static String toPlainText(@Nullable String htmlChunk) {
+    /**
+     * Converts an HTML chunk to plain text safely using a linear scan without recursive regex.
+     */
+    public static @NotNull String toPlainText(@Nullable String htmlChunk) {
         if (htmlChunk == null || htmlChunk.isEmpty()) {
             return "";
         }
-        return htmlChunk
-                .replaceAll("(?i)<br\\s*/?>", "\n")
-                .replaceAll("<[^>]+>", "")
+        StringBuilder sb = new StringBuilder(htmlChunk.length());
+        int len = htmlChunk.length();
+        int i = 0;
+        while (i < len) {
+            char c = htmlChunk.charAt(i);
+            if (c == '<') {
+                int closeIdx = htmlChunk.indexOf('>', i);
+                if (closeIdx == -1) {
+                    break;
+                }
+                String tag = htmlChunk.substring(i + 1, closeIdx).trim().toLowerCase();
+                if (tag.equals("br") || tag.startsWith("br/") || tag.startsWith("br ")) {
+                    sb.append('\n');
+                }
+                i = closeIdx + 1;
+            } else {
+                sb.append(c);
+                i++;
+            }
+        }
+        return sb.toString()
                 .replace("&lt;", "<")
                 .replace("&gt;", ">")
                 .replace("&quot;", "\"")
@@ -476,6 +497,10 @@ public class RepoCiDashboardPanel extends JPanel {
 
     public @NotNull JEditorPane getConsolePane() {
         return consolePane;
+    }
+
+    public @NotNull JBSplitter getSplitter() {
+        return splitter;
     }
 
     public void dispose() {

@@ -4,6 +4,7 @@ import br.com.gitflow.cicd.model.PipelineRun;
 import br.com.gitflow.cicd.model.PipelineStage;
 import br.com.gitflow.cicd.model.PipelineStatus;
 import br.com.gitflow.cicd.model.PipelineStep;
+import br.com.gitflowhelper.toolwindow.ci.RepoCiDashboardPanel;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -523,5 +524,91 @@ public class JenkinsConnectorTest {
         connector.stopRemoteBuild("55");
 
         assertEquals("/job/test/55/term", termPathCalled.get());
+    }
+
+    @Test
+    public void testStripHtmlSafelyHandlesLargeHtmlWithoutStackOverflow() {
+        StringBuilder largeHtml = new StringBuilder();
+        largeHtml.append("<!DOCTYPE html><html><head><title>Error 404 - Not Found</title></head><body>");
+        for (int i = 0; i < 2000; i++) {
+            largeHtml.append("<div class='container' id='div_").append(i).append("'><span>Line ").append(i).append("</span><br/></div>\n");
+        }
+        largeHtml.append("</body></html>");
+
+        String stripped = JenkinsConnector.stripHtmlSafely(largeHtml.toString());
+        assertNotNull(stripped);
+        assertTrue(stripped.length() <= 500);
+        assertFalse(stripped.contains("<div>"));
+        assertFalse(stripped.contains("<br/>"));
+    }
+
+    @Test
+    public void testExtractErrorSnippetExtractsCleanSnippet() {
+        String html404 = "<html><head><title>Apache Tomcat/9.0 - Error report</title></head>"
+                + "<body><h1>HTTP Status 404 – Not Found</h1><p>The origin server did not find a current representation for the target resource.</p></body></html>";
+        String snippet = JenkinsConnector.extractErrorSnippet(html404);
+        assertNotNull(snippet);
+        assertFalse(snippet.contains("<html>"));
+        assertTrue(snippet.contains("HTTP Status 404") || snippet.contains("Apache Tomcat"));
+    }
+
+    @Test
+    public void testRepoCiDashboardPanelToPlainTextHandlesLargeHtmlWithoutStackOverflow() {
+        StringBuilder largeHtml = new StringBuilder();
+        largeHtml.append("<html><body>");
+        for (int i = 0; i < 2000; i++) {
+            largeHtml.append("<span>Line ").append(i).append("&lt;test&gt;</span><br>");
+        }
+        largeHtml.append("</body></html>");
+
+        String plainText = RepoCiDashboardPanel.toPlainText(largeHtml.toString());
+        assertNotNull(plainText);
+        assertFalse(plainText.contains("<span>"));
+        assertFalse(plainText.contains("<br>"));
+        assertTrue(plainText.contains("<test>"));
+        assertTrue(plainText.contains("Line 0"));
+    }
+
+    @Test
+    public void testInvalidUrlReturningHtmlErrorDoesNotCrashAndStopsMonitoring() {
+        // Simulates invalid Jenkins URL returning Tomcat/Jenkins 404 HTML
+        String htmlError = "<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>No such job</p></body></html>";
+        server.createContext("/job/test/lastBuild/buildNumber", exchange -> {
+            byte[] bytes = htmlError.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "text/html;charset=utf-8");
+            exchange.sendResponseHeaders(404, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        String chunk = connector.fetchNextChunk();
+
+        assertNotNull(chunk);
+        assertTrue(chunk.contains("Failed to inspect build status") || chunk.contains("Error"));
+        assertFalse(chunk.contains("<!DOCTYPE html>"), "Should not dump raw HTML into the log chunk");
+        assertFalse(connector.hasMoreData(), "Connector must halt monitoring when non-numeric HTML is received");
+    }
+
+    @Test
+    public void testTriggerBuildOnInvalidUrlReturningHtmlThrowsSanitizedError() {
+        String html500 = "<html><head><title>500 Internal Error</title></head><body><h1>Server Error</h1><p>Jenkins error</p></body></html>";
+        server.createContext("/crumbIssuer/api/json", exchange -> {
+            exchange.sendResponseHeaders(404, 0);
+            exchange.close();
+        });
+        server.createContext("/job/test/build", exchange -> {
+            byte[] bytes = html500.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "text/html");
+            exchange.sendResponseHeaders(500, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        IllegalStateException ex = assertThrows(IllegalStateException.class, connector::triggerBuild);
+        assertNotNull(ex.getMessage());
+        assertTrue(ex.getMessage().contains("500"));
+        assertFalse(ex.getMessage().contains("<!DOCTYPE") && !ex.getMessage().contains("<html>"));
     }
 }

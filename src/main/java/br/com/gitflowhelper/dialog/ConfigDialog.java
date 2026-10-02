@@ -1,6 +1,6 @@
 package br.com.gitflowhelper.dialog;
 
-import br.com.gitflow.cicd.JenkinsConnector;
+import br.com.gitflow.cicd.BaseCiConnector;
 import br.com.gitflowhelper.settings.CiServerConfig;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.toolwindow.CIDataToolWindowPanel;
@@ -10,6 +10,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.components.JBPasswordField;
 import com.intellij.ui.components.JBTextField;
 import git4idea.repo.GitRepository;
@@ -260,7 +261,7 @@ public class ConfigDialog extends DialogWrapper {
         GitRepository repo = repositories.get(repoIndex);
         String repoName = repo.getRoot().getName();
         String branchPart = repo.getCurrentBranch() != null
-                ? "\u2387 " + repo.getCurrentBranch().getName()
+                ? "⎇ " + repo.getCurrentBranch().getName()
                 : "(No current branch)";
 
         boolean isConfigured = workingConfigs != null
@@ -469,6 +470,10 @@ public class ConfigDialog extends DialogWrapper {
             NotificationUtil.showGitFlowWarningNotification(project, "CI/CD", "Please enter a valid CI/CD URL.");
             return;
         }
+        if (!BaseCiConnector.isValidHttpUrl(url)) {
+            NotificationUtil.showGitFlowWarningNotification(project, "CI/CD", "CI/CD URL must start with http:// or https://");
+            return;
+        }
 
         String repoPath = (currentIndex >= 0 && repositories != null && currentIndex < repositories.size())
                 ? repositories.get(currentIndex).getRoot().getPath()
@@ -525,6 +530,22 @@ public class ConfigDialog extends DialogWrapper {
         }
 
         setModified(false);
+    }
+
+    @Override
+    protected @Nullable ValidationInfo doValidate() {
+        saveCurrentFields();
+        if (workingConfigs != null) {
+            for (CiServerConfig cfg : workingConfigs) {
+                if (cfg != null && !cfg.getCiUrl().isEmpty()) {
+                    String url = cfg.getCiUrl();
+                    if (!BaseCiConnector.isValidHttpUrl(url)) {
+                        return new ValidationInfo("CI/CD URL must start with http:// or https://", ciUrlField);
+                    }
+                }
+            }
+        }
+        return super.doValidate();
     }
 
     @Override

@@ -777,4 +777,23 @@ public class PipelineModelsAndCanvasTest {
             canvas.dispose();
         }
     }
+
+    @Test
+    public void testHtmlStackOverflowError() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body>");
+        for (int i = 0; i < 5000; i++) {
+            sb.append("<div class=\"container-fluid\"><p>Some long error message or text </p></div>");
+        }
+        sb.append("</body></html>");
+        String bigHtml = sb.toString();
+
+        try {
+            bigHtml.replaceAll("(?i)<br\\s*/?>", "\n").replaceAll("<[^>]+>", "");
+        } catch (StackOverflowError e) {
+            System.out.println("CAUGHT STACK OVERFLOW IN replaceAll: " + e);
+            throw e;
+        }
+    }
+
 }

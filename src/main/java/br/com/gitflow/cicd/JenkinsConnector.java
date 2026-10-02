@@ -7,36 +7,34 @@ import br.com.gitflow.cicd.model.PipelineStep;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JenkinsConnector implements CiConnector {
+/**
+ * CI/CD connector for Jenkins servers.
+ *
+ * <p>Supports Jenkins Declarative and Scripted Pipelines, Stage View API (/wfapi/describe),
+ * CSRF Crumb handling, progressive log streaming (/logText/progressiveText),
+ * fallback log stage parsing, and remote build aborting.</p>
+ */
+public class JenkinsConnector extends BaseCiConnector {
+
     private static final Pattern STAGE_START_PATTERN = Pattern.compile(
-            "\\[Pipeline\\]\\s*(?:\\{\\s*\\([\"']?([^\"'\\)]+)[\"']?\\)|stage:?\\s*\\(?[\"']?([^\"'\\)\r\n]+)[\"']?\\)?)|Entering stage\\s+[\"']?([^\"'\\r\\n]+)[\"']?"
+            "\\[Pipeline\\]\\s*(?:\\{\\s*\\([\"']?([^\"'\\)]+)[\"']?\\)|stage:?\\s*\\(?[\"']?([^\"'\\)\\r\\n]+)[\"']?\\)?)|Entering stage\\s+[\"']?([^\"'\\r\\n]+)[\"']?"
     );
     private static final Pattern STEP_PATTERN = Pattern.compile("\\[Pipeline\\]\\s*([a-zA-Z0-9_-]+)");
 
-    private final String login;
-    private final String token;
-    private final String normalizedBase;
     private final String buildTriggerUrl;
     private final String crumbIssuerUrl;
     private final String buildNumberUrl;
-    private final HttpClient httpClient;
 
     private String crumb = null;
     private String crumbRequestField = null;
@@ -51,20 +49,32 @@ public class JenkinsConnector implements CiConnector {
     // Tracks the byte offset for progressive log text requests
     private int start = 0;
 
-    // True while monitoring is active and Jenkins reports data being produced
-    private boolean hasMoreData = true;
-
-    private long lastDataReceivedTime = System.currentTimeMillis();
-    private static final long INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
-
     // Real-time stages and steps extracted from log stream or wfapi
     private final List<PipelineStage> fallbackStages = new CopyOnWriteArrayList<>();
     private PipelineStage currentActiveStage = null;
     private PipelineStep currentActiveStep = null;
-    private PipelineRun latestPipelineRun = null;
 
-    public JenkinsConnector(String baseUrl, String login, String token) {
-        String base = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+    public JenkinsConnector(@NotNull String baseUrl, @Nullable String login, @Nullable String token) {
+        super(stripJenkinsSuffixes(baseUrl), login, token);
+
+        this.buildTriggerUrl = this.normalizedBase + "/build";
+        this.buildNumberUrl = this.normalizedBase + "/lastBuild/buildNumber";
+
+        int rootEnd = this.normalizedBase.length();
+        int jobIdx = this.normalizedBase.indexOf("/job/");
+        int viewIdx = this.normalizedBase.indexOf("/view/");
+        if (jobIdx != -1) {
+            rootEnd = Math.min(rootEnd, jobIdx);
+        }
+        if (viewIdx != -1) {
+            rootEnd = Math.min(rootEnd, viewIdx);
+        }
+        String jenkinsRoot = this.normalizedBase.substring(0, rootEnd);
+        this.crumbIssuerUrl = jenkinsRoot + "/crumbIssuer/api/json";
+    }
+
+    private static @NotNull String stripJenkinsSuffixes(@NotNull String url) {
+        String base = normalizeBaseUrl(url);
         if (base.endsWith("/build")) {
             base = base.substring(0, base.length() - "/build".length());
         } else if (base.endsWith("/buildWithParameters")) {
@@ -72,31 +82,7 @@ public class JenkinsConnector implements CiConnector {
         } else if (base.endsWith("/lastBuild")) {
             base = base.substring(0, base.length() - "/lastBuild".length());
         }
-        this.normalizedBase = base;
-        this.buildTriggerUrl = base + "/build";
-        this.buildNumberUrl = base + "/lastBuild/buildNumber";
-
-        int rootEnd = base.length();
-        int jobIdx = base.indexOf("/job/");
-        int viewIdx = base.indexOf("/view/");
-        if (jobIdx != -1) {
-            rootEnd = Math.min(rootEnd, jobIdx);
-        }
-        if (viewIdx != -1) {
-            rootEnd = Math.min(rootEnd, viewIdx);
-        }
-        String jenkinsRoot = base.substring(0, rootEnd);
-        this.crumbIssuerUrl = jenkinsRoot + "/crumbIssuer/api/json";
-
-        this.login = login;
-        this.token = token;
-
-        CookieManager cookieManager = new CookieManager();
-        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-        this.httpClient = HttpClient.newBuilder()
-                .cookieHandler(cookieManager)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
+        return base;
     }
 
     @Override
@@ -112,7 +98,7 @@ public class JenkinsConnector implements CiConnector {
 
     @Override
     public void stop() {
-        this.hasMoreData = false;
+        super.stop();
         CompletableFuture.runAsync(this::stopRemoteBuild);
     }
 
@@ -187,8 +173,8 @@ public class JenkinsConnector implements CiConnector {
             HttpRequest req = createRequestBuilder(jobQueueUrl).GET().build();
             HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
             if (res.statusCode() == 200 && res.body() != null) {
-                JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
-                if (json.has("inQueue") && json.get("inQueue").getAsBoolean() && json.has("queueItem")) {
+                JsonObject json = safeParseJsonObject(res.body());
+                if (json != null && json.has("inQueue") && json.get("inQueue").getAsBoolean() && json.has("queueItem")) {
                     JsonElement qElem = json.get("queueItem");
                     if (qElem.isJsonObject()) {
                         JsonObject item = qElem.getAsJsonObject();
@@ -283,8 +269,8 @@ public class JenkinsConnector implements CiConnector {
             HttpRequest request = createRequestBuilder(url).GET().build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200 && response.body() != null) {
-                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-                if (json.has("crumb") && json.has("crumbRequestField")) {
+                JsonObject json = safeParseJsonObject(response.body());
+                if (json != null && json.has("crumb") && json.has("crumbRequestField")) {
                     this.crumb = json.get("crumb").getAsString();
                     this.crumbRequestField = json.get("crumbRequestField").getAsString();
                     return true;
@@ -317,7 +303,10 @@ public class JenkinsConnector implements CiConnector {
                 HttpRequest bReq = createRequestBuilder(buildNumberUrl).GET().build();
                 HttpResponse<String> bRes = httpClient.send(bReq, HttpResponse.BodyHandlers.ofString());
                 if (bRes.statusCode() == 200 && bRes.body() != null) {
-                    baselineBuildNumber = bRes.body().trim();
+                    String trimmed = bRes.body().trim();
+                    if (isNumericBuildNumber(trimmed)) {
+                        baselineBuildNumber = trimmed;
+                    }
                 }
             } catch (Exception ignored) {
             }
@@ -384,20 +373,12 @@ public class JenkinsConnector implements CiConnector {
         }
 
         String body = response.body() != null ? response.body().trim() : "";
-        throw new IllegalStateException("Jenkins returned HTTP " + statusCode + (body.isEmpty() ? "" : ": " + body));
+        String snippet = extractErrorSnippet(body);
+        throw new IllegalStateException("Jenkins returned HTTP " + statusCode + (snippet.isEmpty() ? "" : ": " + snippet));
     }
 
     public static HttpResponse<String> triggerBuild(String baseUrl, String login, String token) throws Exception {
         return new JenkinsConnector(baseUrl, login, token).triggerBuild();
-    }
-
-    /**
-     * Returns true while Jenkins signals monitoring should continue.
-     * Becomes false after the build status API reports building = false, or on error/timeout.
-     */
-    @Override
-    public boolean hasMoreData() {
-        return hasMoreData;
     }
 
     /**
@@ -441,18 +422,6 @@ public class JenkinsConnector implements CiConnector {
         return latestPipelineRun;
     }
 
-    private final List<PipelineStage> blueprintStagesCache = new ArrayList<>();
-
-    private void updateBlueprintCache(@Nullable List<PipelineStage> stages) {
-        if (stages == null || stages.isEmpty()) return;
-        if (stages.size() >= blueprintStagesCache.size()) {
-            blueprintStagesCache.clear();
-            for (PipelineStage stage : stages) {
-                blueprintStagesCache.add(new PipelineStage(stage.getId(), stage.getName(), PipelineStatus.NOT_STARTED, 0));
-            }
-        }
-    }
-
     @Override
     public @NotNull List<PipelineStage> fetchBlueprintStages() {
         if (blueprintStagesCache.isEmpty()) {
@@ -484,8 +453,11 @@ public class JenkinsConnector implements CiConnector {
             HttpRequest request = createRequestBuilder(url).GET().build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() == 200 && response.body() != null && !response.body().isEmpty()) {
-                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+            if (response.statusCode() == 200 && response.body() != null) {
+                JsonObject json = safeParseJsonObject(response.body());
+                if (json == null) {
+                    return null;
+                }
                 String id = json.has("id") ? json.get("id").getAsString() : (targetBuildNumber != null ? targetBuildNumber : buildTarget);
                 String name = json.has("name") ? json.get("name").getAsString() : ("Build #" + id);
                 String statusStr = json.has("status") ? json.get("status").getAsString() : "";
@@ -580,7 +552,10 @@ public class JenkinsConnector implements CiConnector {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200 && response.body() != null) {
-                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                JsonObject json = safeParseJsonObject(response.body());
+                if (json == null) {
+                    return null;
+                }
                 String id = json.has("number") ? json.get("number").getAsString() : (targetBuildNumber != null ? targetBuildNumber : "last");
                 String name = json.has("displayName") ? json.get("displayName").getAsString() : ("Build #" + id);
 
@@ -621,9 +596,9 @@ public class JenkinsConnector implements CiConnector {
         try {
             HttpRequest request = createRequestBuilder(wfLogUrl).GET().build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200 && response.body() != null && !response.body().isEmpty()) {
-                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-                if (json.has("text") && !json.get("text").isJsonNull()) {
+            if (response.statusCode() == 200 && response.body() != null) {
+                JsonObject json = safeParseJsonObject(response.body());
+                if (json != null && json.has("text") && !json.get("text").isJsonNull()) {
                     return json.get("text").getAsString();
                 }
             }
@@ -662,9 +637,9 @@ public class JenkinsConnector implements CiConnector {
             return "";
         }
 
-        if (System.currentTimeMillis() - lastDataReceivedTime > INACTIVITY_TIMEOUT_MS) {
-            hasMoreData = false;
-            return "<font color='#FFFFFF'>CI/CD monitoring stopped automatically: No data received for 5 minutes.</font><br>";
+        String timeoutMsg = checkInactivityTimeout();
+        if (timeoutMsg != null) {
+            return timeoutMsg;
         }
 
         try {
@@ -690,10 +665,20 @@ public class JenkinsConnector implements CiConnector {
 
         String currentBuildNumber = response.body() != null ? response.body().trim() : "";
 
+        // Build numbers from Jenkins /lastBuild/buildNumber must be purely numeric.
+        // If an HTML error page or login redirect is returned, currentBuildNumber won't be purely numeric.
+        if (currentBuildNumber.isEmpty() || !isNumericBuildNumber(currentBuildNumber)) {
+            hasMoreData = false;
+            String snippet = extractErrorSnippet(currentBuildNumber);
+            return formatErrorHtml("CI server returned invalid build number response" +
+                    (snippet.isEmpty() ? "" : " (" + snippet + ")") +
+                    ". Please verify CI/CD URL and credentials.");
+        }
+
         if (baselineBuildNumber == null) {
             // First execution: record baseline build number
             baselineBuildNumber = currentBuildNumber;
-            lastDataReceivedTime = System.currentTimeMillis();
+            markDataReceived();
 
             // Check if current build is already building right now
             if (checkIfCurrentBuildIsBuilding(currentBuildNumber)) {
@@ -704,12 +689,12 @@ public class JenkinsConnector implements CiConnector {
                 fallbackStages.clear();
                 currentActiveStage = null;
                 currentActiveStep = null;
-                String headerLog = "<font color='#FFFFFF'>Build in progress detected: #" + currentBuildNumber + ". Fetching logs...</font><br>";
+                String headerLog = formatInfoHtml("Build in progress detected: #" + currentBuildNumber + ". Fetching logs...");
                 String firstChunk = fetchProgressiveConsoleText();
                 return headerLog + firstChunk;
             }
 
-            return "<font color='#FFFFFF'>Initial build number recorded: #" + baselineBuildNumber + ". Waiting for new build to start...</font><br>";
+            return formatInfoHtml("Initial build number recorded: #" + baselineBuildNumber + ". Waiting for new build to start...");
         }
 
         if (!currentBuildNumber.equals(baselineBuildNumber)) {
@@ -722,8 +707,8 @@ public class JenkinsConnector implements CiConnector {
             fallbackStages.clear();
             currentActiveStage = null;
             currentActiveStep = null;
-            lastDataReceivedTime = System.currentTimeMillis();
-            String headerLog = "<font color='#FFFFFF'>New build detected: #" + currentBuildNumber + ". Fetching logs...</font><br>";
+            markDataReceived();
+            String headerLog = formatInfoHtml("New build detected: #" + currentBuildNumber + ". Fetching logs...");
             String firstChunk = fetchProgressiveConsoleText();
             return headerLog + firstChunk;
         }
@@ -737,8 +722,8 @@ public class JenkinsConnector implements CiConnector {
             fallbackStages.clear();
             currentActiveStage = null;
             currentActiveStep = null;
-            lastDataReceivedTime = System.currentTimeMillis();
-            String headerLog = "<font color='#FFFFFF'>Active build detected: #" + currentBuildNumber + ". Fetching logs...</font><br>";
+            markDataReceived();
+            String headerLog = formatInfoHtml("Active build detected: #" + currentBuildNumber + ". Fetching logs...");
             String firstChunk = fetchProgressiveConsoleText();
             return headerLog + firstChunk;
         }
@@ -748,14 +733,14 @@ public class JenkinsConnector implements CiConnector {
     }
 
     private boolean checkIfCurrentBuildIsBuilding(String buildNum) {
-        if (buildNum == null || buildNum.isEmpty()) return false;
+        if (!isNumericBuildNumber(buildNum)) return false;
         try {
             String checkUrl = normalizedBase + "/" + buildNum + "/api/json?tree=building,timestamp";
             HttpRequest req = createRequestBuilder(checkUrl).GET().build();
             HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
             if (res.statusCode() == 200 && res.body() != null) {
-                JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
-                if (json.has("building") && json.get("building").getAsBoolean()) {
+                JsonObject json = safeParseJsonObject(res.body());
+                if (json != null && json.has("building") && json.get("building").getAsBoolean()) {
                     if (json.has("timestamp")) {
                         long ts = json.get("timestamp").getAsLong();
                         if (System.currentTimeMillis() - ts < 10 * 60 * 1000) {
@@ -790,8 +775,13 @@ public class JenkinsConnector implements CiConnector {
         }
 
         String rawBody = response.body() != null ? response.body() : "";
-        String chunk;
+        String contentType = response.headers().firstValue("Content-Type").orElse("");
+        if (isHtmlResponse(contentType, rawBody)) {
+            hasMoreData = false;
+            return formatErrorHtml("Received HTML response instead of pipeline console log. Please verify CI/CD URL.");
+        }
 
+        String chunk;
         Optional<String> textSizeHeader = response.headers().firstValue("X-Text-Size");
         if (textSizeHeader.isPresent()) {
             try {
@@ -818,11 +808,11 @@ public class JenkinsConnector implements CiConnector {
         }
 
         if (chunk != null && !chunk.isEmpty()) {
-            lastDataReceivedTime = System.currentTimeMillis();
+            markDataReceived();
             // Parse stages and steps from progressive logs in real time
             parseStagesFromLogChunk(chunk);
         }
-        String formattedChunk = (chunk != null && !chunk.isEmpty()) ? formatHtml(chunk) : "";
+        String formattedChunk = (chunk != null && !chunk.isEmpty()) ? formatHtmlLog(chunk) : "";
 
         // Check build status via Jenkins API
         checkBuildFinishedViaApi();
@@ -831,7 +821,7 @@ public class JenkinsConnector implements CiConnector {
             // Append final build status message if build finished
             String status = fetchBuildResultStatus();
             finalizeStagesOnBuildFinished("SUCCESS".equalsIgnoreCase(status));
-            formattedChunk = formattedChunk + "<br><font color='#FFFFFF'>Build finished: " + status + "</font><br>";
+            formattedChunk = formattedChunk + "<br>" + formatInfoHtml("Build finished: " + status);
         }
 
         return formattedChunk;
@@ -841,31 +831,36 @@ public class JenkinsConnector implements CiConnector {
         String[] lines = chunk.split("\\r?\\n");
         for (String rawLine : lines) {
             String line = rawLine.trim();
-            if (line.isEmpty()) continue;
+            if (line.isEmpty() || line.length() > 1000) continue;
+
+            boolean isPipeline = line.startsWith("[Pipeline]");
+            boolean isEnteringStage = line.startsWith("Entering stage");
 
             // Check for stage start: [Pipeline] { (StageName) or [Pipeline] stage: StageName
-            Matcher stageMatcher = STAGE_START_PATTERN.matcher(line);
-            if (stageMatcher.find()) {
-                String stageName = stageMatcher.group(1);
-                if (stageName == null) stageName = stageMatcher.group(2);
-                if (stageName == null) stageName = stageMatcher.group(3);
-                if (stageName != null) {
-                    stageName = stageName.trim();
-                    if (currentActiveStep != null && currentActiveStep.getStatus().isRunning()) {
-                        currentActiveStep.setStatus(PipelineStatus.SUCCESS);
+            if (isPipeline || isEnteringStage) {
+                Matcher stageMatcher = STAGE_START_PATTERN.matcher(line);
+                if (stageMatcher.find()) {
+                    String stageName = stageMatcher.group(1);
+                    if (stageName == null) stageName = stageMatcher.group(2);
+                    if (stageName == null) stageName = stageMatcher.group(3);
+                    if (stageName != null) {
+                        stageName = stageName.trim();
+                        if (currentActiveStep != null && currentActiveStep.getStatus().isRunning()) {
+                            currentActiveStep.setStatus(PipelineStatus.SUCCESS);
+                        }
+                        if (currentActiveStage != null && currentActiveStage.getStatus().isRunning()) {
+                            currentActiveStage.setStatus(PipelineStatus.SUCCESS);
+                        }
+                        currentActiveStage = new PipelineStage("stage-" + (fallbackStages.size() + 1), stageName, PipelineStatus.IN_PROGRESS, 0);
+                        fallbackStages.add(currentActiveStage);
+                        currentActiveStep = null;
+                        continue;
                     }
-                    if (currentActiveStage != null && currentActiveStage.getStatus().isRunning()) {
-                        currentActiveStage.setStatus(PipelineStatus.SUCCESS);
-                    }
-                    currentActiveStage = new PipelineStage("stage-" + (fallbackStages.size() + 1), stageName, PipelineStatus.IN_PROGRESS, 0);
-                    fallbackStages.add(currentActiveStage);
-                    currentActiveStep = null;
-                    continue;
                 }
             }
 
             // Check for step: [Pipeline] stepName
-            if (line.startsWith("[Pipeline]")) {
+            if (isPipeline) {
                 if (line.contains("// stage") || line.equals("[Pipeline] }")) {
                     if (currentActiveStep != null) {
                         currentActiveStep.appendLog(rawLine);
@@ -928,8 +923,8 @@ public class JenkinsConnector implements CiConnector {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200 && response.body() != null) {
-                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-                if (json.has("building")) {
+                JsonObject json = safeParseJsonObject(response.body());
+                if (json != null && json.has("building")) {
                     boolean isBuilding = json.get("building").getAsBoolean();
                     if (!isBuilding) {
                         hasMoreData = false;
@@ -947,65 +942,13 @@ public class JenkinsConnector implements CiConnector {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200 && response.body() != null) {
-                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-                if (json.has("result") && !json.get("result").isJsonNull()) {
+                JsonObject json = safeParseJsonObject(response.body());
+                if (json != null && json.has("result") && !json.get("result").isJsonNull()) {
                     return json.get("result").getAsString();
                 }
             }
         } catch (Exception ignored) {
         }
         return "COMPLETED";
-    }
-
-    private HttpRequest.Builder createRequestBuilder(String url) {
-        HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(url));
-        if (token != null && !token.isEmpty()) {
-            String credentials = (login != null && !login.isEmpty() ? login : "") + ":" + token;
-            builder.header("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8)));
-        }
-        return builder;
-    }
-
-    private String formatHtml(String rawText) {
-        if (rawText == null || rawText.isEmpty()) {
-            return "";
-        }
-        String[] lines = rawText.split("\\r?\\n", -1);
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            if (i == lines.length - 1 && line.isEmpty()) {
-                break;
-            }
-
-            String escapedLine = line
-                    .replace("&", "&amp;")
-                    .replace("<", "&lt;")
-                    .replace(">", "&gt;");
-
-            String trimmed = line.trim();
-            String color = null;
-
-            if (trimmed.startsWith(">")) {
-                color = "#4FC3F7"; // Blue
-            } else if (trimmed.startsWith("[Pipeline]")) {
-                color = "#81C784"; // Green
-            } else if (trimmed.startsWith("[")) {
-                color = "#FFB74D"; // Orange
-            }
-
-            if (color != null) {
-                sb.append("<font color='").append(color).append("'>");
-                sb.append(escapedLine);
-                sb.append("</font>");
-            } else {
-                sb.append(escapedLine);
-            }
-
-            sb.append("<br>");
-        }
-
-        return sb.toString();
     }
 }
