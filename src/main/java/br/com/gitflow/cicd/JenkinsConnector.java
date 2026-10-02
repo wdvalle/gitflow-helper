@@ -42,8 +42,6 @@ public class JenkinsConnector extends BaseCiConnector {
     private String baselineBuildNumber = null;
     private String targetBuildNumber = null;
     private String lastQueueItemUrl = null;
-    private boolean waitingForNewBuild = true;
-    private boolean buildTriggered = false;
     private boolean useConsoleTextFallback = false;
 
     // Tracks the byte offset for progressive log text requests
@@ -97,9 +95,25 @@ public class JenkinsConnector extends BaseCiConnector {
     }
 
     @Override
+    public @Nullable String getCurrentBuildId() {
+        return (targetBuildNumber != null && !targetBuildNumber.isEmpty()) ? targetBuildNumber : null;
+    }
+
+    @Override
     public void stop() {
         super.stop();
         CompletableFuture.runAsync(this::stopRemoteBuild);
+    }
+
+    @Override
+    public void abortPipeline() {
+        stop();
+    }
+
+    @Override
+    public void abortPipeline(@NotNull String buildId) {
+        this.hasMoreData = false;
+        CompletableFuture.runAsync(() -> stopRemoteBuild(buildId));
     }
 
     /**
@@ -197,20 +211,27 @@ public class JenkinsConnector extends BaseCiConnector {
         }
     }
 
+    @Override
     public void setBuildTriggered(boolean buildTriggered) {
-        this.buildTriggered = buildTriggered;
+        super.setBuildTriggered(buildTriggered);
         if (buildTriggered) {
-            this.waitingForNewBuild = true;
             this.targetBuildNumber = null;
-            this.latestPipelineRun = null;
             this.fallbackStages.clear();
             this.currentActiveStage = null;
             this.currentActiveStep = null;
         }
     }
 
-    public boolean isBuildTriggered() {
-        return buildTriggered;
+    @Override
+    public boolean testConnection() throws Exception {
+        HttpRequest req = createRequestBuilder(buildNumberUrl).GET().build();
+        HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+        int code = res.statusCode();
+        if (code >= 200 && code < 400) {
+            return true;
+        }
+        String snippet = extractErrorSnippet(res.body());
+        throw new IllegalStateException("Jenkins returned HTTP " + code + (snippet.isEmpty() ? "" : ": " + snippet));
     }
 
     public String getBuildTriggerUrl() {

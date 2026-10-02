@@ -46,6 +46,8 @@ public abstract class BaseCiConnector implements CiConnector {
     protected final HttpClient httpClient;
 
     protected volatile boolean hasMoreData = true;
+    protected volatile boolean buildTriggered = false;
+    protected volatile boolean waitingForNewBuild = true;
     protected volatile long lastDataReceivedTime = System.currentTimeMillis();
     protected long inactivityTimeoutMs = DEFAULT_INACTIVITY_TIMEOUT_MS;
 
@@ -331,8 +333,27 @@ public abstract class BaseCiConnector implements CiConnector {
     }
 
     // -----------------------------------------------------------------------
-    // Lifecycle & Inactivity Monitoring
+    // Lifecycle, Triggers & Inactivity Monitoring
     // -----------------------------------------------------------------------
+
+    @Override
+    public void setBuildTriggered(boolean triggered) {
+        this.buildTriggered = triggered;
+        if (triggered) {
+            this.waitingForNewBuild = true;
+            this.latestPipelineRun = null;
+        }
+    }
+
+    @Override
+    public boolean isBuildTriggered() {
+        return buildTriggered;
+    }
+
+    @Override
+    public boolean isWaitingForNewBuild() {
+        return waitingForNewBuild;
+    }
 
     @Override
     public boolean hasMoreData() {
@@ -342,6 +363,16 @@ public abstract class BaseCiConnector implements CiConnector {
     @Override
     public void stop() {
         this.hasMoreData = false;
+    }
+
+    @Override
+    public void abortPipeline() {
+        stop();
+    }
+
+    @Override
+    public void abortPipeline(@NotNull String buildId) {
+        abortPipeline();
     }
 
     /**
@@ -368,6 +399,7 @@ public abstract class BaseCiConnector implements CiConnector {
     // Getters
     // -----------------------------------------------------------------------
 
+    @Override
     public @NotNull String getBaseUrl() {
         return baseUrl;
     }

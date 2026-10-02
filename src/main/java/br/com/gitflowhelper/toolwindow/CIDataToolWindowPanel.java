@@ -69,6 +69,21 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     @Nullable
     private String selectedRepoPath = null;
 
+    /**
+     * Factory method creating the appropriate {@link CiConnector} for a repository configuration.
+     */
+    public static @Nullable CiConnector createConnector(@NotNull CiServerConfig cfg, @Nullable String token) {
+        if ("Jenkins".equalsIgnoreCase(cfg.getCiType())) {
+            return new JenkinsConnector(
+                    cfg.getCiUrl(),
+                    cfg.getCiLogin(),
+                    token != null ? token : ""
+            );
+        }
+        // Future connectors: GitLab, GitHub Actions, CircleCI, etc.
+        return null;
+    }
+
     public CIDataToolWindowPanel(Project project) {
         super(new BorderLayout());
         this.project = project;
@@ -175,7 +190,7 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     }
 
     private void loadInitialPipelineRunIfPossible(String repoPath, CiServerConfig cfg) {
-        if (cfg == null || !cfg.isActive() || !"Jenkins".equals(cfg.getCiType())) return;
+        if (cfg == null || !cfg.isActive()) return;
         RepoCiDashboardPanel dashboard = repoDashboards.get(repoPath);
         if (dashboard == null) return;
 
@@ -192,11 +207,10 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
                 }
 
                 String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(repoPath);
-                JenkinsConnector connector = new JenkinsConnector(
-                        cfg.getCiUrl(),
-                        cfg.getCiLogin(),
-                        token != null ? token : ""
-                );
+                CiConnector connector = createConnector(cfg, token);
+                if (connector == null) {
+                    return;
+                }
                 List<PipelineStage> bpStages = connector.fetchBlueprintStages();
                 if (!bpStages.isEmpty()) {
                     dashboard.updateBlueprintStages(bpStages);
@@ -491,50 +505,46 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         dashboard.appendPluginLog("Triggering build on " + cfg.getCiType() + "...");
         ActivityTracker.getInstance().inc();
 
-        if ("Jenkins".equals(cfg.getCiType())) {
-            ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                try {
-                    String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(repoPath);
-                    JenkinsConnector jenkinsConnector = new JenkinsConnector(
-                            cfg.getCiUrl(),
-                            cfg.getCiLogin(),
-                            token != null ? token : ""
-                    );
-                    repoConnectors.put(repoPath, jenkinsConnector);
-                    dashboard.setStepLogProvider(step -> jenkinsConnector.fetchStepLog(step.getId()));
-
-                    jenkinsConnector.triggerBuild();
-
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        dashboard.appendPluginLog("Build triggered successfully on " + cfg.getCiType() + ". Monitoring execution...");
-                        NotificationUtil.showGitFlowSuccessNotification(project, "CI/CD", "Build triggered successfully on " + cfg.getCiType() + ".");
-                    });
-
-                    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                    repoExecutors.put(repoPath, executor);
-                    // Fast 500ms polling interval ensures the first stage is detected immediately when it starts
-                    executor.scheduleWithFixedDelay(() -> checkBuildStatus(repoPath), 0, 500, TimeUnit.MILLISECONDS);
-                    startingBuilds.remove(repoPath);
-                    ActivityTracker.getInstance().inc();
-
-                } catch (Exception ex) {
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            try {
+                String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(repoPath);
+                CiConnector connector = createConnector(cfg, token);
+                if (connector == null) {
                     startingBuilds.remove(repoPath);
                     dashboard.setRunning(false);
+                    dashboard.appendPluginLog(cfg.getCiType() + " is not yet supported.");
+                    stopMonitoring(repoPath, false);
                     ActivityTracker.getInstance().inc();
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        dashboard.appendPluginLog("Failed to trigger build: " + ex.getMessage());
-                        NotificationUtil.showGitFlowErrorNotification(project, "CI/CD Error", "Failed to trigger build: " + ex.getMessage());
-                        stopMonitoring(repoPath, false);
-                    });
+                    return;
                 }
-            });
-        } else {
-            startingBuilds.remove(repoPath);
-            dashboard.setRunning(false);
-            dashboard.appendPluginLog(cfg.getCiType() + " is not yet supported.");
-            stopMonitoring(repoPath, false);
-            ActivityTracker.getInstance().inc();
-        }
+                repoConnectors.put(repoPath, connector);
+                dashboard.setStepLogProvider(step -> connector.fetchStepLog(step.getId()));
+
+                connector.triggerBuild();
+
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    dashboard.appendPluginLog("Build triggered successfully on " + cfg.getCiType() + ". Monitoring execution...");
+                    NotificationUtil.showGitFlowSuccessNotification(project, "CI/CD", "Build triggered successfully on " + cfg.getCiType() + ".");
+                });
+
+                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                repoExecutors.put(repoPath, executor);
+                // Fast 500ms polling interval ensures the first stage is detected immediately when it starts
+                executor.scheduleWithFixedDelay(() -> checkBuildStatus(repoPath), 0, 500, TimeUnit.MILLISECONDS);
+                startingBuilds.remove(repoPath);
+                ActivityTracker.getInstance().inc();
+
+            } catch (Exception ex) {
+                startingBuilds.remove(repoPath);
+                dashboard.setRunning(false);
+                ActivityTracker.getInstance().inc();
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    dashboard.appendPluginLog("Failed to trigger build: " + ex.getMessage());
+                    NotificationUtil.showGitFlowErrorNotification(project, "CI/CD Error", "Failed to trigger build: " + ex.getMessage());
+                    stopMonitoring(repoPath, false);
+                });
+            }
+        });
     }
 
     public void startMonitoring() {
@@ -568,33 +578,29 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         dashboard.appendPluginLog("Starting CI/CD monitoring...");
         ActivityTracker.getInstance().inc();
 
-        if ("Jenkins".equals(cfg.getCiType())) {
-            ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(repoPath);
-                JenkinsConnector jenkinsConnector = new JenkinsConnector(
-                        cfg.getCiUrl(),
-                        cfg.getCiLogin(),
-                        token != null ? token : ""
-                );
-                jenkinsConnector.setBuildTriggered(true);
-                repoConnectors.put(repoPath, jenkinsConnector);
-                dashboard.setStepLogProvider(step -> jenkinsConnector.fetchStepLog(step.getId()));
-
-                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                repoExecutors.put(repoPath, executor);
-                // Fast 500ms polling interval ensures the first stage is detected immediately when it starts
-                executor.scheduleWithFixedDelay(() -> checkBuildStatus(repoPath), 0, 500, TimeUnit.MILLISECONDS);
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            String token = GitFlowSettingsService.getInstance(project).getTokenForRepo(repoPath);
+            CiConnector connector = createConnector(cfg, token);
+            if (connector == null) {
                 startingBuilds.remove(repoPath);
+                repoConnectors.remove(repoPath);
+                dashboard.setRunning(false);
+                dashboard.appendPluginLog(cfg.getCiType() + " is not yet supported.");
+                stopMonitoring(repoPath, false);
                 ActivityTracker.getInstance().inc();
-            });
-        } else {
+                return;
+            }
+            connector.setBuildTriggered(true);
+            repoConnectors.put(repoPath, connector);
+            dashboard.setStepLogProvider(step -> connector.fetchStepLog(step.getId()));
+
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            repoExecutors.put(repoPath, executor);
+            // Fast 500ms polling interval ensures the first stage is detected immediately when it starts
+            executor.scheduleWithFixedDelay(() -> checkBuildStatus(repoPath), 0, 500, TimeUnit.MILLISECONDS);
             startingBuilds.remove(repoPath);
-            repoConnectors.remove(repoPath);
-            dashboard.setRunning(false);
-            dashboard.appendPluginLog(cfg.getCiType() + " is not yet supported.");
-            stopMonitoring(repoPath, false);
             ActivityTracker.getInstance().inc();
-        }
+        });
     }
 
     private void checkBuildStatus(String repoPath) {
@@ -704,7 +710,11 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
         }
         CiConnector connector = repoConnectors.remove(repoPath);
         if (connector != null) {
-            connector.stop();
+            if (userRequested) {
+                connector.abortPipeline();
+            } else {
+                connector.stop();
+            }
         }
         RepoCiDashboardPanel dashboard = repoDashboards.get(repoPath);
         if (dashboard != null) {

@@ -611,4 +611,44 @@ public class JenkinsConnectorTest {
         assertTrue(ex.getMessage().contains("500"));
         assertFalse(ex.getMessage().contains("<!DOCTYPE") && !ex.getMessage().contains("<html>"));
     }
+
+    @Test
+    public void testTestConnectionSuccess() throws Exception {
+        server.createContext("/job/test/lastBuild/buildNumber", exchange -> {
+            byte[] bytes = "42\n".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        assertTrue(connector.testConnection());
+    }
+
+    @Test
+    public void testTestConnectionFailure() {
+        server.createContext("/job/test/lastBuild/buildNumber", exchange -> {
+            byte[] bytes = "<html><head><title>403 Forbidden</title></head></html>".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(403, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        assertThrows(IllegalStateException.class, connector::testConnection);
+    }
+
+    @Test
+    public void testAbortPipelineViaCiConnectorInterface() {
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        assertTrue(connector.hasMoreData());
+
+        CiConnector ci = connector;
+        ci.abortPipeline();
+        assertFalse(ci.hasMoreData());
+
+        ci.setBuildTriggered(true);
+        assertTrue(ci.isBuildTriggered());
+        assertEquals("http://localhost:" + port + "/job/test", ci.getBaseUrl());
+    }
 }

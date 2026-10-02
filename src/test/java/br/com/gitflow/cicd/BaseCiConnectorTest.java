@@ -184,4 +184,45 @@ public class BaseCiConnectorTest {
         connector.markDataReceived();
         assertTrue(connector.lastDataReceivedTime <= System.currentTimeMillis());
     }
+
+    @Test
+    public void testBaseUrlAndBuildId() {
+        DummyCiConnector connector = new DummyCiConnector("https://ci.example.com/job/test/", "user", "pass");
+        assertEquals("https://ci.example.com/job/test/", connector.getBaseUrl());
+        assertEquals("https://ci.example.com/job/test", connector.getNormalizedBase());
+        assertNull(connector.getCurrentBuildId());
+    }
+
+    @Test
+    public void testBuildTriggeredAndWaitingLifecycle() {
+        DummyCiConnector connector = new DummyCiConnector("https://ci.example.com", "user", "pass");
+        assertFalse(connector.isBuildTriggered());
+        assertTrue(connector.isWaitingForNewBuild());
+
+        connector.setBuildTriggered(true);
+        assertTrue(connector.isBuildTriggered());
+        assertTrue(connector.isWaitingForNewBuild());
+
+        connector.setBuildTriggered(false);
+        assertFalse(connector.isBuildTriggered());
+    }
+
+    @Test
+    public void testAbortPipelineStopsData() {
+        DummyCiConnector connector = new DummyCiConnector("https://ci.example.com", "user", "pass");
+        assertTrue(connector.hasMoreData());
+
+        connector.abortPipeline();
+        assertFalse(connector.hasMoreData());
+
+        connector.hasMoreData = true;
+        connector.abortPipeline("123");
+        assertFalse(connector.hasMoreData());
+    }
+
+    @Test
+    public void testDefaultTestConnection() throws Exception {
+        DummyCiConnector connector = new DummyCiConnector("https://ci.example.com", "user", "pass");
+        assertTrue(connector.testConnection());
+    }
 }
