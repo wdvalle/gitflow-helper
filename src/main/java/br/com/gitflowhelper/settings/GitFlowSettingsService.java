@@ -1,6 +1,7 @@
 package br.com.gitflowhelper.settings;
 
 import br.com.gitflowhelper.events.GitFlowSettingsListener;
+import br.com.gitflowhelper.util.GitFlowReviewCounter;
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.openapi.application.ApplicationManager;
@@ -79,11 +80,11 @@ public final class GitFlowSettingsService
     public void setDevelopBranch(String v) { state.setDevelopBranch(v); notifySettingsChanged(); }
 
     // ------------------------------------------------------------------
-    // Counter / display
+    // Counter / display (stored at IDE application level via PropertiesComponent)
     // ------------------------------------------------------------------
 
-    public Long getCounter() { return state.getCounter(); }
-    public void setCounter(Long v) { state.setCounter(v); }
+    public Long getCounter() { return GitFlowReviewCounter.getCounter(); }
+    public void setCounter(Long v) { GitFlowReviewCounter.setCounter(v != null ? v : 0L); }
 
     public Boolean getShowDetails() {
         if (state.getShowDetails() == null) state.setShowDetails(true);

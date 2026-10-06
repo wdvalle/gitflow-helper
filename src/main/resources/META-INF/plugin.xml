@@ -13,6 +13,13 @@
             </p>
 
             <blockquote>
+                <p><strong>WHAT'S NEW IN v2.10.0</strong></p>
+                <ul>
+                    <li><strong>CI/CD:</strong>Graphical visualization of Jenkins pipeline execution (others coming soon).</li>
+                </ul>
+            </blockquote>
+
+            <blockquote>
                 <p><strong>WHAT'S NEW IN v2.8.0 / 2.9.0</strong></p>
                 <ul>
                     <li><strong>Proactive Divergence Indicator in Status Bar:</strong> Real-time badge showing commits behind <code>develop</code> (<code>⬇ N</code>) with instant 1-click branch synchronization!</li>
@@ -303,6 +310,11 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.10.0</b></li>
+                <ul>
+                    <li><strong>CI/CD:</strong>Graphical visualization of Jenkins pipeline execution (others coming soon).</li>
+                </ul>
+
                 <li><b>2.9.0</b></li>
                 <ul>
                     <li><strong>CI/CD Config Dialog:</strong> It's now possible to trigger builds in Jenkins directly from the plugin.</li>

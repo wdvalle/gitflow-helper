@@ -9,6 +9,7 @@ import br.com.gitflowhelper.gittree.GitBranchPopupBuilder;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.ActionParamsService;
 import br.com.gitflowhelper.util.GitFlowDescriptions;
+import br.com.gitflowhelper.util.GitFlowReviewCounter;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
@@ -69,12 +70,12 @@ public final class GitFlowPopup {
 
     private DefaultActionGroup createGroup(Project project) {
         DefaultActionGroup group = new DefaultActionGroup();
-        Long counter = GitFlowSettingsService.getInstance(project).getCounter();
+        long counter = GitFlowReviewCounter.getCounter();
         if ((counter % BaseAction.COUNTER_RESET >= BaseAction.COUNTER_RESET - 5) && (counter < 1000)) {
             group.add(new LikeAction("Enjoying? Give a like!"));
             group.addSeparator();
         }
-        GitFlowSettingsService.getInstance(project).setCounter(++counter);
+        GitFlowReviewCounter.incrementCounter();
         group.add(new InitAction("Init..."));
         group.addSeparator();
 

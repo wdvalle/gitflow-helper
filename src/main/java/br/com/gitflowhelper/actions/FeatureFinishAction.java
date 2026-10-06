@@ -1,6 +1,6 @@
 package br.com.gitflowhelper.actions;
 
-import br.com.gitflow.cicd.JenkinsConnector;
+import br.com.gitflow.cicd.CiConnector;
 import br.com.gitflowhelper.dialog.ActionChoiceDialog;
 import br.com.gitflowhelper.dialog.UncommittedChangesDialog;
 import br.com.gitflowhelper.dialog.UnpushedCommitsDialog;
@@ -418,12 +418,10 @@ public class FeatureFinishAction extends BaseAction {
                             String token = settingsService.getTokenForRepo(root.getPath());
                             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                                 try {
-                                    JenkinsConnector connector = new JenkinsConnector(
-                                            ciConfig.getCiUrl(),
-                                            ciConfig.getCiLogin(),
-                                            token != null ? token : ""
-                                    );
-                                    connector.triggerBuild();
+                                    CiConnector connector = CIDataToolWindowPanel.createConnector(ciConfig, token);
+                                    if (connector != null) {
+                                        connector.triggerBuild();
+                                    }
                                 } catch (Exception ex) {
                                     ApplicationManager.getApplication().invokeLater(() -> {
                                         NotificationUtil.showGitFlowErrorNotification(

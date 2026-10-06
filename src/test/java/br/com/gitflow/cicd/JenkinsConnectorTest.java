@@ -1,5 +1,10 @@
 package br.com.gitflow.cicd;
 
+import br.com.gitflow.cicd.model.PipelineRun;
+import br.com.gitflow.cicd.model.PipelineStage;
+import br.com.gitflow.cicd.model.PipelineStatus;
+import br.com.gitflow.cicd.model.PipelineStep;
+import br.com.gitflowhelper.toolwindow.ci.RepoCiDashboardPanel;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,6 +86,7 @@ public class JenkinsConnectorTest {
         assertEquals("test-crumb-value-999", crumbHeaderReceived.get());
         assertNotNull(cookieHeaderReceived.get());
         assertTrue(cookieHeaderReceived.get().contains("JSESSIONID=dummy-session-12345"));
+        assertTrue(connector.isBuildTriggered());
     }
 
     @Test
@@ -100,6 +106,7 @@ public class JenkinsConnectorTest {
 
         assertNotNull(response);
         assertEquals(201, response.statusCode());
+        assertTrue(connector.isBuildTriggered());
     }
 
     @Test
@@ -125,6 +132,7 @@ public class JenkinsConnectorTest {
 
         assertNotNull(response);
         assertEquals(201, response.statusCode());
+        assertTrue(connector.isBuildTriggered());
     }
 
     @Test
@@ -143,6 +151,39 @@ public class JenkinsConnectorTest {
         JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "wrong", "cred");
         Exception ex = assertThrows(IllegalStateException.class, connector::triggerBuild);
         assertTrue(ex.getMessage().contains("401"));
+    }
+
+    @Test
+    public void testFetchPipelineRunReturnsEmptyPendingRunWhenBuildTriggered() {
+        // Mock /lastBuild/wfapi/describe returning completed stages of a PREVIOUS build
+        String oldWfApiResponse = "{\n" +
+                "  \"id\": \"40\",\n" +
+                "  \"name\": \"#40\",\n" +
+                "  \"status\": \"SUCCESS\",\n" +
+                "  \"stages\": [{\"id\":\"1\",\"name\":\"Old Stage\",\"status\":\"SUCCESS\",\"stageFlowNodes\":[]}]\n" +
+                "}";
+
+        server.createContext("/job/test/lastBuild/wfapi/describe", exchange -> {
+            byte[] bytes = oldWfApiResponse.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+
+        // 1. Without buildTriggered (idle mode), returns old build
+        PipelineRun idleRun = connector.fetchPipelineRun();
+        assertNotNull(idleRun);
+        assertEquals("40", idleRun.getId());
+        assertEquals(1, idleRun.getStages().size());
+
+        // 2. With buildTriggered = true, MUST return pending run with EMPTY stages so UI spinner is displayed!
+        connector.setBuildTriggered(true);
+        PipelineRun pendingRun = connector.fetchPipelineRun();
+        assertNotNull(pendingRun);
+        assertTrue(pendingRun.getStages().isEmpty(), "Pending run must have empty stages so the loading spinner stays active!");
+        assertEquals(PipelineStatus.IN_PROGRESS, pendingRun.getStatus());
     }
 
     @Test
@@ -300,5 +341,320 @@ public class JenkinsConnectorTest {
         assertTrue(chunk4.contains("Line 3"));
         assertTrue(chunk4.contains("Build finished: SUCCESS"));
         assertFalse(connector.hasMoreData());
+    }
+
+    @Test
+    public void testFetchPipelineRunWithWfApi() {
+        String wfApiResponse = "{\n" +
+                "  \"id\": \"42\",\n" +
+                "  \"name\": \"#42\",\n" +
+                "  \"status\": \"SUCCESS\",\n" +
+                "  \"durationMillis\": 45000,\n" +
+                "  \"stages\": [\n" +
+                "    {\n" +
+                "      \"id\": \"6\",\n" +
+                "      \"name\": \"Checkout\",\n" +
+                "      \"status\": \"SUCCESS\",\n" +
+                "      \"durationMillis\": 5000,\n" +
+                "      \"stageFlowNodes\": [\n" +
+                "        {\"id\": \"7\", \"name\": \"Git Checkout\", \"status\": \"SUCCESS\", \"durationMillis\": 5000}\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"10\",\n" +
+                "      \"name\": \"Build\",\n" +
+                "      \"status\": \"SUCCESS\",\n" +
+                "      \"durationMillis\": 25000,\n" +
+                "      \"stageFlowNodes\": [\n" +
+                "        {\"id\": \"11\", \"name\": \"mvn clean compile\", \"status\": \"SUCCESS\", \"durationMillis\": 20000},\n" +
+                "        {\"id\": \"12\", \"name\": \"mvn package\", \"status\": \"SUCCESS\", \"durationMillis\": 5000}\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        server.createContext("/job/test/lastBuild/wfapi/describe", exchange -> {
+            byte[] bytes = wfApiResponse.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        assertEquals("Jenkins", connector.getPlatformName());
+        assertTrue(connector.getBuildUrl().endsWith("/job/test/lastBuild"));
+
+        PipelineRun run = connector.fetchPipelineRun();
+        assertNotNull(run);
+        assertEquals("42", run.getId());
+        assertEquals("#42", run.getName());
+        assertEquals(PipelineStatus.SUCCESS, run.getStatus());
+        assertEquals(45000, run.getDurationMillis());
+        assertEquals("45s", run.getFormattedDuration());
+
+        assertEquals(2, run.getStages().size());
+
+        PipelineStage stage0 = run.getStages().get(0);
+        assertEquals("Checkout", stage0.getName());
+        assertEquals(PipelineStatus.SUCCESS, stage0.getStatus());
+        assertEquals(1, stage0.getSteps().size());
+        assertEquals("Git Checkout", stage0.getSteps().get(0).getName());
+        assertEquals(PipelineStatus.SUCCESS, stage0.getSteps().get(0).getStatus());
+
+        PipelineStage stage1 = run.getStages().get(1);
+        assertEquals("Build", stage1.getName());
+        assertEquals(2, stage1.getSteps().size());
+        assertEquals("mvn clean compile", stage1.getSteps().get(0).getName());
+        assertEquals("mvn package", stage1.getSteps().get(1).getName());
+    }
+
+    @Test
+    public void testFetchPipelineRunWithLogParsingFallback() {
+        AtomicInteger buildNumber = new AtomicInteger(98);
+
+        // wfapi returns 404
+        server.createContext("/job/test/lastBuild/wfapi/describe", exchange -> {
+            exchange.sendResponseHeaders(404, 0);
+            exchange.close();
+        });
+
+        // api/json returns building info
+        server.createContext("/job/test/lastBuild/api/json", exchange -> {
+            String json = "{\"number\":99,\"displayName\":\"Build #99\",\"building\":true,\"duration\":15000}";
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        server.createContext("/job/test/99/api/json", exchange -> {
+            String json = "{\"number\":99,\"displayName\":\"Build #99\",\"building\":true,\"duration\":15000}";
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        server.createContext("/job/test/lastBuild/buildNumber", exchange -> {
+            byte[] bytes = String.valueOf(buildNumber.get()).getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        server.createContext("/job/test/99/logText/progressiveText", exchange -> {
+            String chunk = "[Pipeline] { (Build)\n[Pipeline] sh mvn compile\n";
+            byte[] bytes = chunk.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("X-Text-Size", String.valueOf(bytes.length));
+            exchange.getResponseHeaders().add("X-More-Data", "true");
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+
+        // Step 1: initial baseline recording (#98)
+        connector.fetchNextChunk();
+
+        // Step 2: Before build #99 starts parsing logs or stages, stages must be empty (triggering UI spinner)
+        PipelineRun initialRun = connector.fetchPipelineRun();
+        assertNotNull(initialRun);
+        assertEquals("99", initialRun.getId());
+        assertEquals(PipelineStatus.IN_PROGRESS, initialRun.getStatus());
+        assertTrue(initialRun.getStages().isEmpty(), "Initially empty before first stage begins, allowing UI spinner to show");
+
+        // Step 3: Build #99 starts and logs arrive
+        buildNumber.set(99);
+        connector.fetchNextChunk();
+
+        // Step 4: Now stages are parsed in real time
+        PipelineRun runningRun = connector.fetchPipelineRun();
+        assertNotNull(runningRun);
+        assertFalse(runningRun.getStages().isEmpty(), "Stages must be populated once first stage is parsed from log");
+        assertEquals("Build", runningRun.getStages().get(0).getName());
+        assertEquals(1, runningRun.getStages().get(0).getSteps().size());
+        assertEquals("sh", runningRun.getStages().get(0).getSteps().get(0).getName());
+    }
+
+    @Test
+    public void testStopRemoteBuildSendsStopAndCancelsQueue() throws Exception {
+        AtomicReference<String> stopPathCalled = new AtomicReference<>();
+
+        server.createContext("/crumbIssuer/api/json", exchange -> {
+            String responseBody = "{\"crumb\":\"stop-crumb\",\"crumbRequestField\":\"Jenkins-Crumb\"}";
+            exchange.sendResponseHeaders(200, responseBody.getBytes(StandardCharsets.UTF_8).length);
+            exchange.getResponseBody().write(responseBody.getBytes(StandardCharsets.UTF_8));
+            exchange.close();
+        });
+
+        server.createContext("/job/test/55/stop", exchange -> {
+            stopPathCalled.set(exchange.getRequestURI().getPath());
+            exchange.sendResponseHeaders(200, 0);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        connector.stopRemoteBuild("55");
+
+        assertEquals("/job/test/55/stop", stopPathCalled.get());
+    }
+
+    @Test
+    public void testStopRemoteBuildFallsBackToTermWhenStopFails() throws Exception {
+        AtomicReference<String> termPathCalled = new AtomicReference<>();
+
+        server.createContext("/crumbIssuer/api/json", exchange -> {
+            exchange.sendResponseHeaders(404, 0);
+            exchange.close();
+        });
+
+        server.createContext("/job/test/55/stop", exchange -> {
+            exchange.sendResponseHeaders(405, 0);
+            exchange.close();
+        });
+
+        server.createContext("/job/test/55/term", exchange -> {
+            termPathCalled.set(exchange.getRequestURI().getPath());
+            exchange.sendResponseHeaders(200, 0);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        connector.stopRemoteBuild("55");
+
+        assertEquals("/job/test/55/term", termPathCalled.get());
+    }
+
+    @Test
+    public void testStripHtmlSafelyHandlesLargeHtmlWithoutStackOverflow() {
+        StringBuilder largeHtml = new StringBuilder();
+        largeHtml.append("<!DOCTYPE html><html><head><title>Error 404 - Not Found</title></head><body>");
+        for (int i = 0; i < 2000; i++) {
+            largeHtml.append("<div class='container' id='div_").append(i).append("'><span>Line ").append(i).append("</span><br/></div>\n");
+        }
+        largeHtml.append("</body></html>");
+
+        String stripped = JenkinsConnector.stripHtmlSafely(largeHtml.toString());
+        assertNotNull(stripped);
+        assertTrue(stripped.length() <= 500);
+        assertFalse(stripped.contains("<div>"));
+        assertFalse(stripped.contains("<br/>"));
+    }
+
+    @Test
+    public void testExtractErrorSnippetDisregardsHtml() {
+        String html404 = "<html><head><title>Apache Tomcat/9.0 - Error report</title></head>"
+                + "<body><h1>HTTP Status 404 – Not Found</h1><p>The origin server did not find a current representation for the target resource.</p></body></html>";
+        // HTML is completely disregarded to avoid polluting user-facing messages
+        String snippet = JenkinsConnector.extractErrorSnippet(html404);
+        assertEquals("", snippet);
+
+        // Plain text error is preserved
+        String plain = JenkinsConnector.extractErrorSnippet("Job is disabled in Jenkins");
+        assertEquals("Job is disabled in Jenkins", plain);
+    }
+
+    @Test
+    public void testRepoCiDashboardPanelToPlainTextHandlesLargeHtmlWithoutStackOverflow() {
+        StringBuilder largeHtml = new StringBuilder();
+        largeHtml.append("<html><body>");
+        for (int i = 0; i < 2000; i++) {
+            largeHtml.append("<span>Line ").append(i).append("&lt;test&gt;</span><br>");
+        }
+        largeHtml.append("</body></html>");
+
+        String plainText = RepoCiDashboardPanel.toPlainText(largeHtml.toString());
+        assertNotNull(plainText);
+        assertFalse(plainText.contains("<span>"));
+        assertFalse(plainText.contains("<br>"));
+        assertTrue(plainText.contains("<test>"));
+        assertTrue(plainText.contains("Line 0"));
+    }
+
+    @Test
+    public void testInvalidUrlReturningHtmlErrorDoesNotCrashAndStopsMonitoring() {
+        // Simulates invalid Jenkins URL returning Tomcat/Jenkins 404 HTML
+        String htmlError = "<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>No such job</p></body></html>";
+        server.createContext("/job/test/lastBuild/buildNumber", exchange -> {
+            byte[] bytes = htmlError.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "text/html;charset=utf-8");
+            exchange.sendResponseHeaders(404, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        String chunk = connector.fetchNextChunk();
+
+        assertNotNull(chunk);
+        assertTrue(chunk.contains("Resource or job not found") || chunk.contains("Error"));
+        assertFalse(chunk.contains("<!DOCTYPE html>"), "Should not dump raw HTML into the log chunk");
+        assertFalse(chunk.contains("No such job"), "HTML body content should be disregarded");
+        assertFalse(connector.hasMoreData(), "Connector must halt monitoring when non-numeric HTML is received");
+    }
+
+    @Test
+    public void testTriggerBuildOnInvalidUrlReturningHtmlThrowsSanitizedError() {
+        String html500 = "<html><head><title>500 Internal Error</title></head><body><h1>Server Error</h1><p>Jenkins error</p></body></html>";
+        server.createContext("/crumbIssuer/api/json", exchange -> {
+            exchange.sendResponseHeaders(404, 0);
+            exchange.close();
+        });
+        server.createContext("/job/test/build", exchange -> {
+            byte[] bytes = html500.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "text/html");
+            exchange.sendResponseHeaders(500, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        IllegalStateException ex = assertThrows(IllegalStateException.class, connector::triggerBuild);
+        assertNotNull(ex.getMessage());
+        assertTrue(ex.getMessage().contains("500"));
+        assertTrue(ex.getMessage().contains("Internal server error"));
+        assertFalse(ex.getMessage().contains("<!DOCTYPE") && !ex.getMessage().contains("<html>"));
+        assertFalse(ex.getMessage().contains("Server Error"), "HTML body content should be disregarded");
+    }
+
+    @Test
+    public void testTestConnectionSuccess() throws Exception {
+        server.createContext("/job/test/lastBuild/buildNumber", exchange -> {
+            byte[] bytes = "42\n".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        assertTrue(connector.testConnection());
+    }
+
+    @Test
+    public void testTestConnectionFailure() {
+        server.createContext("/job/test/lastBuild/buildNumber", exchange -> {
+            byte[] bytes = "<html><head><title>403 Forbidden</title></head></html>".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(403, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        assertThrows(IllegalStateException.class, connector::testConnection);
+    }
+
+    @Test
+    public void testAbortPipelineViaCiConnectorInterface() {
+        JenkinsConnector connector = new JenkinsConnector("http://localhost:" + port + "/job/test", "user", "token");
+        assertTrue(connector.hasMoreData());
+
+        CiConnector ci = connector;
+        ci.abortPipeline();
+        assertFalse(ci.hasMoreData());
+
+        ci.setBuildTriggered(true);
+        assertTrue(ci.isBuildTriggered());
+        assertEquals("http://localhost:" + port + "/job/test", ci.getBaseUrl());
     }
 }
