@@ -1,7 +1,7 @@
 package br.com.gitflowhelper.actions;
 
-import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.util.GitFlowDescriptions;
+import br.com.gitflowhelper.util.GitFlowReviewCounter;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -18,9 +18,9 @@ public class LikeAction extends BaseAction {
 
     @Override
     protected void actionPerformedImpl(@NotNull AnActionEvent e) throws Exception {
-        Long counter = GitFlowSettingsService.getInstance(e.getProject()).getCounter();
-        Long diff = COUNTER_RESET - counter % COUNTER_RESET;
-        GitFlowSettingsService.getInstance(e.getProject()).setCounter(counter+diff);
+        long counter = GitFlowReviewCounter.getCounter();
+        long diff = COUNTER_RESET - counter % COUNTER_RESET;
+        GitFlowReviewCounter.setCounter(counter + diff);
         BrowserUtil.browse("https://plugins.jetbrains.com/plugin/30207-git-flow-helper/reviews");
     }
 }

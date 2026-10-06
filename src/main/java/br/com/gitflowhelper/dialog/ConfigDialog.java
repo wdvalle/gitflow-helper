@@ -1,6 +1,6 @@
 package br.com.gitflowhelper.dialog;
 
-import br.com.gitflow.cicd.JenkinsConnector;
+import br.com.gitflow.cicd.BaseCiConnector;
 import br.com.gitflowhelper.settings.CiServerConfig;
 import br.com.gitflowhelper.settings.GitFlowSettingsService;
 import br.com.gitflowhelper.toolwindow.CIDataToolWindowPanel;
@@ -10,6 +10,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.components.JBPasswordField;
 import com.intellij.ui.components.JBTextField;
 import git4idea.repo.GitRepository;
@@ -469,16 +470,10 @@ public class ConfigDialog extends DialogWrapper {
             NotificationUtil.showGitFlowWarningNotification(project, "CI/CD", "Please enter a valid CI/CD URL.");
             return;
         }
-
-        String login = ciLoginField.getText().trim();
-        String token = new String(ciTokenField.getPassword()).trim();
-        if (token.isEmpty() && currentIndex >= 0 && workingTokens != null && workingTokens[currentIndex] != null) {
-            token = workingTokens[currentIndex];
+        if (!BaseCiConnector.isValidHttpUrl(url)) {
+            NotificationUtil.showGitFlowWarningNotification(project, "CI/CD", "CI/CD URL must start with http:// or https://");
+            return;
         }
-
-        final String finalUrl = url;
-        final String finalLogin = login;
-        final String finalToken = token;
 
         String repoPath = (currentIndex >= 0 && repositories != null && currentIndex < repositories.size())
                 ? repositories.get(currentIndex).getRoot().getPath()
@@ -495,24 +490,10 @@ public class ConfigDialog extends DialogWrapper {
         applyChanges();
         close(OK_EXIT_CODE);
 
-        // Start build log monitoring
+        // Start build execution and log monitoring via CIDataToolWindowPanel
         if (project != null && targetRepoPath != null) {
-            CIDataToolWindowPanel.startMonitoringForRepo(project, targetRepoPath);
+            CIDataToolWindowPanel.triggerBuildAndMonitorForRepo(project, targetRepoPath);
         }
-
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            try {
-                JenkinsConnector connector = new JenkinsConnector(finalUrl, finalLogin, finalToken);
-                connector.triggerBuild();
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    NotificationUtil.showGitFlowSuccessNotification(project, "CI/CD", "Build triggered successfully on Jenkins.");
-                });
-            } catch (Exception ex) {
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    NotificationUtil.showGitFlowErrorNotification(project, "CI/CD Error", "Failed to trigger build: " + ex.getMessage());
-                });
-            }
-        });
     }
 
     private void applyChanges() {
@@ -549,6 +530,22 @@ public class ConfigDialog extends DialogWrapper {
         }
 
         setModified(false);
+    }
+
+    @Override
+    protected @Nullable ValidationInfo doValidate() {
+        saveCurrentFields();
+        if (workingConfigs != null) {
+            for (CiServerConfig cfg : workingConfigs) {
+                if (cfg != null && !cfg.getCiUrl().isEmpty()) {
+                    String url = cfg.getCiUrl();
+                    if (!BaseCiConnector.isValidHttpUrl(url)) {
+                        return new ValidationInfo("CI/CD URL must start with http:// or https://", ciUrlField);
+                    }
+                }
+            }
+        }
+        return super.doValidate();
     }
 
     @Override

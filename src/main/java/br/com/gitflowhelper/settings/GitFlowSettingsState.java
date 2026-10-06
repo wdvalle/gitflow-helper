@@ -11,7 +11,6 @@ public class GitFlowSettingsState {
     private String mainBranch;
     private String developBranch;
 
-    private Long    counter;
     private Boolean showDetails;
     private Boolean integrateWithTasks = false;
     private String  preferredUsername;
@@ -54,14 +53,8 @@ public class GitFlowSettingsState {
     public void setDevelopBranch(String v) { this.developBranch = v; }
 
     // ------------------------------------------------------------------
-    // Counter / display
+    // Display / integration
     // ------------------------------------------------------------------
-
-    public Long getCounter() {
-        if (this.counter == null) this.counter = 0L;
-        return counter;
-    }
-    public void setCounter(Long v) { this.counter = v; }
 
     public Boolean getShowDetails()              { return showDetails; }
     public void setShowDetails(Boolean v)        { this.showDetails = v; }
@@ -174,8 +167,7 @@ public class GitFlowSettingsState {
     @Override
     public String toString() {
         return "GitFlowSettingsState{" +
-                "counter=" + counter +
-                ", featurePrefix='" + featurePrefix + '\'' +
+                "featurePrefix='" + featurePrefix + '\'' +
                 ", releasePrefix='" + releasePrefix + '\'' +
                 ", hotfixPrefix='" + hotfixPrefix + '\'' +
                 ", mainBranch='" + mainBranch + '\'' +
@@ -199,7 +191,6 @@ public class GitFlowSettingsState {
                 Objects.equals(hotfixPrefix, that.hotfixPrefix) &&
                 Objects.equals(mainBranch, that.mainBranch) &&
                 Objects.equals(developBranch, that.developBranch) &&
-                Objects.equals(counter, that.counter) &&
                 Objects.equals(showDetails, that.showDetails) &&
                 Objects.equals(integrateWithTasks, that.integrateWithTasks) &&
                 Objects.equals(selectedRepositories, that.selectedRepositories) &&
@@ -212,7 +203,7 @@ public class GitFlowSettingsState {
     @Override
     public int hashCode() {
         return Objects.hash(featurePrefix, releasePrefix, hotfixPrefix, mainBranch,
-                developBranch, counter, showDetails, integrateWithTasks,
+                developBranch, showDetails, integrateWithTasks,
                 selectedRepositories, repoCiEntries, preferredUsername,
                 logFontFamily, logFontSize);
     }
