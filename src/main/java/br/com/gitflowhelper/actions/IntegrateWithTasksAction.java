@@ -6,6 +6,7 @@ import br.com.gitflowhelper.toolwindow.TasksToolWindowPanel;
 import br.com.gitflowhelper.util.NotificationUtil;
 import br.com.gitflowhelper.util.PluginUtils;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
@@ -20,8 +21,11 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 public class IntegrateWithTasksAction extends BaseAction {
+
+    private static final String TASKS_PLUGIN_URL = "https://plugins.jetbrains.com/plugin/11545";
 
     public IntegrateWithTasksAction() {
         super("Integrate with tasks", "Enable/Disable Task integration", AllIcons.Actions.Checked);
@@ -72,13 +76,13 @@ public class IntegrateWithTasksAction extends BaseAction {
     // -------------------------------------------------------------------------
 
     /**
-     * Shows a dialog explaining that the "Task Management" plugin is required,
+     * Shows a dialog explaining that the "Issue Trackers, aka Task Management" plugin is required,
      * with a clickable link that opens the IDE's Plugin Manager directly on
-     * the Marketplace search for "Task Management".
+     * the Marketplace search for "Issue Trackers".
      */
     private void showPluginNotInstalledDialog(Project project) {
         DialogBuilder builder = new DialogBuilder(project);
-        builder.setTitle("Task Management Plugin Required");
+        builder.setTitle("Issue Trackers, aka Task Management Plugin Required");
 
         JPanel panel = new JPanel(new BorderLayout(15, 10));
         panel.add(new JLabel(AllIcons.General.Warning), BorderLayout.WEST);
@@ -91,7 +95,7 @@ public class IntegrateWithTasksAction extends BaseAction {
         message.setFont(UIManager.getFont("Label.font"));
         message.setText(
                 "<html><body>" +
-                "The <b>Task Management</b> plugin is required to use the Tasks integration feature " +
+                "The <b>Issue Trackers, aka Task Management</b> plugin is required to use the Tasks integration feature " +
                 "of Git Flow Helper, but it is currently <b>not installed</b> or <b>disabled</b>.<br><br>" +
                 "This plugin allows Git Flow Helper to:<br>" +
                 "&bull; <b>Link branches to issues</b> from GitHub, GitLab, Redmine, Jira and more.<br>" +
@@ -99,16 +103,22 @@ public class IntegrateWithTasksAction extends BaseAction {
                 "&bull; <b>Mark tasks</b> as In Progress when starting a feature or hotfix.<br>" +
                 "&bull; <b>Close tasks</b> automatically when finishing a branch.<br><br>" +
                 "To install it, click <b>Open Plugin Manager</b> below and search for " +
-                "<b>&quot;Task Management&quot;</b>.<br><br>" +
+                "<b>&quot;Issue Trackers&quot;</b>, or click <b>Open Plugin Page</b> to view it online.<br><br>" +
                 "<font color='gray'><i>After installing and restarting the IDE, click " +
                 "&quot;Tasks integration&quot; again to enable it.</i></font>" +
                 "</body></html>"
         );
 
-        // Clicking any hyperlink inside the editor pane opens the plugin manager
+        // Clicking any hyperlink inside the editor pane opens the URL or plugin manager
         message.addHyperlinkListener(ev -> {
             if (HyperlinkEvent.EventType.ACTIVATED.equals(ev.getEventType())) {
-                openPluginManager(project);
+                if (ev.getURL() != null) {
+                    BrowserUtil.browse(ev.getURL());
+                } else if (ev.getDescription() != null && ev.getDescription().startsWith("http")) {
+                    BrowserUtil.browse(ev.getDescription());
+                } else {
+                    openPluginManager(project);
+                }
             }
         });
 
@@ -117,6 +127,12 @@ public class IntegrateWithTasksAction extends BaseAction {
 
         builder.setCenterPanel(panel);
         builder.addOkAction().setText("Open Plugin Manager");
+        builder.addAction(new AbstractAction("Open Plugin Page") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BrowserUtil.browse(TASKS_PLUGIN_URL);
+            }
+        });
         builder.addCancelAction().setText("Cancel");
 
         if (builder.show() == DialogWrapper.OK_EXIT_CODE) {
