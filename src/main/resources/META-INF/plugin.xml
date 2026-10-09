@@ -15,7 +15,7 @@
             <blockquote>
                 <p><strong>WHAT'S NEW IN v2.10.0</strong></p>
                 <ul>
-                    <li><strong>CI/CD:</strong>Graphical visualization of Jenkins pipeline execution (others coming soon).</li>
+                    <li><strong>CI/CD:</strong> Graphical visualization and execution for Jenkins and OpenShift Pipelines (Tekton).</li>
                 </ul>
             </blockquote>
 
@@ -47,7 +47,7 @@
 
             <h2>📖 Overview</h2>
             <p><strong>GitFlow Helper</strong> brings the complete <a href="https://nvie.com/posts/a-successful-git-branching-model/">Vincent Driessen Git Flow branching strategy</a> natively into JetBrains IDEs.</p>
-            <p>It executes all Git operations programmatically via asynchronous IntelliJ Platform APIs without requiring external Git Flow CLI tools. In addition to branch automation, it deeply integrates with your <strong>Issue Trackers</strong> (Jira, GitHub, GitLab, Redmine), <strong>CI/CD pipelines</strong> (Jenkins), and provides interactive visual flow diagrams right inside your IDE.</p>
+            <p>It executes all Git operations programmatically via asynchronous IntelliJ Platform APIs without requiring external Git Flow CLI tools. In addition to branch automation, it deeply integrates with your <strong>Issue Trackers</strong> (Jira, GitHub, GitLab, Redmine), <strong>CI/CD pipelines</strong> (Jenkins, OpenShift Pipelines / Tekton), and provides interactive visual flow diagrams right inside your IDE.</p>
 
             <hr>
 
@@ -312,7 +312,7 @@
             <ul>
                 <li><b>2.10.0</b></li>
                 <ul>
-                    <li><strong>CI/CD:</strong>Graphical visualization of Jenkins pipeline execution (others coming soon).</li>
+                    <li><strong>CI/CD:</strong> Graphical visualization and execution for Jenkins and OpenShift Pipelines (Tekton).</li>
                 </ul>
 
                 <li><b>2.9.0</b></li>

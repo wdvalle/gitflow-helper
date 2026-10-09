@@ -57,7 +57,7 @@ public class ConfigDialog extends DialogWrapper {
     // CI/CD server fields
     // -----------------------------------------------------------------------
     private final ComboBox<String> ciTypeComboBox =
-            new ComboBox<>(new String[]{"Jenkins", "GitLab (soon)", "GitHub (soon)"});
+            new ComboBox<>(new String[]{"Jenkins", "OpenShift (Tekton)", "GitLab (soon)", "GitHub (soon)"});
     private final JBTextField     ciUrlField     = new JBTextField();
     private final JBPasswordField ciTokenField   = new JBPasswordField();
     private final JBTextField     ciLoginField   = new JBTextField();
@@ -367,7 +367,19 @@ public class ConfigDialog extends DialogWrapper {
 
     private void updateEnabledState() {
         boolean hasSelectedRepo = currentIndex >= 0;
-        boolean isJenkins       = hasSelectedRepo && "Jenkins".equals(ciTypeComboBox.getSelectedItem());
+        String selectedType     = (String) ciTypeComboBox.getSelectedItem();
+        boolean isJenkins       = hasSelectedRepo && "Jenkins".equals(selectedType);
+        boolean isTekton        = hasSelectedRepo && "OpenShift (Tekton)".equals(selectedType);
+
+        if (isTekton) {
+            ciUrlField.getEmptyText().setText("e.g. https://api.cluster:6443/apis/tekton.dev/v1/namespaces/my-ns/pipelines/my-pipeline");
+            ciLoginField.getEmptyText().setText("Not required (Bearer token only)");
+            ciTokenField.getEmptyText().setText("ServiceAccount Bearer token");
+        } else {
+            ciUrlField.getEmptyText().setText("e.g. https://jenkins.example.com/job/mypipeline");
+            ciLoginField.getEmptyText().setText("e.g. username");
+            ciTokenField.getEmptyText().setText("API token or password");
+        }
 
         ciTypeComboBox.setEnabled(hasSelectedRepo);
         ciUrlField.setEnabled(hasSelectedRepo);

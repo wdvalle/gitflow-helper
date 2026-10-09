@@ -2,6 +2,7 @@ package br.com.gitflowhelper.toolwindow;
 
 import br.com.gitflow.cicd.CiConnector;
 import br.com.gitflow.cicd.JenkinsConnector;
+import br.com.gitflow.cicd.TektonConnector;
 import br.com.gitflow.cicd.model.PipelineRun;
 import br.com.gitflow.cicd.model.PipelineStage;
 import br.com.gitflowhelper.dialog.ConfigDialog;
@@ -75,6 +76,14 @@ public class CIDataToolWindowPanel extends JPanel implements Disposable {
     public static @Nullable CiConnector createConnector(@NotNull CiServerConfig cfg, @Nullable String token) {
         if ("Jenkins".equalsIgnoreCase(cfg.getCiType())) {
             return new JenkinsConnector(
+                    cfg.getCiUrl(),
+                    cfg.getCiLogin(),
+                    token != null ? token : ""
+            );
+        } else if ("OpenShift (Tekton)".equalsIgnoreCase(cfg.getCiType())
+                || "Tekton".equalsIgnoreCase(cfg.getCiType())
+                || "OpenShift".equalsIgnoreCase(cfg.getCiType())) {
+            return new TektonConnector(
                     cfg.getCiUrl(),
                     cfg.getCiLogin(),
                     token != null ? token : ""
