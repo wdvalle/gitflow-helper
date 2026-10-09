@@ -310,6 +310,10 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.10.1</b></li>
+                <ul>
+                    <li><strong>Tasks management:</strong>Plugin Task management is now Issue trackers.</li>
+                </ul>
                 <li><b>2.10.0</b></li>
                 <ul>
                     <li><strong>CI/CD:</strong> Graphical visualization and execution for Jenkins and OpenShift Pipelines (Tekton).</li>

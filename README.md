@@ -229,10 +229,12 @@ All primary Git Flow operations have default keyboard shortcuts configured:
 
 ## 🛠️ Installation
 
-1. Open your JetBrains IDE.
-2. Go to **Settings / Preferences (`⌘,` / `Ctrl+Alt+S`) → Plugins → Marketplace**.
-3. Search for **Git Flow Helper** and click **Install**.
-4. Restart your IDE if prompted.
+* **Currently Supported:**
+  * **GitHub**
+  * **GitLab**
+  * **Redmine**
+* **Coming Soon:**
+  * **Jira**
 
 Alternatively, download the plugin release directly from the [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/30207-git-flow-helper).
 
