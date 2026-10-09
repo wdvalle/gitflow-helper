@@ -169,7 +169,7 @@ public class HotfixFinishAction extends BaseAction {
                         executor.execute(
                                 root,
                                 GitCommand.PUSH,
-                                "origin",
+                                REMOTE,
                                 "--delete",
                                 hotfixName
                         )
@@ -179,13 +179,13 @@ public class HotfixFinishAction extends BaseAction {
             // 8️⃣ push final
             if (tagAndPush) {
                 results.add(
-                        executor.execute(root, GitCommand.PUSH, "origin", mainBranch)
+                        executor.execute(root, GitCommand.PUSH, REMOTE, mainBranch)
                 );
                 results.add(
-                        executor.execute(root, GitCommand.PUSH, "origin", developBranch)
+                        executor.execute(root, GitCommand.PUSH, REMOTE, developBranch)
                 );
                 results.add(
-                        executor.execute(root, GitCommand.PUSH, "origin", "--tags")
+                        executor.execute(root, GitCommand.PUSH, REMOTE, tagName)
                 );
             }
 

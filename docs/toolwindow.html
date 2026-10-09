@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dedicated 4-Tab Tool Window — GitFlow Helper</title>
+  <meta name="description" content="Explore GitFlow Helper's dedicated 4-tab tool window in IntelliJ IDEA: real-time execution logs, issue inspector, visual flow branch graph, and Jenkins CI/CD tracking.">
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="index.html" class="nav-brand">
+        <div class="brand-logo-wrap">
+          <img src="assets/images/logo.svg" alt="GitFlow Helper Logo" class="brand-logo">
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">GitFlow Helper</span>
+          <span class="brand-badge">IntelliJ Plugin</span>
+        </div>
+      </a>
+
+      <ul class="nav-desktop-links">
+        <li><a href="index.html" class="nav-link">Overview</a></li>
+        <li><a href="workflow.html" class="nav-link">Branching & Workflows</a></li>
+        <li><a href="toolwindow.html" class="nav-link active">4-Tab Tool Window</a></li>
+        <li><a href="integrations.html" class="nav-link">Integrations & CI/CD</a></li>
+        <li><a href="safety-shortcuts.html" class="nav-link">Safety & Shortcuts</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" class="btn btn-kofi btn-sm">
+          <span>☕</span>
+          <span>Buy Me a Coffee</span>
+        </a>
+        <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
+          <span>Get Plugin</span>
+        </a>
+        <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+          <span class="line"></span>
+          <span class="line"></span>
+          <span class="line"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hamburger Drawer Navigation -->
+  <div class="drawer-overlay"></div>
+  <aside class="nav-drawer" aria-label="Mobile Navigation">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem;">
+        <div class="brand-logo-wrap" style="width: 32px; height: 32px;">
+          <img src="assets/images/logo.svg" alt="Logo" style="width: 18px; height: 18px;">
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 1.05rem;">GitFlow Helper</div>
+          <div style="font-size: 0.75rem; color: var(--primary);">Navigation Menu</div>
+        </div>
+      </div>
+
+      <div class="drawer-section-title">Documentation & Features</div>
+      <ul class="drawer-links">
+        <li><a href="index.html" class="drawer-link"><span>🏠 Home Overview</span></a></li>
+        <li><a href="workflow.html" class="drawer-link"><span>🌿 Branching & Workflows</span></a></li>
+        <li><a href="toolwindow.html" class="drawer-link active"><span>🪟 4-Tab Tool Window</span><span class="drawer-link-tag">Active</span></a></li>
+        <li><a href="integrations.html" class="drawer-link"><span>🔗 Issue Trackers & CI/CD</span></a></li>
+        <li><a href="safety-shortcuts.html" class="drawer-link"><span>🛡️ Safety & Key Shortcuts</span></a></li>
+      </ul>
+
+      <div class="drawer-section-title" style="margin-top: 2rem;">Community & Links</div>
+      <ul class="drawer-links">
+        <li><a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper" target="_blank" rel="noopener noreferrer" class="drawer-link"><span>🛒 JetBrains Marketplace</span><span>↗</span></a></li>
+        <li><a href="https://github.com/wdvalle/gitflow-helper" target="_blank" rel="noopener noreferrer" class="drawer-link"><span>🐙 GitHub Repository</span><span>↗</span></a></li>
+      </ul>
+    </div>
+
+    <div class="drawer-footer">
+      <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" class="btn btn-kofi" style="width: 100%;">
+        <span>☕</span>
+        <span>Support on Ko-fi</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Page Header -->
+  <section class="hero" style="padding-bottom: 2rem;">
+    <div class="container">
+      <span class="badge badge-primary badge-glow reveal" style="margin-bottom: 1.5rem;">Total IDE Visibility</span>
+      <h1 class="hero-title reveal delay-1">
+        Dedicated <span class="gradient-text">4-Tab Tool Window</span>
+      </h1>
+      <p class="hero-subtitle reveal delay-2">
+        A unified command center docked at the bottom of your IDE. Monitor Git operations in real time, inspect assigned tasks, visualize branch topologies, and track CI/CD builds.
+      </p>
+    </div>
+  </section>
+
+  <!-- Interactive 4-Tab Navigation Showcase -->
+  <section class="section">
+    <div class="container">
+      <div class="tab-container reveal">
+        <div class="tab-nav">
+          <button class="tab-btn active" data-tab="tab-logs">📜 1. Logs Tab</button>
+          <button class="tab-btn" data-tab="tab-flow">🌿 2. Flow Tab (Visual Graph)</button>
+          <button class="tab-btn" data-tab="tab-issues">📋 3. Issues Tab</button>
+          <button class="tab-btn" data-tab="tab-cicd">🚀 4. CI/CD Tab (Jenkins)</button>
+        </div>
+
+        <!-- Pane 1: Logs -->
+        <div id="tab-logs" class="tab-pane active">
+          <div class="grid-2" style="align-items: center;">
+            <div>
+              <span class="badge badge-primary" style="margin-bottom: 1rem;">Live Output & Telemetry</span>
+              <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem;">Real-Time Execution Logs</h2>
+              <p style="color: var(--text-secondary); margin-bottom: 1.25rem;">
+                Never guess what Git commands are running under the hood. The <strong>Logs</strong> tab displays every single Git operation asynchronously executed by the plugin, complete with exact parameters, stdout, stderr, and exit codes.
+              </p>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.8rem; color: var(--text-secondary); font-size: 0.92rem;">
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--primary);">✓</span>
+                  <span><strong>Customizable Typography:</strong> Choose your favorite font family and adjust font size directly inside the tool window settings.</span>
+                </li>
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--primary);">✓</span>
+                  <span><strong>Multi-Repository Tagging:</strong> Clear repository prefix tags in multi-root workspaces to identify which repository triggered each command.</span>
+                </li>
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--primary);">✓</span>
+                  <span><strong>Live Status Indicator:</strong> Animated spinner on the tool window tab whenever background tasks are actively running.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Demarcated Screenshot Placeholder 1: Logs -->
+            <div>
+              <div class="screenshot-frame" style="margin: 0;">
+                <div class="screenshot-header">
+                  <div class="window-dots">
+                    <span class="window-dot close"></span>
+                    <span class="window-dot minimize"></span>
+                    <span class="window-dot maximize"></span>
+                  </div>
+                  <div class="screenshot-title"><span>📜</span><span>toolwindow-logs-view.png</span></div>
+                  <button class="btn btn-secondary btn-sm toggle-preview-btn">👁️ Preview</button>
+                </div>
+                <div class="screenshot-body" style="min-height: 300px;">
+                  <img src="assets/images/screens/03-toolwindow.png" alt="Tool Window Logs" class="sample-preview-img screenshot-img" style="display: none;">
+                  <div class="screenshot-placeholder" style="min-height: 250px; margin: 1rem;">
+                    <div class="placeholder-icon">📜</div>
+                    <div class="placeholder-label">Screenshot Placeholder: Tool Window Logs Tab</div>
+                    <div class="placeholder-desc">
+                      Place the screenshot showing the Logs tab with Git command stream, timestamped outputs, repository prefix, and font customization controls.
+                    </div>
+                    <span class="placeholder-badge">1200 × 650 px • PNG</span>
+                  </div>
+                </div>
+                <div class="screenshot-caption">
+                  <span>Asynchronous execution logs with customizable font size and family</span>
+                  <span style="color: var(--primary);">Tab: Logs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 2: Flow -->
+        <div id="tab-flow" class="tab-pane">
+          <div class="grid-2" style="align-items: center;">
+            <div>
+              <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 1rem;">Topological Visualization</span>
+              <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem;">Interactive Visual Flow Diagram</h2>
+              <p style="color: var(--text-secondary); margin-bottom: 1.25rem;">
+                See your active branch state at a glance. The <strong>Flow</strong> tab generates an interactive topological map of all local and remote branches in your Git repository.
+              </p>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.8rem; color: var(--text-secondary); font-size: 0.92rem;">
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--branch-main);">●</span>
+                  <span><strong>Main:</strong> Blue production line with release tags.</span>
+                </li>
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--branch-develop);">●</span>
+                  <span><strong>Develop:</strong> Emerald green integration line.</span>
+                </li>
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--branch-feature);">●</span>
+                  <span><strong>Features:</strong> Amber branches showing current work in progress.</span>
+                </li>
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--branch-release);">●</span>
+                  <span><strong>Releases & Hotfixes:</strong> Cyan and red tracks with convergence markers.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Demarcated Screenshot Placeholder 2: Flow -->
+            <div>
+              <div class="screenshot-frame" style="margin: 0;">
+                <div class="screenshot-header">
+                  <div class="window-dots">
+                    <span class="window-dot close"></span>
+                    <span class="window-dot minimize"></span>
+                    <span class="window-dot maximize"></span>
+                  </div>
+                  <div class="screenshot-title"><span>🌿</span><span>toolwindow-flow-graph.png</span></div>
+                  <button class="btn btn-secondary btn-sm toggle-preview-btn">👁️ Preview</button>
+                </div>
+                <div class="screenshot-body" style="min-height: 300px;">
+                  <img src="assets/images/screens/gitflow.png" alt="Visual Flow Graph" class="sample-preview-img screenshot-img" style="display: none;">
+                  <div class="screenshot-placeholder" style="min-height: 250px; margin: 1rem;">
+                    <div class="placeholder-icon" style="color: var(--primary);">🌿</div>
+                    <div class="placeholder-label">Screenshot Placeholder: Visual Flow Graph</div>
+                    <div class="placeholder-desc">
+                      Place the screenshot showing the interactive GitFlow branch diagram with color-coded branches, active head indicator, and origin connections.
+                    </div>
+                    <span class="placeholder-badge">1200 × 650 px • PNG</span>
+                  </div>
+                </div>
+                <div class="screenshot-caption">
+                  <span>Interactive visual graph of local branches and checkout points</span>
+                  <span style="color: var(--text-highlight);">Tab: Flow</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 3: Issues -->
+        <div id="tab-issues" class="tab-pane">
+          <div class="grid-2" style="align-items: center;">
+            <div>
+              <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.3); margin-bottom: 1rem;">Integrated Task Server</span>
+              <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem;">Issues & Tasks Inspector</h2>
+              <p style="color: var(--text-secondary); margin-bottom: 1.25rem;">
+                Browse assigned tickets from Jira, GitHub, GitLab, or Redmine directly within the IDE. View ticket descriptions, recent comments, and start branches with one click.
+              </p>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.8rem; color: var(--text-secondary); font-size: 0.92rem;">
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--primary);">✓</span>
+                  <span><strong>Side-by-Side Dual Pane:</strong> Task list on the left with detailed rich inspector on the right.</span>
+                </li>
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--primary);">✓</span>
+                  <span><strong>Instant Branch Creation:</strong> 'Start Feature' or 'Start Hotfix' buttons directly inside ticket details.</span>
+                </li>
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--primary);">✓</span>
+                  <span><strong>Quick Browser Shortcut:</strong> Click to jump straight to the issue URL in your default browser.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Demarcated Screenshot Placeholder 3: Issues -->
+            <div>
+              <div class="screenshot-frame" style="margin: 0;">
+                <div class="screenshot-header">
+                  <div class="window-dots">
+                    <span class="window-dot close"></span>
+                    <span class="window-dot minimize"></span>
+                    <span class="window-dot maximize"></span>
+                  </div>
+                  <div class="screenshot-title"><span>📋</span><span>toolwindow-issues-tab.png</span></div>
+                  <button class="btn btn-secondary btn-sm toggle-preview-btn">👁️ Preview</button>
+                </div>
+                <div class="screenshot-body" style="min-height: 300px;">
+                  <img src="assets/images/screens/12-tasks-view.png" alt="Issues Tab View" class="sample-preview-img screenshot-img" style="display: none;">
+                  <div class="screenshot-placeholder" style="min-height: 250px; margin: 1rem;">
+                    <div class="placeholder-icon" style="color: var(--accent-purple);">📋</div>
+                    <div class="placeholder-label">Screenshot Placeholder: Issues & Tasks Tab</div>
+                    <div class="placeholder-desc">
+                      Place the screenshot showing the Issues tab with assigned task cards, description panel, and direct 'Start Feature' action buttons.
+                    </div>
+                    <span class="placeholder-badge">1200 × 650 px • PNG</span>
+                  </div>
+                </div>
+                <div class="screenshot-caption">
+                  <span>Side-by-side task inspector connected to Jira, GitHub, GitLab, and Redmine</span>
+                  <span style="color: var(--accent-purple);">Tab: Issues</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 4: CI/CD -->
+        <div id="tab-cicd" class="tab-pane">
+          <div class="grid-2" style="align-items: center;">
+            <div>
+              <span class="badge" style="background: rgba(6, 182, 212, 0.15); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.3); margin-bottom: 1rem;">Continuous Integration</span>
+              <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem;">CI/CD Pipeline Monitoring</h2>
+              <p style="color: var(--text-secondary); margin-bottom: 1.25rem;">
+                Stay in your coding zone while tests and deployment jobs execute. The <strong>CI/CD</strong> tab connects to Jenkins pipelines to give you real-time build telemetry without browser tab switching.
+              </p>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.8rem; color: var(--text-secondary); font-size: 0.92rem;">
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--primary);">✓</span>
+                  <span><strong>Live Console Streaming:</strong> Progressive terminal output streaming with intelligent ANSI color highlighting.</span>
+                </li>
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--primary);">✓</span>
+                  <span><strong>Build Trigger & Status:</strong> Trigger new builds upon publishing or finishing branches and observe build status badges.</span>
+                </li>
+                <li style="display: flex; gap: 0.5rem;">
+                  <span style="color: var(--primary);">✓</span>
+                  <span><strong>Secure Authentication:</strong> Credentials stored safely using IntelliJ's encrypted PasswordSafe subsystem.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Demarcated Screenshot Placeholder 4: CI/CD -->
+            <div>
+              <div class="screenshot-frame" style="margin: 0;">
+                <div class="screenshot-header">
+                  <div class="window-dots">
+                    <span class="window-dot close"></span>
+                    <span class="window-dot minimize"></span>
+                    <span class="window-dot maximize"></span>
+                  </div>
+                  <div class="screenshot-title"><span>🚀</span><span>toolwindow-cicd-jenkins.png</span></div>
+                </div>
+                <div class="screenshot-body" style="min-height: 300px;">
+                  <div class="screenshot-placeholder" style="min-height: 250px; margin: 1rem;">
+                    <div class="placeholder-icon" style="color: var(--accent-cyan);">🚀</div>
+                    <div class="placeholder-label">Screenshot Placeholder: Jenkins CI/CD Tab</div>
+                    <div class="placeholder-desc">
+                      Place the screenshot showing the Jenkins CI/CD pipeline monitoring tab with live console chunk streaming and build status indicator.
+                    </div>
+                    <span class="placeholder-badge">1200 × 650 px • PNG</span>
+                  </div>
+                </div>
+                <div class="screenshot-caption">
+                  <span>Live Jenkins pipeline execution and console log streaming</span>
+                  <span style="color: var(--accent-cyan);">Tab: CI/CD</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Support Banner -->
+  <section class="container reveal">
+    <div class="donation-banner">
+      <div class="donation-content">
+        <div class="donation-badge">💖 Developer Love</div>
+        <h2 class="donation-title">Enjoying the 4-Tab Tool Window?</h2>
+        <p class="donation-desc">
+          Building and maintaining native IntelliJ platform plugins takes ongoing effort and testing across IDE versions. If GitFlow Helper makes your work enjoyable, support the project with a coffee!
+        </p>
+        <div class="donation-actions">
+          <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" class="btn btn-kofi btn-lg">
+            <span>☕</span>
+            <span>Support on Ko-fi</span>
+          </a>
+          <a href="integrations.html" class="btn btn-secondary btn-lg">
+            Next: Issue Trackers & CI/CD Pipelines →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="brand-logo-wrap" style="width: 32px; height: 32px;">
+              <img src="assets/images/logo.svg" alt="GitFlow Logo" style="width: 18px; height: 18px;">
+            </div>
+            <span style="font-weight: 700; font-size: 1.15rem;">GitFlow Helper</span>
+          </div>
+          <p class="footer-desc">The modern native Git Flow plugin for JetBrains IDEs.</p>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Tool Window</h4>
+          <ul class="footer-links">
+            <li><a href="#tab-logs" class="footer-link">Execution Logs</a></li>
+            <li><a href="#tab-flow" class="footer-link">Visual Flow Diagram</a></li>
+            <li><a href="#tab-issues" class="footer-link">Issues & Tasks</a></li>
+            <li><a href="#tab-cicd" class="footer-link">CI/CD Jenkins Monitoring</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Documentation</h4>
+          <ul class="footer-links">
+            <li><a href="workflow.html" class="footer-link">Branching Workflows</a></li>
+            <li><a href="integrations.html" class="footer-link">Ecosystem Integrations</a></li>
+            <li><a href="safety-shortcuts.html" class="footer-link">Safety & Keymaps</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Community</h4>
+          <ul class="footer-links">
+            <li><a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" class="footer-link">Buy Me a Coffee ☕</a></li>
+            <li><a href="https://github.com/wdvalle/gitflow-helper" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub ↗</a></li>
+            <li><a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper" target="_blank" rel="noopener noreferrer" class="footer-link">JetBrains Marketplace ↗</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 GitFlow Helper. Licensed under Apache 2.0.</div>
+        <div>Created by Walter Valle • <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" style="color: #ff8583;">Support on Ko-fi ☕</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
