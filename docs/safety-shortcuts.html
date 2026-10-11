@@ -14,13 +14,9 @@
   <!-- Header -->
   <header class="site-header">
     <div class="container nav-container">
-      <a href="index.html" class="nav-brand">
+      <a href="index.html" class="nav-brand" aria-label="GitFlow Helper" title="GitFlow Helper">
         <div class="brand-logo-wrap">
           <img src="assets/images/logo.svg" alt="GitFlow Helper Logo" class="brand-logo">
-        </div>
-        <div class="brand-text">
-          <span class="brand-title">GitFlow Helper</span>
-          <span class="brand-badge">IntelliJ Plugin</span>
         </div>
       </a>
 
@@ -163,37 +159,23 @@
     </div>
   </section>
 
-  <!-- Demarcated Screenshot Placeholder 1: Protected Branch Guard -->
+  <!-- Live Screenshot 1: Safe Git Execution & Context Tracking -->
   <section class="container reveal">
     <div class="screenshot-frame">
       <div class="screenshot-header">
-        <div class="window-dots">
-          <span class="window-dot close"></span>
-          <span class="window-dot minimize"></span>
-          <span class="window-dot maximize"></span>
-        </div>
         <div class="screenshot-title">
           <span>🛡️</span>
-          <span>protected-branch-commit-warning.png</span>
+          <span>Safe Git Command Execution & Traceability</span>
         </div>
       </div>
 
       <div class="screenshot-body">
-        <div class="screenshot-placeholder">
-          <div class="placeholder-icon" style="color: var(--accent-rose); background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.3);">
-            🛑
-          </div>
-          <div class="placeholder-label">Screenshot Placeholder: Protected Branch Commit Interceptor</div>
-          <div class="placeholder-desc">
-            Place the screenshot showing the warning modal triggered when attempting to commit directly into protected <code>main</code> or <code>develop</code> branches.
-          </div>
-          <span class="placeholder-badge">Recommended Resolution: 1000 × 550 px • PNG</span>
-        </div>
+        <img src="assets/images/screens/08-checkout-branch.png" alt="Safe Git Command Execution and Task Binding" class="screenshot-img">
       </div>
 
       <div class="screenshot-caption">
-        <span>Defensive CheckinHandler intercepting commits to protected branches</span>
-        <span style="color: var(--accent-rose);">Guardrail: Protected Branch</span>
+        <span>Git commands executed via native async API with strict parameters, preventing destructive errors</span>
+        <span style="color: var(--primary);">Safety: Controlled Async Execution</span>
       </div>
     </div>
   </section>
@@ -300,44 +282,41 @@
     </div>
   </section>
 
-  <!-- Demarcated Screenshot Placeholder 2: Interactive Tree Explorer -->
+  <!-- Live Screenshots: Branch Navigation & Tree Explorer -->
   <section class="container reveal">
-    <div class="screenshot-frame">
-      <div class="screenshot-header">
-        <div class="window-dots">
-          <span class="window-dot close"></span>
-          <span class="window-dot minimize"></span>
-          <span class="window-dot maximize"></span>
-        </div>
-        <div class="screenshot-title">
-          <span>🌲</span>
-          <span>tree-view-checkout-modal.png</span>
-        </div>
-        <button class="btn btn-secondary btn-sm toggle-preview-btn">👁️ Preview Existing Screen</button>
-      </div>
-
-      <div class="screenshot-body">
-        <img src="assets/images/screens/04-checkout.png" alt="Checkout Dialog" class="sample-preview-img screenshot-img" style="display: none;">
-        
-        <div class="screenshot-placeholder">
-          <div class="placeholder-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
+    <div class="grid-2" style="gap: 1.5rem; align-items: start;">
+      <!-- Quick Checkout Menu -->
+      <div class="screenshot-frame" style="margin: 0;">
+        <div class="screenshot-header">
+          <div class="screenshot-title">
+            <span>⚡</span>
+            <span>Quick Branch Menu & Tree Access</span>
           </div>
-          <div class="placeholder-label">Screenshot Placeholder: Branch Checkout & Tree Dialog</div>
-          <div class="placeholder-desc">
-            Place the screenshot showing branch checkout dialog with Speed Search, remote branch fetching, and branch deletion actions.
-          </div>
-          <span class="placeholder-badge">Recommended Resolution: 1100 × 650 px • PNG</span>
+        </div>
+        <div class="screenshot-body">
+          <img src="assets/images/screens/04-checkout.png" alt="GitFlow Helper Branch Checkout Menu" class="screenshot-img">
+        </div>
+        <div class="screenshot-caption">
+          <span>Active Git Flow status, 'Show as tree...' shortcut, and instant local branch list</span>
+          <span style="color: var(--primary);">Branches Menu</span>
         </div>
       </div>
 
-      <div class="screenshot-caption">
-        <span>Fast branch switching with Speed Search filtering and checkout indicators</span>
-        <span style="color: var(--primary);">GitFlow Checkout Dialog</span>
+      <!-- Hierarchical Tree Dialog -->
+      <div class="screenshot-frame" style="margin: 0;">
+        <div class="screenshot-header">
+          <div class="screenshot-title">
+            <span>🌲</span>
+            <span>Branch Tree Organized into Category Folders</span>
+          </div>
+        </div>
+        <div class="screenshot-body">
+          <img src="assets/images/screens/10-tree-view.png" alt="Hierarchical Branch Tree View in IntelliJ" class="screenshot-img">
+        </div>
+        <div class="screenshot-caption">
+          <span>Prefix-based folders (feature/, hotfix/) and Speed Search for instant switching</span>
+          <span style="color: var(--text-highlight);">Action: Show as tree...</span>
+        </div>
       </div>
     </div>
   </section>

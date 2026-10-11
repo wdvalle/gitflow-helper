@@ -14,13 +14,9 @@
   <!-- Header -->
   <header class="site-header">
     <div class="container nav-container">
-      <a href="index.html" class="nav-brand">
+      <a href="index.html" class="nav-brand" aria-label="GitFlow Helper" title="GitFlow Helper">
         <div class="brand-logo-wrap">
           <img src="assets/images/logo.svg" alt="GitFlow Helper Logo" class="brand-logo">
-        </div>
-        <div class="brand-text">
-          <span class="brand-title">GitFlow Helper</span>
-          <span class="brand-badge">IntelliJ Plugin</span>
         </div>
       </a>
 
@@ -70,7 +66,7 @@
         <li>
           <a href="index.html" class="drawer-link active">
             <span>🏠 Home Overview</span>
-            <span class="drawer-link-tag">v2.10.1</span>
+            <span class="drawer-link-tag">v2.10.2</span>
           </a>
         </li>
         <li>
@@ -136,15 +132,25 @@
   <!-- Hero Section with Motion -->
   <section class="hero">
     <div class="container">
-      <div class="hero-pill reveal">
-        <span class="dot"></span>
-        <span>Latest Release v2.10.1 is here • Native JetBrains GitFlow</span>
+      <!-- Prominent Plugin Brand Showcase -->
+      <div class="hero-brand-featured reveal">
+        <div class="hero-brand-badge-icon">
+          <img src="assets/images/logo.svg" alt="GitFlow Helper Logo" class="hero-brand-icon-img">
+        </div>
+        <div class="hero-brand-text">
+          <div class="hero-brand-badge">
+            <span class="hero-brand-dot"></span>
+            <span>JetBrains Marketplace • v2.10.2</span>
+          </div>
+          <h1 class="hero-brand-title">GitFlow Helper</h1>
+          <p class="hero-brand-subtitle">Seamless Git Flow Branching for JetBrains IDEs</p>
+        </div>
       </div>
 
-      <h1 class="hero-title reveal delay-1">
+      <h2 class="hero-title reveal delay-1">
         Master <span class="gradient-text">Git Flow Natively</span><br>
         Inside JetBrains IDEs.
-      </h1>
+      </h2>
 
       <p class="hero-subtitle reveal delay-2">
         Execute full Vincent Driessen Git Flow lifecycle directly inside IntelliJ IDEA, Android Studio, and WebStorm. No CLI tools required. Zero friction, complete safety guardrails, and deep issue tracker integration.
@@ -218,46 +224,21 @@
         </div>
       </div>
 
-      <!-- Demarcated Screenshot Placeholder: Hero Overview -->
+      <!-- Live Screenshot: Hero Overview -->
       <div class="screenshot-frame reveal delay-3">
         <div class="screenshot-header">
-          <div class="window-dots">
-            <span class="window-dot close"></span>
-            <span class="window-dot minimize"></span>
-            <span class="window-dot maximize"></span>
-          </div>
           <div class="screenshot-title">
             <span>🖼️</span>
-            <span>gitflow-helper-main-interface.png</span>
-          </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-secondary btn-sm toggle-preview-btn">👁️ Preview Existing Screen</button>
+            <span>GitFlow Helper — Status Bar Quick Action Menu</span>
           </div>
         </div>
 
         <div class="screenshot-body">
-          <!-- Sample image fallback (hidden initially to present clearly demarcated placeholder) -->
-          <img src="assets/images/screens/01-start.png" alt="GitFlow Helper Status Bar Menu" class="sample-preview-img screenshot-img" style="display: none;">
-
-          <!-- Specifically Demarcated Screenshot Placeholder requested by user -->
-          <div class="screenshot-placeholder">
-            <div class="placeholder-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <polyline points="21 15 16 10 5 21"/>
-              </svg>
-            </div>
-            <div class="placeholder-label">Screenshot Placeholder: Main Interface & Status Bar Menu</div>
-            <div class="placeholder-desc">
-              Place the screenshot showing the IDE with GitFlow Helper active in the status bar, displaying available Feature, Release, and Hotfix actions.
-            </div>
-            <span class="placeholder-badge">Recommended Resolution: 1200 × 700 px • PNG</span>
-          </div>
+          <img src="assets/images/screens/01-start.png" alt="GitFlow Helper Quick Action Menu on Status Bar" class="screenshot-img">
         </div>
 
         <div class="screenshot-caption">
-          <span>Status Bar Widget & Quick Action Dropdown Menu</span>
+          <span>1-Click Context Menu Access: Init..., Tasks Integration, Feature, Release, and Hotfix</span>
           <span style="color: var(--primary);">IntelliJ IDEA 2024.2+ Compatible</span>
         </div>
       </div>
@@ -398,52 +379,31 @@
     </div>
   </section>
 
-  <!-- Demarcated Screenshot Placeholder: Tree View & Navigation -->
+  <!-- Live Screenshot: Tree View & Navigation -->
   <section class="section section-alt">
     <div class="container">
       <div class="section-header reveal">
-        <span class="section-tag">Interactive Navigation</span>
+        <span class="section-tag">Smart Navigation</span>
         <h2 class="section-title">Hierarchical Branch Tree View</h2>
         <p class="section-desc">
-          Navigate complex repositories with speed. Filter branches instantly with Speed Search, switch checkouts with one click, and manage local or remote branches effortlessly.
+          Navigate complex repositories with speed and precision. The <strong>Show as tree...</strong> action organizes branches into virtual folders (<code>feature/</code>, <code>hotfix/</code>, <code>release/</code>), supports instant type-to-filter Speed Search, and double-click checkout.
         </p>
       </div>
 
       <div class="screenshot-frame reveal delay-2">
         <div class="screenshot-header">
-          <div class="window-dots">
-            <span class="window-dot close"></span>
-            <span class="window-dot minimize"></span>
-            <span class="window-dot maximize"></span>
-          </div>
           <div class="screenshot-title">
             <span>🌲</span>
-            <span>gitflow-tree-view-dialog.png</span>
+            <span>Git Branches — Folder Hierarchy with Speed Search</span>
           </div>
-          <button class="btn btn-secondary btn-sm toggle-preview-btn">👁️ Preview Existing Screen</button>
         </div>
 
         <div class="screenshot-body">
-          <img src="assets/images/screens/10-tree-view.png" alt="Tree View Screenshot" class="sample-preview-img screenshot-img" style="display: none;">
-          
-          <div class="screenshot-placeholder">
-            <div class="placeholder-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <polyline points="21 15 16 10 5 21"/>
-              </svg>
-            </div>
-            <div class="placeholder-label">Screenshot Placeholder: Hierarchical Branch Tree View</div>
-            <div class="placeholder-desc">
-              Place the screenshot illustrating the 'Show as tree...' dialog with features, releases, and hotfix branches organized neatly in folders with Speed Search active.
-            </div>
-            <span class="placeholder-badge">Recommended Resolution: 1100 × 650 px • PNG</span>
-          </div>
+          <img src="assets/images/screens/10-tree-view.png" alt="Hierarchical Branch Tree View in IntelliJ" class="screenshot-img">
         </div>
 
         <div class="screenshot-caption">
-          <span>Organized branch hierarchy with quick actions and instant filtering</span>
+          <span>Structured branch hierarchy organized by prefix folders with quick checkout actions</span>
           <span style="color: var(--text-highlight);">Action: Show as tree...</span>
         </div>
       </div>

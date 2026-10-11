@@ -22,9 +22,10 @@ import java.awt.*;
 
 public class AboutDialog extends DialogWrapper {
 
-    public static final String PLUGIN_VERSION = "2.10.1";
+    public static final String PLUGIN_VERSION = "2.10.2";
 
     private static final String PLUGIN_NAME = "GitFlow Helper";
+    private static final String WEBSITE_URL = "https://gitflowhelper.com";
     private static final String GITHUB_URL = "https://github.com/wdvalle/gitflow-helper";
     private static final String MARKETPLACE_URL = "https://plugins.jetbrains.com/plugin/30207-git-flow-helper";
     private static final String KOFI_URL = "https://ko-fi.com/waltervalle";
@@ -106,6 +107,11 @@ public class AboutDialog extends DialogWrapper {
         );
         descPanel.add(desc);
 
+        HyperlinkLabel websiteLink = new HyperlinkLabel();
+        websiteLink.setHtmlText("Website: <a href=\"" + WEBSITE_URL + "\">" + WEBSITE_URL + "</a>");
+        websiteLink.addHyperlinkListener(e -> BrowserUtil.browse(WEBSITE_URL));
+        descPanel.add(websiteLink);
+
         HyperlinkLabel projectLink = new HyperlinkLabel();
         projectLink.setHtmlText("Project: <a href=\"" + GITHUB_URL + "\">" + GITHUB_URL + "</a>");
         projectLink.addHyperlinkListener(e -> BrowserUtil.browse(GITHUB_URL));
@@ -125,8 +131,14 @@ public class AboutDialog extends DialogWrapper {
         c.insets = JBUI.insetsRight(8);
         c.anchor = GridBagConstraints.WEST;
 
-        // GitHub
+        // Website
         c.gridx = 0;
+        JButton websiteBtn = new JButton("Website", AllIcons.General.Web);
+        websiteBtn.addActionListener(e -> BrowserUtil.browse(WEBSITE_URL));
+        links.add(websiteBtn, c);
+
+        // GitHub
+        c.gridx = 1;
         JButton githubBtn = new JButton("Open GitHub", AllIcons.Vcs.Vendors.Github);
         githubBtn.addActionListener(e -> BrowserUtil.browse(GITHUB_URL));
         links.add(githubBtn, c);
@@ -138,7 +150,7 @@ public class AboutDialog extends DialogWrapper {
         links.add(marketplaceBtn, c);
 
         // Buy me a Coffee
-        c.gridx = 1;
+        c.gridx = 3;
         JButton coffeeBtn = new JButton("Buy Me a Coffee", AllIcons.FileTypes.Java);
         coffeeBtn.addActionListener(e -> BrowserUtil.browse(KOFI_URL));
         links.add(coffeeBtn, c);
@@ -146,7 +158,7 @@ public class AboutDialog extends DialogWrapper {
         root.add(links, BorderLayout.SOUTH);
 
         // define an amazing size
-        root.setPreferredSize(new Dimension(520, 320));
+        root.setPreferredSize(new Dimension(560, 340));
         return root;
     }
 
