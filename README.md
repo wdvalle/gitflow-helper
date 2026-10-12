@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper">
-    <img src="https://img.shields.io/badge/JetBrains%20Marketplace-v2.9.0-blue?logo=intellij-idea&style=flat-square" alt="JetBrains Marketplace">
+    <img src="https://img.shields.io/badge/JetBrains%20Marketplace-v2.10.3-blue?logo=intellij-idea&style=flat-square" alt="JetBrains Marketplace">
   </a>
   <a href="https://github.com/wdvalle/gitflow-helper">
     <img src="https://img.shields.io/badge/GitHub-wdvalle%2Fgitflow--helper-181717?logo=github&style=flat-square" alt="GitHub">

@@ -10,7 +10,7 @@ java {
 }
 
 group = 'br.com.gitflowhelper'
-version = '2.10.2'
+version = '2.10.3'
 
 repositories {
     mavenCentral()
@@ -23,7 +23,7 @@ repositories {
 dependencies {
     intellijPlatform {
         //intellijIdeaCommunity('2025.2.2')
-        intellijIdeaCommunity('2025.2.2')
+        intellijIdeaCommunity('2024.2.4')
         bundledPlugin('Git4Idea')
         bundledPlugin('com.intellij.tasks')
     }
