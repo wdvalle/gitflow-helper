@@ -46,9 +46,15 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
         this.project = project;
         this.taskFormatter = new TaskFormatter(project);
 
-        taskList = new JBList<>(new CollectionListModel<>());
-        updateEmptyText();
+        searchField = new SearchTextField();
+        searchField.addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull javax.swing.event.DocumentEvent e) {
+                filterTasks();
+            }
+        });
 
+        taskList = new JBList<>(new CollectionListModel<>());
         taskList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         taskList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
@@ -59,14 +65,6 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
                     setIcon(task.getIcon());
                 }
                 return this;
-            }
-        });
-
-        searchField = new SearchTextField();
-        searchField.addDocumentListener(new DocumentAdapter() {
-            @Override
-            protected void textChanged(@NotNull javax.swing.event.DocumentEvent e) {
-                filterTasks();
             }
         });
 
@@ -93,6 +91,8 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
                 ActivityTracker.getInstance().inc();
             }
         });
+
+        updateEmptyText();
 
         JPanel listPanel = new JPanel(new BorderLayout());
         JPanel searchPanel = new JPanel(new BorderLayout());
@@ -195,7 +195,7 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
     }
 
     private void filterTasks() {
-        String query = searchField.getText().toLowerCase();
+        String query = searchField != null ? searchField.getText().toLowerCase() : "";
         List<GFTask> filtered = allTasks.stream()
                 .filter(task -> task.getPresentableId().toLowerCase().contains(query) ||
                                 task.getSummary().toLowerCase().contains(query))
@@ -254,7 +254,7 @@ public class TasksToolWindowPanel extends JPanel implements DataProvider, Dispos
             return;
         }
 
-        String query = searchField.getText().trim();
+        String query = searchField != null ? searchField.getText().trim() : "";
         if (!query.isEmpty()) {
             emptyText.setText("No tasks match '" + query + "'");
             emptyText.appendLine("Clear the search field to see all tasks.");

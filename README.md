@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper">
-    <img src="https://img.shields.io/badge/JetBrains%20Marketplace-v2.9.0-blue?logo=intellij-idea&style=flat-square" alt="JetBrains Marketplace">
+    <img src="https://img.shields.io/badge/JetBrains%20Marketplace-v2.10.3-blue?logo=intellij-idea&style=flat-square" alt="JetBrains Marketplace">
   </a>
   <a href="https://github.com/wdvalle/gitflow-helper">
     <img src="https://img.shields.io/badge/GitHub-wdvalle%2Fgitflow--helper-181717?logo=github&style=flat-square" alt="GitHub">
@@ -19,21 +19,21 @@
 </a>
 
 > **WHAT'S NEW IN v2.8.0 / 2.9.0 / 2.10.0**  
-> • **CI/CD:** Graphical visualization of Jenkins pipeline execution (others coming soon).
+> • **CI/CD:** Graphical visualization of Jenkins pipeline execution (others coming soon).  
 > • **Proactive Divergence Indicator in Status Bar**: Real-time badge showing commits behind `develop` (`⬇ N`) with instant 1-click branch synchronization!  
 > • **Customizable Log Typography**: Select custom font family and font size directly in the Logs tool window.  
 > • **Repository Context in Logs & Flow**: Interactive repo selection in the Flow diagram panel and clear repo name prefix in execution logs.  
 > • **Optional Task Selection on Feature Start**: Create feature branches with or without binding to an issue tracker task.  
 > • **Safe Background Execution**: GitFlow menu is automatically disabled during background operations to prevent branch conflicts.  
-> • **New Interactive About Dialog**: Comprehensive built-in documentation guide (`UsageDialog`).
-> • **CI/CD Config Dialog:** Its now possible do trigger build in Jenkins directly from plugin.
+> • **New Interactive About Dialog**: Comprehensive built-in documentation guide (`UsageDialog`).  
+> • **CI/CD Config Dialog:** It's now possible to trigger build in Jenkins directly from the plugin.  
 
-> **OTHER IMPORTANT FEARTURES**  
+> **OTHER IMPORTANT FEATURES**  
 > • **Extended Issue Tracker Integrations**: Full support for **Jira**, **GitHub**, **GitLab**, and **Redmine**!  
 > • **Dedicated 4-Tab Tool Window**: Dedicated views for **Logs**, **Issues** (rich task detail & actions), **Flow** (visual GitFlow branch graph), and **CI/CD** (Jenkins pipeline tracking)!  
 > • **Jenkins CI/CD Pipeline Monitoring**: Real-time build status tracking and progressive console log streaming.  
 > • **Comprehensive Safety Guardrails**: Pre-finish checks for uncommitted changes, unpushed commits, and divergence blocking, plus protected branch commit warnings for `main` and `develop`.  
-> • **Multi-Repository Workspace Support**: Independent configuration and execution across multi-repo projects.
+> • **Multi-Repository Workspace Support**: Independent configuration and execution across multi-repo projects.  
 
 
 ---
@@ -59,13 +59,13 @@ It executes all Git operations programmatically via asynchronous IntelliJ Platfo
 - Safe configuration reset action to reconfigure branch conventions whenever needed.
 
 <p align="center">
-  <img src="src/main/resources/screens/01-start.png" alt="Start Menu" width="48%">
-  <img src="src/main/resources/screens/02-init.png" alt="Initialization Dialog" width="48%">
+  <img src="docs/assets/images/screens/01-start.png" alt="Start Menu" width="48%">
+  <img src="docs/assets/images/screens/02-init.png" alt="Initialization Dialog" width="48%">
 </p>
 
 ---
 
-### 🌳 Git Flow Branching Model
+### 🌿 Git Flow Branching Model
 The plugin follows the standard Git Flow strategy with zero CLI overhead:
 
 - **Main Branch (`main` / `master`)**: Represents production-ready, release-tested code.
@@ -75,7 +75,7 @@ The plugin follows the standard Git Flow strategy with zero CLI overhead:
 - **Hotfix Branches (`hotfix/*`)**: Created directly from `main` for critical production fixes. Merged back into both `main` and `develop` with patch tags.
 
 <p align="center">
-  <img src="src/main/resources/screens/gitflow.png" alt="Git Flow Model" width="80%">
+  <img src="docs/assets/images/screens/gitflow.png" alt="Git Flow Model" width="80%">
 </p>
 
 ---
@@ -112,7 +112,7 @@ When finishing a feature, choose the workflow that best matches your team's code
 - **Automatic Task Closing**: Automatically transitions and closes the linked issue tracker task upon successful completion.
 
 <p align="center">
-  <img src="src/main/resources/screens/07-feature-finish.png" alt="Finish Feature Dialog" width="60%">
+  <img src="docs/assets/images/screens/07-feature-finish.png" alt="Finish Feature Dialog" width="60%">
 </p>
 
 ---
@@ -140,7 +140,8 @@ Monitor every aspect of your Git workflow in a dedicated bottom Tool Window:
    - Build status tracking and stop/clear controls.
 
 <p align="center">
-  <img src="src/main/resources/screens/03-toolwindow.png" alt="Tool Window Logs" width="80%">
+  <img src="docs/assets/images/screens/03-toolwindow.png" alt="Tool Window Logs" width="48%">
+  <img src="docs/assets/images/screens/13-branches-derivation.png" alt="Flow Visual Graph" width="48%">
 </p>
 
 ---
@@ -160,13 +161,13 @@ Seamlessly connects to IntelliJ IDEA's **Task Management** subsystem (`com.intel
   - Automatically closes the task on the server when finishing the branch.
 
 <p align="center">
-  <img src="src/main/resources/screens/11-task-server-config.png" alt="Task Server Configuration" width="48%">
-  <img src="src/main/resources/screens/12-tasks-view.png" alt="Tasks View" width="48%">
+  <img src="docs/assets/images/screens/11-task-server-config.png" alt="Task Server Configuration" width="48%">
+  <img src="docs/assets/images/screens/12-tasks-view.png" alt="Tasks View" width="48%">
 </p>
 
 <p align="center">
-  <img src="src/main/resources/screens/05-new-feature.png" alt="Feature Start with Task" width="48%">
-  <img src="src/main/resources/screens/06-new-feature-2.png" alt="Feature Start Confirmation" width="48%">
+  <img src="docs/assets/images/screens/05-new-feature.png" alt="Feature Start with Task" width="48%">
+  <img src="docs/assets/images/screens/06-new-feature-2.png" alt="Feature Start Confirmation" width="48%">
 </p>
 
 ---
@@ -179,6 +180,11 @@ Stay in your flow without switching back and forth to your browser:
 - Streams live console chunks progressively with smart ANSI color parsing.
 - Secure token storage backed by IntelliJ's `PasswordSafe`.
 
+<p align="center">
+  <img src="docs/assets/images/screens/14-config-ci-cd.png" alt="CI/CD Configuration" width="48%">
+  <img src="docs/assets/images/screens/15-pipeline.png" alt="CI/CD Pipeline Monitoring" width="48%">
+</p>
+
 ---
 
 ### 🗂️ Branch Navigation & Interactive Tree View
@@ -190,8 +196,8 @@ Stay in your flow without switching back and forth to your browser:
   - Bookmark indicators for current active branch and production branches.
 
 <p align="center">
-  <img src="src/main/resources/screens/04-checkout.png" alt="Checkout Dialog" width="48%">
-  <img src="src/main/resources/screens/10-tree-view.png" alt="Tree View" width="48%">
+  <img src="docs/assets/images/screens/04-checkout.png" alt="Checkout Dialog" width="48%">
+  <img src="docs/assets/images/screens/10-tree-view.png" alt="Tree View" width="48%">
 </p>
 
 ---

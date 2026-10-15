@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitFlow Helper — Seamless Git Flow Branching for JetBrains IDEs</title>
+  <meta name="description" content="Native Git Flow branching model inside IntelliJ IDEA and JetBrains IDEs. Zero CLI overhead, proactive divergence sync, 4-tab tool window, issue tracker integrations, and Jenkins CI/CD monitoring.">
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="index.html" class="nav-brand" aria-label="GitFlow Helper" title="GitFlow Helper">
+        <div class="brand-logo-wrap">
+          <img src="assets/images/logo.svg" alt="GitFlow Helper Logo" class="brand-logo">
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <ul class="nav-desktop-links">
+        <li><a href="index.html" class="nav-link active">Overview</a></li>
+        <li><a href="workflow.html" class="nav-link">Branching & Workflows</a></li>
+        <li><a href="toolwindow.html" class="nav-link">4-Tab Tool Window</a></li>
+        <li><a href="integrations.html" class="nav-link">Integrations & CI/CD</a></li>
+        <li><a href="safety-shortcuts.html" class="nav-link">Safety & Shortcuts</a></li>
+      </ul>
+
+      <!-- Action buttons & Hamburger Trigger -->
+      <div class="nav-actions">
+        <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" class="btn btn-kofi btn-sm" title="Support creator on Ko-fi">
+          <span>☕</span>
+          <span>Buy Me a Coffee</span>
+        </a>
+        <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
+          <span>Get Plugin</span>
+        </a>
+        <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+          <span class="line"></span>
+          <span class="line"></span>
+          <span class="line"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hamburger Drawer Navigation (Requested by user) -->
+  <div class="drawer-overlay"></div>
+  <aside class="nav-drawer" aria-label="Mobile Navigation">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem;">
+        <div class="brand-logo-wrap" style="width: 32px; height: 32px;">
+          <img src="assets/images/logo.svg" alt="Logo" style="width: 18px; height: 18px;">
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 1.05rem;">GitFlow Helper</div>
+          <div style="font-size: 0.75rem; color: var(--primary);">Navigation Menu</div>
+        </div>
+      </div>
+
+      <div class="drawer-section-title">Documentation & Features</div>
+      <ul class="drawer-links">
+        <li>
+          <a href="index.html" class="drawer-link active">
+            <span>🏠 Home Overview</span>
+            <span class="drawer-link-tag">v2.10.3</span>
+          </a>
+        </li>
+        <li>
+          <a href="workflow.html" class="drawer-link">
+            <span>🌿 Branching & Workflows</span>
+            <span class="drawer-link-tag">Core</span>
+          </a>
+        </li>
+        <li>
+          <a href="toolwindow.html" class="drawer-link">
+            <span>🪟 4-Tab Tool Window</span>
+            <span class="drawer-link-tag">Interactive</span>
+          </a>
+        </li>
+        <li>
+          <a href="integrations.html" class="drawer-link">
+            <span>🔗 Issue Trackers & CI/CD</span>
+            <span class="drawer-link-tag">Jira • Jenkins</span>
+          </a>
+        </li>
+        <li>
+          <a href="safety-shortcuts.html" class="drawer-link">
+            <span>🛡️ Safety & Key Shortcuts</span>
+            <span class="drawer-link-tag">Guardrails</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="drawer-section-title" style="margin-top: 2rem;">Community & Links</div>
+      <ul class="drawer-links">
+        <li>
+          <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper" target="_blank" rel="noopener noreferrer" class="drawer-link">
+            <span>🛒 JetBrains Marketplace</span>
+            <span>↗</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/wdvalle/gitflow-helper" target="_blank" rel="noopener noreferrer" class="drawer-link">
+            <span>🐙 GitHub Repository</span>
+            <span>↗</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/wdvalle/gitflow-helper/issues" target="_blank" rel="noopener noreferrer" class="drawer-link">
+            <span>🐛 Report an Issue</span>
+            <span>↗</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="drawer-footer">
+      <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" class="btn btn-kofi" style="width: 100%;">
+        <span>☕</span>
+        <span>Support on Ko-fi</span>
+      </a>
+      <div style="font-size: 0.78rem; text-align: center; color: var(--text-muted);">
+        Created with ❤️ by Walter Valle
+      </div>
+    </div>
+  </aside>
+
+  <!-- Hero Section with Motion -->
+  <section class="hero">
+    <div class="container">
+      <!-- Prominent Plugin Brand Showcase -->
+      <div class="hero-brand-featured reveal">
+        <div class="hero-brand-badge-icon">
+          <img src="assets/images/logo.svg" alt="GitFlow Helper Logo" class="hero-brand-icon-img">
+        </div>
+        <div class="hero-brand-text">
+          <div class="hero-brand-badge">
+            <span class="hero-brand-dot"></span>
+            <span>JetBrains Marketplace • v2.10.3</span>
+          </div>
+          <h1 class="hero-brand-title">GitFlow Helper</h1>
+          <p class="hero-brand-subtitle">Seamless Git Flow Branching for JetBrains IDEs</p>
+        </div>
+      </div>
+
+      <h2 class="hero-title reveal delay-1">
+        Master <span class="gradient-text">Git Flow Natively</span><br>
+        Inside JetBrains IDEs.
+      </h2>
+
+      <p class="hero-subtitle reveal delay-2">
+        Execute full Vincent Driessen Git Flow lifecycle directly inside IntelliJ IDEA, Android Studio, and WebStorm. No CLI tools required. Zero friction, complete safety guardrails, and deep issue tracker integration.
+      </p>
+
+      <div class="hero-cta reveal delay-3">
+        <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+          </svg>
+          Install from Marketplace
+        </a>
+        <a href="workflow.html" class="btn btn-secondary btn-lg">
+          Explore Workflows & Guide →
+        </a>
+        <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" class="btn btn-kofi btn-lg">
+          ☕ Buy Me a Coffee
+        </a>
+      </div>
+
+      <div class="hero-meta reveal delay-4">
+        <div class="hero-meta-item">
+          <span>⚡</span>
+          <span>Zero External CLI Tools</span>
+        </div>
+        <div class="hero-meta-item">
+          <span>🛡️</span>
+          <span>Protected Branch Safety</span>
+        </div>
+        <div class="hero-meta-item">
+          <span>🔄</span>
+          <span>1-Click Divergence Sync</span>
+        </div>
+        <div class="hero-meta-item">
+          <span>🏗️</span>
+          <span>Multi-Repo Support</span>
+        </div>
+      </div>
+
+      <!-- Branch Visual Rail Animation -->
+      <div class="branch-flow-strip reveal delay-2">
+        <div class="branch-strip-header">
+          <span>Active GitFlow Architecture Overview</span>
+          <span style="font-family: var(--font-mono); color: var(--primary);">git-flow --native-intellij</span>
+        </div>
+        <div class="branch-strip-nodes">
+          <div class="branch-node main">
+            <span class="branch-dot main"></span>
+            <span>main / master</span>
+          </div>
+          <span style="color: var(--text-muted); font-size: 1.1rem;">⇄</span>
+          <div class="branch-node hotfix">
+            <span class="branch-dot hotfix"></span>
+            <span>hotfix/*</span>
+          </div>
+          <span style="color: var(--text-muted); font-size: 1.1rem;">⇄</span>
+          <div class="branch-node release">
+            <span class="branch-dot release"></span>
+            <span>release/*</span>
+          </div>
+          <span style="color: var(--text-muted); font-size: 1.1rem;">⇄</span>
+          <div class="branch-node develop">
+            <span class="branch-dot develop"></span>
+            <span>develop</span>
+          </div>
+          <span style="color: var(--text-muted); font-size: 1.1rem;">⇄</span>
+          <div class="branch-node feature">
+            <span class="branch-dot feature"></span>
+            <span>feature/*</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Screenshot: Hero Overview -->
+      <div class="screenshot-frame reveal delay-3">
+        <div class="screenshot-header">
+          <div class="screenshot-title">
+            <span>🖼️</span>
+            <span>GitFlow Helper — Status Bar Quick Action Menu</span>
+          </div>
+        </div>
+
+        <div class="screenshot-body">
+          <img src="assets/images/screens/01-start.png" alt="GitFlow Helper Quick Action Menu on Status Bar" class="screenshot-img">
+        </div>
+
+        <div class="screenshot-caption">
+          <span>1-Click Context Menu Access: Init..., Tasks Integration, Feature, Release, and Hotfix</span>
+          <span style="color: var(--primary);">IntelliJ IDEA 2024.2+ Compatible</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Highlights Grid -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Powerful Capabilities</span>
+        <h2 class="section-title">Engineered for Developers Who Love Clean Git</h2>
+        <p class="section-desc">
+          Everything you need for strict Git Flow compliance without ever leaving your IDE or typing repetitive terminal commands.
+        </p>
+      </div>
+
+      <div class="grid-3">
+        <!-- Feature 1 -->
+        <div class="feature-card reveal delay-1">
+          <div class="card-icon-wrap">⚡</div>
+          <h3 class="card-title">100% Native JetBrains APIs</h3>
+          <p class="card-desc">
+            No external Git Flow CLI binaries required. Works seamlessly through IntelliJ Platform's asynchronous Git4Idea engine with instant feedback and zero latency.
+          </p>
+          <a href="workflow.html" class="card-link">Learn about Git Flow model →</a>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card reveal delay-2">
+          <div class="card-icon-wrap" style="color: var(--accent-amber); border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1);">⬇</div>
+          <h3 class="card-title">Proactive Divergence Indicator</h3>
+          <p class="card-desc">
+            Never let features fall behind. Real-time status bar badge (<code>⬇ N</code>) counts how many commits you are behind develop, with instant 1-click automatic synchronization.
+          </p>
+          <a href="workflow.html#divergence-sync" class="card-link">See 1-Click Sync in action →</a>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card reveal delay-3">
+          <div class="card-icon-wrap" style="color: var(--accent-blue); border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.1);">🪟</div>
+          <h3 class="card-title">Dedicated 4-Tab Tool Window</h3>
+          <p class="card-desc">
+            Full visibility at your fingertips: Execution Logs with custom typography, rich Issues inspector, interactive visual branch Flow graph, and Jenkins CI/CD monitoring.
+          </p>
+          <a href="toolwindow.html" class="card-link">Explore the 4 Tool Window tabs →</a>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card reveal delay-1">
+          <div class="card-icon-wrap" style="color: var(--accent-purple); border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.1);">🔗</div>
+          <h3 class="card-title">Deep Issue Tracker Binding</h3>
+          <p class="card-desc">
+            Directly integrates with Jira Software, GitHub Issues, GitLab Issues, and Redmine. Automatically generates sanitized branch names and updates status to In Progress.
+          </p>
+          <a href="integrations.html" class="card-link">View issue tracker setup →</a>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card reveal delay-2">
+          <div class="card-icon-wrap" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.3); background: rgba(244, 63, 94, 0.1);">🛡️</div>
+          <h3 class="card-title">Safety Guardrails & Checks</h3>
+          <p class="card-desc">
+            Blocks accidental direct commits to <code>main</code> and <code>develop</code>. Detects uncommitted changes and divergence before allowing branch completion.
+          </p>
+          <a href="safety-shortcuts.html" class="card-link">Discover safety layers →</a>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card reveal delay-3">
+          <div class="card-icon-wrap" style="color: var(--accent-cyan); border-color: rgba(6, 182, 212, 0.3); background: rgba(6, 182, 212, 0.1);">🚀</div>
+          <h3 class="card-title">Jenkins CI/CD Live Stream</h3>
+          <p class="card-desc">
+            Trigger builds and monitor live console output streaming with smart ANSI coloring without switching to an external browser tab.
+          </p>
+          <a href="integrations.html#jenkins-cicd" class="card-link">Monitor CI/CD pipelines →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subpages Navigation Showcase Section -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Explore Detailed Documentation</span>
+        <h2 class="section-title">Deep Dive into Each Capability</h2>
+        <p class="section-desc">
+          Browse dedicated guides for workflows, the 4-tab tool window, third-party integrations, and safety rules.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="feature-card reveal-left">
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--branch-develop); text-transform: uppercase; margin-bottom: 0.5rem;">Workflow Engine</div>
+          <h3 class="card-title">🌿 Branching Model & Lifecycle Guide</h3>
+          <p class="card-desc">
+            Understand how GitFlow Helper manages Feature branches, Release stabilization, Hotfix patching, merge-requests to GitLab, squash merges, and the real-time Divergence Indicator.
+          </p>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <a href="workflow.html" class="btn btn-primary btn-sm">Read Workflows Guide →</a>
+          </div>
+        </div>
+
+        <div class="feature-card reveal-right">
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--branch-main); text-transform: uppercase; margin-bottom: 0.5rem;">Visual IDE Experience</div>
+          <h3 class="card-title">🪟 Dedicated 4-Tab Tool Window</h3>
+          <p class="card-desc">
+            Step through the Logs tab (with customizable typography and multi-repo tagging), Issues tab, the visual interactive Flow graph, and Jenkins build tracking.
+          </p>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <a href="toolwindow.html" class="btn btn-secondary btn-sm">Inspect Tool Window →</a>
+          </div>
+        </div>
+
+        <div class="feature-card reveal-left delay-1">
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--branch-feature); text-transform: uppercase; margin-bottom: 0.5rem;">Connected Ecosystem</div>
+          <h3 class="card-title">🔗 Issue Trackers & CI/CD Pipelines</h3>
+          <p class="card-desc">
+            Step-by-step setup for Jira, GitHub, GitLab, and Redmine integration. Configure Jenkins pipeline triggers and monitor builds directly inside your IDE.
+          </p>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <a href="integrations.html" class="btn btn-secondary btn-sm">View Integrations →</a>
+          </div>
+        </div>
+
+        <div class="feature-card reveal-right delay-1">
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--branch-hotfix); text-transform: uppercase; margin-bottom: 0.5rem;">Safety & Speed</div>
+          <h3 class="card-title">🛡️ Safety Guardrails & Key Shortcuts</h3>
+          <p class="card-desc">
+            Commit interception checks, dirty working tree scanners, divergence blockers, plus a complete searchable cheatsheet of keyboard shortcuts for macOS and Windows.
+          </p>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <a href="safety-shortcuts.html" class="btn btn-secondary btn-sm">Review Safety & Keys →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Screenshot: Tree View & Navigation -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Smart Navigation</span>
+        <h2 class="section-title">Hierarchical Branch Tree View</h2>
+        <p class="section-desc">
+          Navigate complex repositories with speed and precision. The <strong>Show as tree...</strong> action organizes branches into virtual folders (<code>feature/</code>, <code>hotfix/</code>, <code>release/</code>), supports instant type-to-filter Speed Search, and double-click checkout.
+        </p>
+      </div>
+
+      <div class="screenshot-frame reveal delay-2">
+        <div class="screenshot-header">
+          <div class="screenshot-title">
+            <span>🌲</span>
+            <span>Git Branches — Folder Hierarchy with Speed Search</span>
+          </div>
+        </div>
+
+        <div class="screenshot-body">
+          <img src="assets/images/screens/10-tree-view.png" alt="Hierarchical Branch Tree View in IntelliJ" class="screenshot-img">
+        </div>
+
+        <div class="screenshot-caption">
+          <span>Structured branch hierarchy organized by prefix folders with quick checkout actions</span>
+          <span style="color: var(--text-highlight);">Action: Show as tree...</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Donation & Support Section (Prominent as requested) -->
+  <section class="container reveal">
+    <div class="donation-banner">
+      <div class="donation-content">
+        <div class="donation-badge">💖 Open Source Support</div>
+        <h2 class="donation-title">Love Using GitFlow Helper?</h2>
+        <p class="donation-desc">
+          GitFlow Helper is free and open source, built to make developers' daily Git routines smoother, safer, and faster. If this plugin saves you time and prevents headaches, consider supporting future development with a coffee!
+        </p>
+        <div class="donation-actions">
+          <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" class="btn btn-kofi btn-lg">
+            <span>☕</span>
+            <span>Buy Me a Coffee on Ko-fi</span>
+          </a>
+          <a href="https://github.com/wdvalle/gitflow-helper" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-lg">
+            <span>⭐</span>
+            <span>Star on GitHub</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="brand-logo-wrap" style="width: 32px; height: 32px;">
+              <img src="assets/images/logo.svg" alt="GitFlow Logo" style="width: 18px; height: 18px;">
+            </div>
+            <span style="font-weight: 700; font-size: 1.15rem;">GitFlow Helper</span>
+          </div>
+          <p class="footer-desc">
+            Bringing the complete Vincent Driessen Git Flow branching model natively to IntelliJ IDEA and compatible JetBrains IDEs.
+          </p>
+          <div style="margin-top: 0.5rem;">
+            <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" class="btn btn-kofi btn-sm">
+              <span>☕</span>
+              <span>Support the Project</span>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Features</h4>
+          <ul class="footer-links">
+            <li><a href="workflow.html" class="footer-link">Branching Model</a></li>
+            <li><a href="workflow.html#divergence-sync" class="footer-link">1-Click Branch Sync</a></li>
+            <li><a href="toolwindow.html" class="footer-link">4-Tab Tool Window</a></li>
+            <li><a href="toolwindow.html#flow-tab" class="footer-link">Visual Flow Graph</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Integrations</h4>
+          <ul class="footer-links">
+            <li><a href="integrations.html#jira" class="footer-link">Jira Software</a></li>
+            <li><a href="integrations.html#github" class="footer-link">GitHub Issues</a></li>
+            <li><a href="integrations.html#gitlab" class="footer-link">GitLab MRs</a></li>
+            <li><a href="integrations.html#jenkins-cicd" class="footer-link">Jenkins CI/CD</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Resources</h4>
+          <ul class="footer-links">
+            <li><a href="safety-shortcuts.html" class="footer-link">Keyboard Shortcuts</a></li>
+            <li><a href="safety-shortcuts.html#safety" class="footer-link">Safety Guardrails</a></li>
+            <li><a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper" target="_blank" rel="noopener noreferrer" class="footer-link">Marketplace Page ↗</a></li>
+            <li><a href="https://github.com/wdvalle/gitflow-helper" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub Repository ↗</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 GitFlow Helper. Released under the Apache 2.0 License.
+        </div>
+        <div>
+          Developed with precision by Walter Valle • <a href="https://ko-fi.com/waltervalle" target="_blank" rel="noopener noreferrer" style="color: #ff8583;">Support on Ko-fi ☕</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

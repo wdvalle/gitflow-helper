@@ -5,49 +5,13 @@
     <description>
         <![CDATA[
             <h1>GitFlow Helper</h1>
-
             <p>
-                <a href="https://plugins.jetbrains.com/plugin/30207-git-flow-helper">JetBrains Marketplace</a> |
-                <a href="https://github.com/wdvalle/gitflow-helper">GitHub</a> |
-                <a href="https://ko-fi.com/waltervalle">Buy Me a Coffee</a>
+                GitFlow Helper brings the complete Git Flow branching strategy natively into JetBrains IDEs.
             </p>
-
-            <blockquote>
-                <p><strong>WHAT'S NEW IN v2.10.0</strong></p>
-                <ul>
-                    <li><strong>CI/CD:</strong> Graphical visualization and execution for Jenkins and OpenShift Pipelines (Tekton).</li>
-                </ul>
-            </blockquote>
-
-            <blockquote>
-                <p><strong>WHAT'S NEW IN v2.8.0 / 2.9.0</strong></p>
-                <ul>
-                    <li><strong>Proactive Divergence Indicator in Status Bar:</strong> Real-time badge showing commits behind <code>develop</code> (<code>⬇ N</code>) with instant 1-click branch synchronization!</li>
-                    <li><strong>Customizable Log Typography:</strong> Select custom font family and font size directly in the Logs tool window.</li>
-                    <li><strong>Repository Context in Logs &amp; Flow:</strong> Interactive repo selection in the Flow diagram panel and clear repo name prefix in execution logs.</li>
-                    <li><strong>Optional Task Selection on Feature Start:</strong> Create feature branches with or without binding to an issue tracker task.</li>
-                    <li><strong>Safe Background Execution:</strong> GitFlow menu is automatically disabled during background operations to prevent branch conflicts.</li>
-                    <li><strong>New Interactive About Dialog:</strong> Comprehensive built-in documentation guide (<code>UsageDialog</code>).</li>
-                    <li><strong>CI/CD Config Dialog:</strong> It's now possible to trigger builds in Jenkins directly from the plugin.</li>
-                </ul>
-            </blockquote>
-
-            <blockquote>
-                <p><strong>OTHER IMPORTANT FEATURES</strong></p>
-                <ul>
-                    <li><strong>Extended Issue Tracker Integrations:</strong> Full support for <strong>Jira</strong>, <strong>GitHub</strong>, <strong>GitLab</strong>, and <strong>Redmine</strong>!</li>
-                    <li><strong>Dedicated 4-Tab Tool Window:</strong> Dedicated views for <strong>Logs</strong>, <strong>Issues</strong> (rich task detail &amp; actions), <strong>Flow</strong> (visual GitFlow branch graph), and <strong>CI/CD</strong> (Jenkins pipeline tracking)!</li>
-                    <li><strong>Jenkins CI/CD Pipeline Monitoring:</strong> Real-time build status tracking and progressive console log streaming.</li>
-                    <li><strong>Comprehensive Safety Guardrails:</strong> Pre-finish checks for uncommitted changes, unpushed commits, and divergence blocking, plus protected branch commit warnings for <code>main</code> and <code>develop</code>.</li>
-                    <li><strong>Multi-Repository Workspace Support:</strong> Independent configuration and execution across multi-repo projects.</li>
-                </ul>
-            </blockquote>
-
-            <hr>
 
             <h2>📖 Overview</h2>
             <p><strong>GitFlow Helper</strong> brings the complete <a href="https://nvie.com/posts/a-successful-git-branching-model/">Vincent Driessen Git Flow branching strategy</a> natively into JetBrains IDEs.</p>
-            <p>It executes all Git operations programmatically via asynchronous IntelliJ Platform APIs without requiring external Git Flow CLI tools. In addition to branch automation, it deeply integrates with your <strong>Issue Trackers</strong> (Jira, GitHub, GitLab, Redmine), <strong>CI/CD pipelines</strong> (Jenkins, OpenShift Pipelines / Tekton), and provides interactive visual flow diagrams right inside your IDE.</p>
+            <p>It executes all Git operations programmatically via asynchronous IntelliJ Platform APIs without requiring external Git Flow CLI tools. In addition to branch automation, it deeply integrates with your <strong>Issue Trackers</strong> (Jira, GitHub, GitLab, Redmine), <strong>CI/CD pipelines</strong> (Jenkins), and provides interactive visual flow diagrams right inside your IDE.</p>
 
             <hr>
 
@@ -310,13 +274,21 @@
     <change-notes>
         <![CDATA[
             <ul>
+                <li><b>2.10.3</b></li>
+                <ul>
+                    <li><strong>Tasks:</strong>NPE in TasksToolWindowPanel.</li>
+                </ul>
+                <li><b>2.10.2</b></li>
+                <ul>
+                    <li><strong>Website:</strong>Bretter prints e new info.</li>
+                </ul>
                 <li><b>2.10.1</b></li>
                 <ul>
                     <li><strong>Tasks management:</strong>Plugin Task management is now Issue trackers.</li>
                 </ul>
                 <li><b>2.10.0</b></li>
                 <ul>
-                    <li><strong>CI/CD:</strong> Graphical visualization and execution for Jenkins and OpenShift Pipelines (Tekton).</li>
+                    <li><strong>CI/CD:</strong>Graphical visualization of Jenkins pipeline execution (others coming soon).</li>
                 </ul>
 
                 <li><b>2.9.0</b></li>
